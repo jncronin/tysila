@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{82697295-1AFF-4174-97BC-6562732305F3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>libtysila5</RootNamespace>
+    <AssemblyName>libtysila5</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AssembleMethod.cs" />
+    <Compile Include="cil\CilNode.cs" />
+    <Compile Include="cil\CilParser.cs" />
+    <Compile Include="cil\Opcode.cs" />
+    <Compile Include="cil\OpcodeList.cs" />
+    <Compile Include="Code.cs" />
+    <Compile Include="Array.cs" />
+    <Compile Include="Delegate.cs" />
+    <Compile Include="EqualityComparer.cs" />
+    <Compile Include="FileLoader.cs" />
+    <Compile Include="ir\AllocRegs.cs" />
+    <Compile Include="ir\ConvertToIR.cs" />
+    <Compile Include="ir\GetRetType.cs" />
+    <Compile Include="ir\intcall.cs" />
+    <Compile Include="ir\IrOpcodes.cs" />
+    <Compile Include="ir\Opcode.cs" />
+    <Compile Include="ir\SpecialMethods.cs" />
+    <Compile Include="layout\Array.cs" />
+    <Compile Include="layout\Ehdr.cs" />
+    <Compile Include="layout\Field.cs" />
+    <Compile Include="layout\String.cs" />
+    <Compile Include="layout\VTable.cs" />
+    <Compile Include="libtysila.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Requestor.cs" />
+    <Compile Include="SignatureTable.cs" />
+    <Compile Include="StringTable.cs" />
+    <Compile Include="target\AllocateLocalVarsArgs.cs" />
+    <Compile Include="target\ChooseInstructions.cs" />
+    <Compile Include="target\HashTable.cs" />
+    <Compile Include="target\MCGraph.cs" />
+    <Compile Include="target\MCInst.cs" />
+    <Compile Include="target\Target.cs" />
+    <Compile Include="target\TargetOptions.cs" />
+    <Compile Include="target\Targets.cs" />
+    <Compile Include="target\Trie.cs" />
+    <Compile Include="target\x86\AssemblePass.cs" />
+    <Compile Include="target\x86\Instructions.cs" />
+    <Compile Include="target\x86\lab.cs" />
+    <Compile Include="target\x86\stind.cs" />
+    <Compile Include="target\x86\x86_Assembler.cs" />
+    <Compile Include="target\x86\zeromem.cs" />
+    <Compile Include="util\set.cs" />
+    <Compile Include="util\setT.cs" />
+    <Compile Include="util\Stack.cs" />
+    <Compile Include="util\util.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\metadata\metadata.csproj">
+      <Project>{577c93b9-acd1-4ec2-83f5-c0ff3246feba}</Project>
+      <Name>metadata</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\tl\binary_library\binary_library.csproj">
+      <Project>{7d57589d-4c6c-4c24-945e-5a9cf736227e}</Project>
+      <Name>binary_library</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ir\IrMappings.td" />
+    <None Include="ir\IrOpcodes.td" />
+    <None Include="target\cc.td" />
+    <None Include="target\Instr.td" />
+    <None Include="target\Register.td" />
+    <None Include="target\Target.td" />
+    <None Include="target\TargetInit.td" />
+    <None Include="target\x86\x86.td" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

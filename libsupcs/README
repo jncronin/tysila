@@ -1,0 +1,7 @@
+libsupcs is the support library for all non trivial code compiled by tysila
+
+It is mainly responsible for dealing with RTTI and also contains placeholders
+for system-specific functionality that is implemented by tysila (e.g. the
+ability to perform IO port read/writes).  It does not have any dependencies
+on underlying libraries except those which define System.Type and the like.
+
