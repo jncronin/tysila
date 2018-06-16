@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2018
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "binary_library", "binary_library\binary_library.csproj", "{7D57589D-4C6C-4C24-945E-5A9CF736227E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsupcs", "libsupcs\libsupcs.csproj", "{566AA7AB-C8B8-417C-B16E-08C7D359CBB1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libtysila5", "libtysila5\libtysila5.csproj", "{82697295-1AFF-4174-97BC-6562732305F3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Compile BareBones|Any CPU = Compile BareBones|Any CPU
+		Compile libsupcs|Any CPU = Compile libsupcs|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7D57589D-4C6C-4C24-945E-5A9CF736227E}.Compile BareBones|Any CPU.ActiveCfg = Compile BareBones|Any CPU
+		{7D57589D-4C6C-4C24-945E-5A9CF736227E}.Compile BareBones|Any CPU.Build.0 = Compile BareBones|Any CPU
+		{7D57589D-4C6C-4C24-945E-5A9CF736227E}.Compile libsupcs|Any CPU.ActiveCfg = Compile BareBones|Any CPU
+		{7D57589D-4C6C-4C24-945E-5A9CF736227E}.Compile libsupcs|Any CPU.Build.0 = Compile BareBones|Any CPU
+		{7D57589D-4C6C-4C24-945E-5A9CF736227E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D57589D-4C6C-4C24-945E-5A9CF736227E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D57589D-4C6C-4C24-945E-5A9CF736227E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D57589D-4C6C-4C24-945E-5A9CF736227E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{566AA7AB-C8B8-417C-B16E-08C7D359CBB1}.Compile BareBones|Any CPU.ActiveCfg = Compile BareBones|Any CPU
+		{566AA7AB-C8B8-417C-B16E-08C7D359CBB1}.Compile BareBones|Any CPU.Build.0 = Compile BareBones|Any CPU
+		{566AA7AB-C8B8-417C-B16E-08C7D359CBB1}.Compile libsupcs|Any CPU.ActiveCfg = Compile libsupcs|Any CPU
+		{566AA7AB-C8B8-417C-B16E-08C7D359CBB1}.Compile libsupcs|Any CPU.Build.0 = Compile libsupcs|Any CPU
+		{566AA7AB-C8B8-417C-B16E-08C7D359CBB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{566AA7AB-C8B8-417C-B16E-08C7D359CBB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{566AA7AB-C8B8-417C-B16E-08C7D359CBB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{566AA7AB-C8B8-417C-B16E-08C7D359CBB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82697295-1AFF-4174-97BC-6562732305F3}.Compile BareBones|Any CPU.ActiveCfg = Release|Any CPU
+		{82697295-1AFF-4174-97BC-6562732305F3}.Compile BareBones|Any CPU.Build.0 = Release|Any CPU
+		{82697295-1AFF-4174-97BC-6562732305F3}.Compile libsupcs|Any CPU.ActiveCfg = Release|Any CPU
+		{82697295-1AFF-4174-97BC-6562732305F3}.Compile libsupcs|Any CPU.Build.0 = Release|Any CPU
+		{82697295-1AFF-4174-97BC-6562732305F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82697295-1AFF-4174-97BC-6562732305F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82697295-1AFF-4174-97BC-6562732305F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82697295-1AFF-4174-97BC-6562732305F3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {739FCB81-46C7-4354-8325-D48CA2E40414}
+	EndGlobalSection
+EndGlobal
