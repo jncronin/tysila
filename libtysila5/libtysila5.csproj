@@ -87,7 +87,7 @@
       <Project>{577c93b9-acd1-4ec2-83f5-c0ff3246feba}</Project>
       <Name>metadata</Name>
     </ProjectReference>
-    <ProjectReference Include="..\tl\binary_library\binary_library.csproj">
+    <ProjectReference Include="..\binary_library\binary_library.csproj">
       <Project>{7d57589d-4c6c-4c24-945e-5a9cf736227e}</Project>
       <Name>binary_library</Name>
     </ProjectReference>
