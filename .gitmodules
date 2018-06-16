@@ -1,0 +1,6 @@
+[submodule "binary_library"]
+	path = binary_library
+	url = https://github.com/jncronin/binary_library
+[submodule "metadata"]
+	path = metadata
+	url = https://github.com/jncronin/metadata
