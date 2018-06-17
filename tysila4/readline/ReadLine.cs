@@ -24,7 +24,17 @@ namespace System
         {
             Console.Write(prompt);
             KeyHandler keyHandler = new KeyHandler(new Console2(), _history, AutoCompletionHandler);
-            string text = GetText(keyHandler);
+
+            string text = null;
+            try
+            {
+                text = GetText(keyHandler);
+            }
+            catch(InvalidOperationException)
+            {
+                // this occurs if the console does not support System.Console.ReadKey
+                text = System.Console.ReadLine();
+            }
 
             if (String.IsNullOrWhiteSpace(text) && !String.IsNullOrWhiteSpace(@default))
             {
