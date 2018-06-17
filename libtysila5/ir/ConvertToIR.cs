@@ -324,7 +324,7 @@ namespace libtysila5.ir
                     stack_after = stloc(n, c, stack_before, 3);
                     break;
                 case cil.Opcode.SingleOpcodes.stloc_s:
-                    stack_after = stloc(n, c, stack_before, n.inline_int);
+                    stack_after = stloc(n, c, stack_before, (int)n.inline_uint);
                     break;
 
                 case cil.Opcode.SingleOpcodes.ldloc_0:
@@ -340,7 +340,7 @@ namespace libtysila5.ir
                     stack_after = ldloc(n, c, stack_before, 3);
                     break;
                 case cil.Opcode.SingleOpcodes.ldloc_s:
-                    stack_after = ldloc(n, c, stack_before, n.inline_int);
+                    stack_after = ldloc(n, c, stack_before, (int)n.inline_uint);
                     break;
 
                 case cil.Opcode.SingleOpcodes.ldarg_s:
