@@ -1,0 +1,102 @@
+// Build tysila and use it to build libsupcs
+
+ARCHS = [ "x86_64" ];
+CFLAGS ?= "-O2";
+
+// How to build tysila
+TYSILA = dir(THIS) + "/tysila4/bin/Release/tysila4.exe";
+MSBUILD = "msbuild";
+
+rulefor(TYSILA, [ ], [ ], function()
+{
+	shellcmd("$MSBUILD /p:Configuration=Release " + dir(THIS) + "/tysila.sln");
+});
+
+build(TYSILA);
+
+MSCORLIB = find("mscorlib.dll", "mscorlib.dll from coreclr", "../tysos/coreclr/mscorlib.dll");
+MSCORLIBDIR = dir(MSCORLIB);
+
+// How to build an architecture
+function buildarch(string arch)
+{
+	// Required tools
+	XCC = find("$arch-elf-gcc", "cross compiler for $arch-elf", "");
+	XAR = find("$arch-elf-ar", "cross archiver for $arch-elf", "");
+	XRANLIB = find("$arch-elf-ranlib", "cross ranlib for $arch-elf", "");
+
+	// Rules
+	rulefor("%.$arch.o", [ "%.c" ], [ THIS, XCC ], function() {
+		shellcmd("$XCC -o $_RULE_OUTPUT $CFLAGS -ffreestanding -c $_RULE_INPUT");
+	});
+
+	rulefor("%.$arch.o", [ "%.s" ], [ THIS, XCC ], function() {
+		shellcmd("$XCC -o $_RULE_OUTPUT $CFLAGS -ffreestanding -c $_RULE_INPUT");
+	});
+
+	rulefor("%.$arch.obj", [ "%.exe" ], [ TYSILA, THIS ], function()
+	{
+		shellcmd("$TYSILA -o $_RULE_OUTPUT -D -d " + dir(_RULE_OUTPUT) + "/" + basefname(_RULE_OUTPUT) + ".txt -t $arch -q -L$MSCORLIBDIR $_RULE_INPUT");
+	});
+	rulefor("%.$arch.obj", [ "%.dll" ], [ TYSILA, THIS ], function()
+	{
+		shellcmd("$TYSILA -o $_RULE_OUTPUT -D -d " + dir(_RULE_OUTPUT) + "/" + basefname(_RULE_OUTPUT) + ".txt -t $arch -q -L$MSCORLIBDIR $_RULE_INPUT");
+	});
+	
+	// Compiler RT library from netlib/llvm
+	ROOT = dir(THIS);
+	LIBSUPCS_COMPILER_RT = [
+		ROOT + "/libsupcs/compiler_rt/ashldi3.$arch.o",
+		ROOT + "/libsupcs/compiler_rt/ashrdi3.$arch.o",
+		ROOT + "/libsupcs/compiler_rt/divdi3.$arch.o",
+		ROOT + "/libsupcs/compiler_rt/fixdfdi.$arch.o",
+		ROOT + "/libsupcs/compiler_rt/fixunsdfdi.$arch.o",
+		ROOT + "/libsupcs/compiler_rt/fixunsdfsi.$arch.o",
+		ROOT + "/libsupcs/compiler_rt/floatdidf.$arch.o",
+		ROOT + "/libsupcs/compiler_rt/floatundidf.$arch.o",
+		ROOT + "/libsupcs/compiler_rt/lshrdi3.$arch.o",
+		ROOT + "/libsupcs/compiler_rt/moddi3.$arch.o",
+		ROOT + "/libsupcs/compiler_rt/muldi3.$arch.o",
+		ROOT + "/libsupcs/compiler_rt/negdi2.$arch.o",
+		ROOT + "/libsupcs/compiler_rt/udivmoddi4.$arch.o",
+
+		ROOT + "/libsupcs/netlib/s_rint.$arch.o",
+		ROOT + "/libsupcs/netlib/s_floor.$arch.o",
+	];
+
+	// Arch-specific files
+	if (arch == "x86_64")
+	{
+		YASM = find("yasm", "YASM-like assembler", "");
+		rulefor("%.$arch.o", [ "%.asm" ], [ THIS, YASM ], function() {
+			shellcmd("$YASM -o $_RULE_OUTPUT -felf64 $_RULE_INPUT");
+		});
+		
+		LIBSUPCS_CPU_OBJ = [ ROOT + "/libsupcs/x86_64_cpu.$arch.o",
+			ROOT + "/libsupcs/x86_64_Invoke.$arch.o",
+			ROOT + "/libsupcs/x86_64_Spinlock.$arch.o" ];
+	}
+	else
+	{
+		error("Unsupported target: $arch");
+	}
+	
+	// Outputs
+	LIBSUPCSA = "libsupcs.$arch.a";
+	LIBSUPCSOBJ = dir(THIS) + "/tysila4/bin/Release/libsupcs.$arch.obj";
+	METADATAOBJ = dir(THIS) + "/tysila4/bin/Release/metadata.$arch.obj";
+
+	rulefor(LIBSUPCSA, [ LIBSUPCSOBJ, METADATAOBJ ] + LIBSUPCS_CPU_OBJ + LIBSUPCS_COMPILER_RT,
+	[ THIS ], function()
+	{
+		shellcmd("$XAR -cru $_RULE_OUTPUT $_RULE_INPUTS");
+		shellcmd("$XRANLIB $_RULE_OUTPUT");
+	});
+	
+	build(LIBSUPCSA);
+}
+
+foreach(arch in ARCHS)
+{
+	buildarch(arch);
+}
