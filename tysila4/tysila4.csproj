@@ -122,6 +122,11 @@
     <Compile Include="XGetopt.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\libsupcs\libsupcs.csproj">
+      <Project>{566aa7ab-c8b8-417c-b16e-08c7d359cbb1}</Project>
+      <Name>libsupcs</Name>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\libtysila5\libtysila5.csproj">
       <Project>{82697295-1aff-4174-97bc-6562732305f3}</Project>
       <Name>libtysila5</Name>
