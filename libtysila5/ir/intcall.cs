@@ -454,7 +454,10 @@ namespace libtysila5.ir
         private static Stack<StackItem> assembly_GetExecutingAssembly(CilNode n, Code c, Stack<StackItem> stack_before)
         {
             // get the appropriate methods
-            var tmeth = c.ms.m.al.GetAssembly("libsupcs").GetTypeSpec("libsupcs", "TysosModule");
+            var libsupcs = c.ms.m.al.GetAssembly("libsupcs");
+            if (libsupcs == null)
+                throw new Exception("Cannot load libsupcs");
+            var tmeth = libsupcs.GetTypeSpec("libsupcs", "TysosModule");
             var get_mod = tmeth.m.GetMethodSpec(tmeth, "GetModule");
             var get_ass = tmeth.m.GetMethodSpec(tmeth, "GetAssembly");
 
