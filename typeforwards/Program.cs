@@ -29,21 +29,22 @@ namespace typeforwards
 {
     class Program
     {
-        static string corefx = @"D:\tysos\corefx\lib";
-        static string input_ass = @"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1\mscorlib.dll";
-        static string outmap = @"D:\tysos\corefx\lib\typeforwards.txt";
-
         static void Main(string[] args)
         {
+            if(args.Length != 4)
+            {
+                disp_usage();
+                return;
+            }
             libtysila5.libtysila.AssemblyLoader al = new libtysila5.libtysila.AssemblyLoader(
                 new tysila4.FileSystemFileLoader());
-            tysila4.Program.search_dirs.Add(corefx);
-            tysila4.Program.search_dirs.Add(new System.IO.FileInfo(input_ass).DirectoryName);
+            tysila4.Program.search_dirs.Add(args[0]);
+            tysila4.Program.search_dirs.Add(new System.IO.FileInfo(args[2]).DirectoryName);
 
             /* Load up all types in corefx files */
             Dictionary<string, string> map = new Dictionary<string, string>();
-            var indir = new System.IO.DirectoryInfo(corefx);
-            var files = indir.GetFiles("*.dll");
+            var indir = new System.IO.DirectoryInfo(args[0]);
+            var files = indir.GetFiles(args[1]);
             foreach (var fi in files)
             {
                 var m = al.GetAssembly(fi.FullName);
@@ -65,8 +66,9 @@ namespace typeforwards
             }
 
             /* Generate a mapping from type name/namespaces to the files they are contained in */
-            var infile = al.GetAssembly(input_ass);
-            var o = new System.IO.StreamWriter(outmap);
+            var infiledi = al.LoadAssembly(args[2]);
+            var infile = new metadata.PEFile().Parse(infiledi, al, false);
+            var o = new System.IO.StreamWriter(args[3]);
             for (int i = 1; i <= infile.table_rows[metadata.MetadataStream.tid_TypeDef]; i++)
             {
                 var flags = infile.GetIntEntry(metadata.MetadataStream.tid_TypeDef, i, 0);
@@ -85,7 +87,23 @@ namespace typeforwards
                     }
                 }
             }
+            for(int i = 1; i <= infile.table_rows[metadata.MetadataStream.tid_ExportedType]; i++)
+            {
+                var nspace = infile.GetStringEntry(metadata.MetadataStream.tid_ExportedType, i, 3);
+                var name = infile.GetStringEntry(metadata.MetadataStream.tid_ExportedType, i, 2);
+                var fullname = nspace + "." + name;
+
+                if(map.ContainsKey(fullname))
+                {
+                    o.WriteLine(infile.AssemblyName + "!" + fullname + "=" + map[fullname]);
+                }
+            }
             o.Close();
+        }
+
+        private static void disp_usage()
+        {
+            Console.WriteLine("Usage: typeforwards <input_dir> <pattern> <reference_assembly> <outfile>");
         }
     }
 }

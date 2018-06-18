@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "metadata", "metadata\metada
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "readline", "tysila4\readline\readline.csproj", "{725897E7-4A20-4D94-917E-BB0F6BFA1257}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "typeforwards", "typeforwards\typeforwards.csproj", "{64B876B2-65A6-4D61-9F28-75580A91156F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		CHeader|Any CPU = CHeader|Any CPU
@@ -171,6 +173,26 @@ Global
 		{725897E7-4A20-4D94-917E-BB0F6BFA1257}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{725897E7-4A20-4D94-917E-BB0F6BFA1257}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{725897E7-4A20-4D94-917E-BB0F6BFA1257}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.CHeader|Any CPU.ActiveCfg = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.CHeader|Any CPU.Build.0 = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile BareBones|Any CPU.ActiveCfg = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile BareBones|Any CPU.Build.0 = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile libstdcs|Any CPU.ActiveCfg = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile libstdcs|Any CPU.Build.0 = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile libsupcs|Any CPU.ActiveCfg = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile libsupcs|Any CPU.Build.0 = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile libtysila|Any CPU.ActiveCfg = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile libtysila|Any CPU.Build.0 = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile metadata|Any CPU.ActiveCfg = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile metadata|Any CPU.Build.0 = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile mscorlib|Any CPU.ActiveCfg = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile mscorlib|Any CPU.Build.0 = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile TestProcess|Any CPU.ActiveCfg = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Compile TestProcess|Any CPU.Build.0 = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64B876B2-65A6-4D61-9F28-75580A91156F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
