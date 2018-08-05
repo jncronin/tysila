@@ -100,3 +100,21 @@ foreach(arch in ARCHS)
 {
 	buildarch(arch);
 }
+
+if(input("Install tysila?", [ "y", "n" ]) == "y")
+{
+	install_dir = input("Install directory", "bin");
+	mkdir(install_dir);
+	foreach(dll_file in files(dir(TYSILA), "*.dll"))
+	{
+		cp(dll_file, install_dir);
+	}
+	foreach(exe_file in files(dir(TYSILA), "*.exe"))
+	{
+		cp(exe_file, install_dir);
+	}
+	foreach(arch in ARCHS)
+	{
+		cp("libsupcs.$arch.a", install_dir);
+	}
+}
