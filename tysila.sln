@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tl", "binary_library\tl\tl\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "elfhash", "binary_library\tl\elfhash\elfhash.csproj", "{D717D6F9-38FB-4C2C-BA3E-C8B2FDE9B446}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "genmissing", "genmissing\genmissing.csproj", "{82B7AF62-E4BD-4909-B8EF-1654A34F466E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		CHeader|Any CPU = CHeader|Any CPU
@@ -446,6 +448,46 @@ Global
 		{D717D6F9-38FB-4C2C-BA3E-C8B2FDE9B446}.Release|Any CPU.Build.0 = Release|x86
 		{D717D6F9-38FB-4C2C-BA3E-C8B2FDE9B446}.Release|x86.ActiveCfg = Release|x86
 		{D717D6F9-38FB-4C2C-BA3E-C8B2FDE9B446}.Release|x86.Build.0 = Release|x86
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.CHeader|Any CPU.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.CHeader|Any CPU.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.CHeader|x86.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.CHeader|x86.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile BareBones|Any CPU.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile BareBones|Any CPU.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile BareBones|x86.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile BareBones|x86.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile libstdcs|Any CPU.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile libstdcs|Any CPU.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile libstdcs|x86.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile libstdcs|x86.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile libsupcs|Any CPU.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile libsupcs|Any CPU.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile libsupcs|x86.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile libsupcs|x86.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile libtysila|Any CPU.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile libtysila|Any CPU.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile libtysila|x86.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile libtysila|x86.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile metadata|Any CPU.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile metadata|Any CPU.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile metadata|x86.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile metadata|x86.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile mscorlib|Any CPU.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile mscorlib|Any CPU.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile mscorlib|x86.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile mscorlib|x86.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile TestProcess|Any CPU.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile TestProcess|Any CPU.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile TestProcess|x86.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Compile TestProcess|x86.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Debug|x86.Build.0 = Debug|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Release|x86.ActiveCfg = Release|Any CPU
+		{82B7AF62-E4BD-4909-B8EF-1654A34F466E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
