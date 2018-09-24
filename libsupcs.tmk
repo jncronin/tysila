@@ -5,14 +5,20 @@ CFLAGS ?= "-O2";
 
 // How to build tysila
 TYSILA = dir(THIS) + "/tysila4/bin/Release/tysila4.exe";
+GENMISSING = dir(THIS) + "/genmissing/bin/Release/genmissing.exe";
 MSBUILD = "msbuild";
 
 rulefor(TYSILA, [ ], [ ], function()
 {
 	shellcmd("$MSBUILD /p:Configuration=Release " + dir(THIS) + "/tysila.sln");
 });
+rulefor(GENMISSING, [ ], [ ], function()
+{
+	shellcmd("$MSBUILD /p:Configuration=Release " + dir(THIS) + "/genmissing/genmissing.csproj");
+});
 
 build(TYSILA);
+build(GENMISSING);
 
 MSCORLIB = find("mscorlib.dll", "mscorlib.dll from coreclr", "../tysos/coreclr/mscorlib.dll");
 MSCORLIBDIR = dir(MSCORLIB);
@@ -110,6 +116,14 @@ if(input("Install tysila?", [ "y", "n" ]) == "y")
 		cp(dll_file, install_dir);
 	}
 	foreach(exe_file in files(dir(TYSILA), "*.exe"))
+	{
+		cp(exe_file, install_dir);
+	}
+	foreach(dll_file in files(dir(GENMISSING), "*.dll"))
+	{
+		cp(dll_file, install_dir);
+	}
+	foreach(exe_file in files(dir(GENMISSING), "*.exe"))
 	{
 		cp(exe_file, install_dir);
 	}
