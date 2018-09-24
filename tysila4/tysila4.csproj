@@ -122,6 +122,10 @@
     <Compile Include="XGetopt.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\binary_library\tl\tl\tl.csproj">
+      <Project>{0b85407b-b286-4f7e-a6f7-264181efda67}</Project>
+      <Name>tl</Name>
+    </ProjectReference>
     <ProjectReference Include="..\libsupcs\libsupcs.csproj">
       <Project>{566aa7ab-c8b8-417c-b16e-08c7d359cbb1}</Project>
       <Name>libsupcs</Name>
