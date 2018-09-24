@@ -122,6 +122,10 @@
     <Compile Include="XGetopt.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\binary_library\tl\elfhash\elfhash.csproj">
+      <Project>{d717d6f9-38fb-4c2c-ba3e-c8b2fde9b446}</Project>
+      <Name>elfhash</Name>
+    </ProjectReference>
     <ProjectReference Include="..\binary_library\tl\tl\tl.csproj">
       <Project>{0b85407b-b286-4f7e-a6f7-264181efda67}</Project>
       <Name>tl</Name>
