@@ -40,9 +40,14 @@ namespace TableMap
                 @"D:\tysos\libtysila5\target\Target.td",
             };
 
-            foreach(var file in files)
+            var this_file = System.Reflection.Assembly.GetEntryAssembly().Location;
+            var this_fi = new FileInfo(this_file);
+
+            foreach (var file in args)
             {
                 MakeState s = new MakeState();
+
+                s.search_paths.Add(this_fi.DirectoryName);
 
                 new PrintFunction { args = new List<FunctionStatement.FunctionArg> { new FunctionStatement.FunctionArg { name = "val", argtype = Expression.EvalResult.ResultType.Int } } }.Execute(s);
                 new PrintFunction { args = new List<FunctionStatement.FunctionArg> { new FunctionStatement.FunctionArg { name = "val", argtype = Expression.EvalResult.ResultType.String } } }.Execute(s);
