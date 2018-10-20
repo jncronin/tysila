@@ -37,6 +37,10 @@ namespace libtysila5
             binary_library.ISection ts = null,
             binary_library.ISection data_sect = null)
         {
+            if(ms.ret_type_needs_boxing)
+            {
+                throw new Exception("AssembleMethod called for box rettype stub - use AssembleBoxedMethod instead");
+            }
             if (ms.is_boxed)
             {
                 throw new Exception("AssembleMethod called for boxed method - use AssembleBoxedMethod instead");
