@@ -83,6 +83,8 @@ namespace libtysila5.target
         protected internal abstract binary_library.IRelocationType GetDataToCodeReloc();
 
         protected internal abstract Code AssembleBoxedMethod(metadata.MethodSpec ms);
+        protected internal abstract Code AssembleBoxRetTypeMethod(metadata.MethodSpec ms);
+        protected internal abstract bool NeedsBoxRetType(metadata.MethodSpec ms);
         protected internal abstract void AssemblePass(Code c);
 
         protected internal virtual int GetCTFromTypeForCC(metadata.TypeSpec t) { return ir.Opcode.GetCTFromType(t); }

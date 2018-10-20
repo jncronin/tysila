@@ -60,6 +60,7 @@ x86_instrs = [
 	"mov_rm32_imm32",
 	"mov_r32_lab",
 	"mov_lab_r32",
+	"mov_rm32_lab",
 	"mov_r32_rm32sib",
 	"mov_r32_rm32disp",
 	"mov_r32_rm16disp",

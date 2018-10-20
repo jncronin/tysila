@@ -389,6 +389,115 @@ namespace libtysila5.target.x86
             return base.GetCTFromTypeForCC(t);
         }
 
+        protected internal override bool NeedsBoxRetType(MethodSpec ms)
+        {
+            if (Opcode.GetCTFromType(ms.ReturnType) == Opcode.ct_vt)
+                return true;
+            else
+                return false;
+        }
+
+        protected internal override Code AssembleBoxRetTypeMethod(MethodSpec ms)
+        {
+            // Move all parameters up one - this will require knowledge of the param locs
+            // if the return type is an object (to get the 'from' locations) and
+            // knowledge of the param locs in the target method (the 'to' locations)
+            // Allocate space on heap (boxed return object)
+
+            var cc = cc_map[ms.CallingConvention];
+            var cc_class_map = cc_classmap[ms.CallingConvention];
+            int stack_loc = 0;
+            var from_locs = GetRegLocs(new ir.Param
+            {
+                m = ms.m,
+                ms = ms,
+            }, ref stack_loc, cc, cc_class_map,
+            ms.CallingConvention,
+            out var from_sizes, out var from_types,
+            null);
+            stack_loc = 0;
+            var to_locs = GetRegLocs(new ir.Param
+            {
+                m = ms.m,
+                ms = ms,
+            }, ref stack_loc, cc, cc_class_map,
+            ms.CallingConvention,
+            out var to_sizes, out var to_types,
+            ms.m.SystemIntPtr);
+
+            // Generate code
+            var c = new Code();
+            c.mc = new List<MCInst>();
+            var n = new cil.CilNode(ms, 0);
+            var ir = new cil.CilNode.IRNode { parent = n, mc = c.mc };
+            ir.opcode = Opcode.oc_nop;
+            n.irnodes.Add(ir);
+            c.starts = new List<cil.CilNode>();
+            c.starts.Add(n);
+            c.ms = ms;
+            c.t = this;
+
+            // copy from[0:n] to to[1:n+1] in reverse order so
+            //  we don't overwrite the previous registers
+            ulong defined = 0;
+            for(int i = from_locs.Length - 1; i >= 0 ; i--)
+            {
+                handle_move(to_locs[i + 1], from_locs[i], c.mc, ir, c, x86_64.x86_64_Assembler.r_rax, from_sizes[i]);
+                defined |= to_locs[i + 1].mask;
+            }
+
+            // call gcmalloc with the size of the boxed version of the return
+            //  type
+            var ts = ms.ReturnType;
+            var tsize = GetSize(ts);
+            var sysobj_size = layout.Layout.GetTypeSize(c.ms.m.SystemObject, c.t);
+            var boxed_size = util.util.align(sysobj_size + tsize, psize);
+
+            // decide on the registers we need to save around gcmalloc
+            var caller_preserves = cc_caller_preserves_map[ms.CallingConvention];
+            var to_push = new util.Set();
+            to_push.Union(defined);
+            to_push.Intersect(caller_preserves);
+            List<Reg> push_list = new List<Reg>();
+            while (!to_push.Empty)
+            {
+                var first_set = to_push.get_first_set();
+                push_list.Add(c.t.regs[first_set]);
+                to_push.unset(first_set);
+            }
+            int push_length = 0;
+            foreach(var r in push_list)
+            {
+                handle_push(r, ref push_length, c.mc, ir, c);
+            }
+            c.mc.Add(inst(x86_call_rel32, new Param { t = Opcode.vl_call_target, str = "gcmalloc" },
+                new Param { t = Opcode.vl_c32, v = boxed_size }, ir));
+            for (int i = push_list.Count - 1; i >= 0; i--)
+                handle_pop(push_list[i], ref push_length, c.mc, ir, c);
+
+            // put vtable pointer into gcmalloc result
+            c.mc.Add(inst(x86_mov_rm32_lab, new ContentsReg { basereg = r_eax, size = 4 },
+                new Param { t = Opcode.vl_str, str = ts.MangleType() }, ir));
+
+            // put rax into to[0]
+            handle_move(to_locs[0], r_eax, c.mc, ir, c);
+
+            // call the actual function (see AssembleBoxedMethod below)
+            var unboxed = ms.Unbox;
+            var act_meth = unboxed.MangleMethod();
+            r.MethodRequestor.Request(unboxed);
+
+            // Save rax around the call and return it
+            // We do this because the actual method returns the address of a value type in rax
+            //  and we want to return the address of the boxed object instead
+            c.mc.Add(inst(x86_push_r32, r_eax, ir));
+            c.mc.Add(inst(x86_call_rel32, new Param { t = Opcode.vl_str, str = act_meth }, ir));
+            c.mc.Add(inst(x86_pop_r32, r_eax, ir));
+            c.mc.Add(inst(x86_ret, ir));
+
+            return c;
+        }
+
         protected internal override Code AssembleBoxedMethod(MethodSpec ms)
         {
             /* To unbox, we simply add the size of system.object to 

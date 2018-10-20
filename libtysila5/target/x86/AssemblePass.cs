@@ -612,6 +612,23 @@ namespace libtysila5.target.x86
                         }
                         break;
 
+                    case x86_mov_rm32_lab:
+                        {
+                            Code.Add(0xc7);
+                            Code.AddRange(ModRMSIB(0, I.p[1].mreg));
+                            var reloc = bf.CreateRelocation();
+                            reloc.DefinedIn = text_section;
+                            reloc.Type = new binary_library.elf.ElfFile.Rel_386_32();
+                            reloc.Addend = I.p[2].v;
+                            reloc.References = bf.CreateSymbol();
+                            reloc.References.Name = I.p[2].str;
+                            reloc.References.ObjectType = binary_library.SymbolObjectType.Object;
+                            reloc.Offset = (ulong)Code.Count;
+                            bf.AddRelocation(reloc);
+                            AddImm32(Code, 0);
+                        }
+                        break;
+
                     case x86_mov_r32_lab:
                         {
                             Code.Add(0x8b);
