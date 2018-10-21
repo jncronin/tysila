@@ -176,6 +176,13 @@ namespace libtysila5.ir
             stack_before = ConvertToIR.binnumop(n, c, stack_before, cil.Opcode.SingleOpcodes.add, Opcode.ct_intptr);
             stack_before = ConvertToIR.ldind(n, c, stack_before, fld_ts);
 
+            // Duplicate and branch to the static implementation if null
+            stack_before = ConvertToIR.copy_to_front(n, c, stack_before);
+            stack_before = ConvertToIR.ldc(n, c, stack_before, 0, (int)CorElementType.Object);
+            var tstatic = c.next_mclabel--;
+            stack_before = ConvertToIR.brif(n, c, stack_before, Opcode.cc_eq, tstatic);
+            var tstatic_stack_in = new Stack<StackItem>(stack_before);
+
             // Get number of params and push left to right
             var sig_idx = ms.msig;
             var pcount = ms.m.GetMethodDefSigParamCount(sig_idx);
@@ -196,6 +203,37 @@ namespace libtysila5.ir
             for (int i = 0; i < pcount; i++)
                 p.Add(ms.m.GetTypeSpec(ref sig_idx, ms.gtparams, ms.gmparams));
             var new_msig = c.special_meths.CreateMethodSignature(ret_ts, p.ToArray());
+            c.ret_ts = ret_ts;
+
+            // Calli
+            stack_before = ConvertToIR.call(n, c, stack_before, true, "noname", c.special_meths, new_msig);
+
+            // Ret
+            n.irnodes.Add(new cil.CilNode.IRNode { parent = n, opcode = Opcode.oc_ret, ct = ((ret_ts == null) ? ir.Opcode.ct_unknown : Opcode.GetCTFromType(ret_ts)), stack_before = stack_before, stack_after = stack_before });
+
+            // Static version of above
+            stack_before = mclabel(n, c, tstatic_stack_in, tstatic);
+            stack_before = ConvertToIR.pop(n, c, stack_before); // remove null m_target pointer
+
+            // Get number of params and push left to right
+            sig_idx = ms.msig;
+            pcount = ms.m.GetMethodDefSigParamCount(sig_idx);
+            for (int i = 0; i < pcount; i++)
+                stack_before = ConvertToIR.ldarg(n, c, stack_before, i + 1);
+
+            // Load method_ptr
+            stack_before = ConvertToIR.ldarg(n, c, stack_before, 0);
+            stack_before = ConvertToIR.ldflda(n, c, stack_before, false, out fld_ts, 0, delegate_method_ptr);
+            stack_before = ConvertToIR.binnumop(n, c, stack_before, cil.Opcode.SingleOpcodes.add, Opcode.ct_intptr);
+            stack_before = ConvertToIR.ldind(n, c, stack_before, fld_ts);
+
+            // Build new method signature containing the parameters of Invoke
+            sig_idx = ms.m.GetMethodDefSigRetTypeIndex(sig_idx);
+            ret_ts = ms.m.GetTypeSpec(ref sig_idx, ms.gtparams, ms.gmparams);
+            p = new List<TypeSpec>();
+            for (int i = 0; i < pcount; i++)
+                p.Add(ms.m.GetTypeSpec(ref sig_idx, ms.gtparams, ms.gmparams));
+            new_msig = c.special_meths.CreateMethodSignature(ret_ts, p.ToArray());
             c.ret_ts = ret_ts;
 
             // Calli
