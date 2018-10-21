@@ -280,6 +280,11 @@ namespace libsupcs
                     spec_vtbl = OtherOperations.GetStaticObjectAddress("_ZW30System#2ECollections#2EGeneric25GenericEqualityComparer`1_G1j");
                     spec_ctor = OtherOperations.GetFunctionAddress("_ZW30System#2ECollections#2EGeneric25GenericEqualityComparer`1_G1j_7#2Ector_Rv_P1u1t");
                 }
+                else if (n_vtbl == OtherOperations.GetStaticObjectAddress("_Zi"))
+                {
+                    spec_vtbl = OtherOperations.GetStaticObjectAddress("_ZW30System#2ECollections#2EGeneric25GenericEqualityComparer`1_G1i");
+                    spec_ctor = OtherOperations.GetFunctionAddress("_ZW30System#2ECollections#2EGeneric25GenericEqualityComparer`1_G1i_7#2Ector_Rv_P1u1t");
+                }
             }
             if(spec_vtbl != null)
             {
