@@ -485,11 +485,11 @@ namespace libtysila5.layout
         }
 
 
-        class VTableItem
+        public class VTableItem
         {
-            internal MethodSpec unimpl_meth;     // the declaration site of the method
+            public MethodSpec unimpl_meth;     // the declaration site of the method
             internal TypeSpec max_implementor;   // the most derived class the method can possibly be implemented in
-            internal MethodSpec impl_meth;       // the implementation of the method
+            public MethodSpec impl_meth;       // the implementation of the method
 
             public override string ToString()
             {
@@ -516,7 +516,7 @@ namespace libtysila5.layout
             new Dictionary<TypeSpec, List<VTableItem>>(
                 new GenericEqualityComparer<TypeSpec>());
 
-        static List<VTableItem> GetVirtualMethodDeclarations(TypeSpec ts)
+        public static List<VTableItem> GetVirtualMethodDeclarations(TypeSpec ts)
         {
             List<VTableItem> ret;
             if (vmeth_list_cache.TryGetValue(ts, out ret))
@@ -580,7 +580,7 @@ namespace libtysila5.layout
             return ret;
         }
 
-        private static void ImplementVirtualMethods(TypeSpec ts, List<VTableItem> list)
+        public static void ImplementVirtualMethods(TypeSpec ts, List<VTableItem> list)
         {
             // We implement those methods in the most derived class first and work back
             foreach (var i in list)

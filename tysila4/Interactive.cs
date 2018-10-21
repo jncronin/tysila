@@ -245,6 +245,7 @@ namespace tysila4
             "list.interfaces",
             "list.methods",
             "implement.interface",
+            "list.vmethods",
         };
 
         internal Interactive(metadata.MetadataStream metadata, libtysila5.target.Target target)
@@ -269,29 +270,29 @@ namespace tysila4
 
                 // handle the command
                 int idx = 0;
-                if(cmd[idx] == "select.type")
+                if (cmd[idx] == "select.type")
                 {
                     idx++;
                     s.m = ParseModule(cmd, ref idx);
                     s.ts = ParseType(cmd, ref idx);
                     s.ts = instantiate_type(s.ts);
                 }
-                else if(cmd[idx] == "select.method")
+                else if (cmd[idx] == "select.method")
                 {
                     idx++;
                     s.m = ParseModule(cmd, ref idx);
                     s.ts = ParseType(cmd, ref idx);
                     s.ms = ParseMethod(cmd, ref idx);
                 }
-                else if(cmd[idx] == "quit" || cmd[idx] == "q")
+                else if (cmd[idx] == "quit" || cmd[idx] == "q")
                 {
                     return false;
                 }
-                else if(cmd[idx] == "continue" || cmd[idx] == "c")
+                else if (cmd[idx] == "continue" || cmd[idx] == "c")
                 {
                     return true;
                 }
-                else if(cmd[idx] == "assemble.method")
+                else if (cmd[idx] == "assemble.method")
                 {
                     idx++;
                     s.m = ParseModule(cmd, ref idx);
@@ -305,7 +306,7 @@ namespace tysila4
 
                     Console.WriteLine(sb.ToString());
                 }
-                else if(cmd[idx] == "list.methods")
+                else if (cmd[idx] == "list.methods")
                 {
                     idx++;
                     s.m = ParseModule(cmd, ref idx);
@@ -314,7 +315,25 @@ namespace tysila4
                     foreach (var meth in s.ts.AllMethods.Keys)
                         Console.WriteLine(meth);
                 }
-                else if(cmd[idx] == "list.interfaces")
+                else if (cmd[idx] == "list.vmethods")
+                {
+                    idx++;
+
+                    s.m = ParseModule(cmd, ref idx);
+                    s.ts = ParseType(cmd, ref idx);
+
+                    var vmeths = libtysila5.layout.Layout.GetVirtualMethodDeclarations(s.ts);
+                    libtysila5.layout.Layout.ImplementVirtualMethods(s.ts, vmeths);
+
+                    foreach (var vmeth in vmeths)
+                    {
+                        var impl_ms = vmeth.impl_meth;
+                        string impl_target = (impl_ms == null) ? "__cxa_pure_virtual" : impl_ms.MangleMethod();
+                        var ims = new InteractiveMethodSpec(vmeth.unimpl_meth);
+                        Console.WriteLine(ims.Name + " -> " + impl_target);
+                    }
+                }
+                else if (cmd[idx] == "list.interfaces")
                 {
                     idx++;
                     s.m = ParseModule(cmd, ref idx);
@@ -323,7 +342,7 @@ namespace tysila4
                     foreach (var ii in s.ts.ts.ImplementedInterfaces)
                         Console.WriteLine(((InteractiveTypeSpec)ii).Name);
                 }
-                else if(cmd[idx] == "implement.interface")
+                else if (cmd[idx] == "implement.interface")
                 {
                     idx++;
 
@@ -335,7 +354,7 @@ namespace tysila4
                     t.r = new libtysila5.CachingRequestor(s.m.m);
 
                     var iis = libtysila5.layout.Layout.ImplementInterface(s.ts, istate.ts, t);
-                    foreach(var ii in iis)
+                    foreach (var ii in iis)
                     {
                         Console.WriteLine(((InteractiveMethodSpec)ii.InterfaceMethod).Name + " -> " + ii.TargetName);
                     }
@@ -543,7 +562,7 @@ namespace tysila4
                     else
                         return new List<string>();
                 }
-                else if (cmd == "list.methods" || cmd == "list.interfaces")
+                else if (cmd == "list.methods" || cmd == "list.interfaces" || cmd == "list.vmethods")
                 {
                     if (idx < ctx.Count || state.ts == null)
                         return ParseTypeForOptions(ctx, ref idx, state);
