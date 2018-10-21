@@ -391,7 +391,7 @@ namespace libsupcs
 
         protected override bool HasElementTypeImpl()
         {
-            throw new NotImplementedException();
+            return (IsArray || IsZeroBasedArray || IsManagedPointer || IsUnmanagedPointer);
         }
 
         public override object InvokeMember(string name, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, object target, object[] args, System.Reflection.ParameterModifier[] modifiers, System.Globalization.CultureInfo culture, string[] namedParameters)
