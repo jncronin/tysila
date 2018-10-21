@@ -482,6 +482,9 @@ namespace libtysila5.target.x86
             // put rax into to[0]
             handle_move(to_locs[0], r_eax, c.mc, ir, c);
 
+            // unbox to[0] (i.e. increment pointer so it points to the inner data)
+            c.mc.Add(inst(x86_add_rm32_imm8, to_locs[0], sysobj_size, ir));
+
             // call the actual function (see AssembleBoxedMethod below)
             var unboxed = ms.Unbox;
             var act_meth = unboxed.MangleMethod();
