@@ -316,6 +316,7 @@ namespace libtysila5.layout
                 {
                     if (impl_ms.ReturnType != null && impl_ms.ReturnType.IsValueType && t.NeedsBoxRetType(impl_ms) && (iface_ms.ReturnType == null || (iface_ms.ReturnType != null && !iface_ms.ReturnType.IsValueType)))
                     {
+                        impl_ms = impl_ms.Clone();
                         impl_ms.ret_type_needs_boxing = true;
                         t.r.BoxedMethodRequestor.Request(impl_ms);
                     }
@@ -413,10 +414,11 @@ namespace libtysila5.layout
                 {
                     if (impl_ms.ReturnType != null && impl_ms.ReturnType.IsValueType && t.NeedsBoxRetType(impl_ms) && (iface_ms.ReturnType == null || (iface_ms.ReturnType != null && !iface_ms.ReturnType.IsValueType)))
                     {
+                        impl_ms = impl_ms.Clone();
                         impl_ms.ret_type_needs_boxing = true;
                         t.r.BoxedMethodRequestor.Request(impl_ms);
                     }
-                    if (is_boxed)
+                    else if (is_boxed)
                     {
                         impl_ms.is_boxed = true;
                         t.r.BoxedMethodRequestor.Request(impl_ms);
