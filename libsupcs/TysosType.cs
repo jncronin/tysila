@@ -350,7 +350,44 @@ namespace libsupcs
             System.Diagnostics.Debugger.Log(arg_count, "libsupcs", "arg_count");
             System.Diagnostics.Debugger.Log((int)arg1, "libsupcs", "arg1");
 
-            return RT_MakeGenericType(this, typeArguments);
+            /* Create a typespec for the new type */
+            var tmpl = this.tspec;
+
+            if(tmpl.GenericParamCount != typeArguments.Length)
+            {
+                throw new TypeLoadException("Incorrect number of generic parameters provided for " +
+                    tmpl.MangleType() + ": got " + typeArguments.Length +
+                    ", expected " + tmpl.GenericParamCount);
+            }
+
+            var new_tspec = tmpl.Clone();
+            new_tspec.gtparams = new metadata.TypeSpec[typeArguments.Length];
+            for(int i = 0; i < typeArguments.Length; i++)
+            {
+                new_tspec.gtparams[i] = ((TysosType)typeArguments[i]).tspec;
+            }
+
+            var tname = new_tspec.MangleType();
+
+            System.Diagnostics.Debugger.Log(0, "libsupcs", "MakeGenericType: " + tname);
+
+            var new_addr = JitOperations.GetAddressOfObject(tname);
+            if(new_addr == null)
+            {
+                System.Diagnostics.Debugger.Log(0, "libsupcs", "MakeGenericType: not available - need to create");
+                var new_vtbl = JitOperations.JitCompile(new_tspec);
+                var new_tt = new TysosType(new_vtbl, new_tspec);
+                return new_tt;
+            }
+            else
+            {
+                System.Diagnostics.Debugger.Log(0, "libsupcs", "MakeGenericType: is available - using already compiled version");
+                var existing_obj = internal_from_vtbl(new_addr);
+                return existing_obj;
+            }
+
+
+            //return RT_MakeGenericType(this, typeArguments);
         }
 
         private bool MatchBindingFlags(System.Reflection.MethodInfo mi, System.Reflection.BindingFlags bindingAttr)

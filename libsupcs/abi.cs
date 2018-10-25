@@ -385,6 +385,10 @@ namespace libsupcs
         public static extern void* JitCompile(TysosMethod m);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        [MethodReferenceAlias("jit_vtable")]
+        public static extern void* JitCompile(metadata.TypeSpec ts);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
         [MethodReferenceAlias("jit_addrof")]
         public static extern void* GetAddressOfObject(string name);
 
