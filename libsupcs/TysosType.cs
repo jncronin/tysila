@@ -636,7 +636,14 @@ namespace libsupcs
 
         public override Type GetGenericTypeDefinition()
         {
-            throw new InvalidOperationException();
+            var new_tspec = tspec.Clone();
+            new_tspec.gtparams = null;
+            var nts_name = new_tspec.MangleType();
+            var nts_addr = JitOperations.GetAddressOfObject(nts_name);
+            if (nts_addr != null)
+                return internal_from_vtbl(nts_addr);
+            else
+                return new TysosType(null, new_tspec);
         }
 
         public unsafe override RuntimeTypeHandle TypeHandle
