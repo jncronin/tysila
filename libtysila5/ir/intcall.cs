@@ -118,6 +118,24 @@ namespace libtysila5.ir
             intcalls["_ZW34System#2ERuntime#2EInteropServices8GCHandle_23InternalCompareExchange_Ru1O_P4u1Iu1Ou1Ob"] = gcHandle_InternalCompareExchange;
 
             intcalls["_ZW18System#2EThreading11Interlocked_8Exchange_Rx_P2Rxx"] = threading_Exchange_long;
+
+            intcalls["_ZW35System#2ERuntime#2ECompilerServices6Unsafe_2As_RRu1p1_P1Ru1p0"] = unsafe_as_generic;
+        }
+
+        private static Stack<StackItem> unsafe_as_generic(CilNode n, Code c, Stack<StackItem> stack_before)
+        {
+            // Handle similarly to ReinterpretAs...
+
+            var c_ms = c.ms.m.GetMethodSpec(n.inline_uint, c.ms.gtparams, c.ms.gmparams);
+
+            var stack_after = new Stack<StackItem>(stack_before);
+            var popped_st = stack_after.Pop();
+            var new_st = popped_st.Clone();
+            new_st.ts = c_ms.ReturnType;
+            stack_after.Push(new_st);
+
+            n.irnodes.Add(new CilNode.IRNode { parent = n, opcode = Opcode.oc_stackcopy, arg_a = 0, res_a = 0, stack_before = stack_before, stack_after = stack_after });
+            return stack_after;
         }
 
         private static Stack<StackItem> runtimeHelpers_Equals(CilNode n, Code c, Stack<StackItem> stack_before)
