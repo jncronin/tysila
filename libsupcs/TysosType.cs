@@ -296,13 +296,32 @@ namespace libsupcs
                 return obj;
             }
 
-            System.Diagnostics.Debugger.Log(0, "libsupcs", "CreateInstanceForAnotherGenericParameter:");
-            System.Diagnostics.Debugger.Log((int)t_vtbl, "libsupcs", "template");
-            System.Diagnostics.Debugger.Log((int)n_vtbl, "libsupcs", "newtype");
+            // Else, generate from a call to MakeGenericType
+            var new_tspec = template.tspec.Clone();
+            new_tspec.gtparams[0] = newtype.tspec;
+            var tname = new_tspec.MangleType();
+            System.Diagnostics.Debugger.Log(0, "libsupcs", "CreateInstanceForAnotherGenericParameter: " + tname);
 
-            while (true) ;
+            var vtbl = JitOperations.GetAddressOfObject(tname);
+            TysosType tt = null;
+            if(vtbl != null)
+            {
+                tt = internal_from_vtbl(vtbl);
+            }
+            else
+            {
+                vtbl = JitOperations.JitCompile(new_tspec);
+                tt = new TysosType(vtbl, new_tspec);
+            }
 
-            return null;
+            System.Diagnostics.Debugger.Log(0, "libsupcs", "CreateInstanceForAnotherGenericParameter: vtbl found");
+
+            var newobj = tt.Create();
+            var ctor = tt.GetConstructor(Type.EmptyTypes);
+            if(ctor != null)
+                ctor.Invoke(newobj, Type.EmptyTypes);
+
+            return newobj;
         }
 
         [MethodReferenceAlias("_ZW6System11RuntimeType_15MakeGenericType_RV4Type_P2u1tu1ZV4Type")]
