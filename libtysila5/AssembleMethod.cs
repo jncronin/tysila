@@ -117,13 +117,14 @@ namespace libtysila5
                     code_override = ir.ConvertToIR.CreateVectorget_Item(ms, t);
                 else if (ms.Name == "set_Item")
                     code_override = ir.ConvertToIR.CreateVectorset_Item(ms, t);
+                else if (ms.Name == "get_Count")
+                    code_override = ir.ConvertToIR.CreateVectorget_Count(ms, t);
                 else if (ms.Name == "GetEnumerator" ||
                     ms.Name == "Add" ||
                     ms.Name == "Clear" ||
                     ms.Name == "Contains" ||
                     ms.Name == "CopyTo" ||
                     ms.Name == "Remove" ||
-                    ms.Name == "get_Count" ||
                     ms.Name == "get_IsReadOnly" ||
                     ms.Name == "get_IsSynchronized" ||
                     ms.Name == "get_SyncRoot" ||

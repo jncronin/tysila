@@ -484,6 +484,33 @@ namespace libtysila5.ir
 
             return c;
         }
+        internal static Code CreateVectorget_Count(MethodSpec ms,
+            Target t)
+        {
+            Code c = new Code { t = t, ms = ms };
+            t.AllocateLocalVarsArgs(c);
+            cil.CilNode n = new cil.CilNode(ms, 0);
+
+            util.Stack<StackItem> stack_before = new util.Stack<StackItem>();
+
+            // enter
+            n.irnodes.Add(new cil.CilNode.IRNode { parent = n, opcode = Opcode.oc_enter, stack_before = stack_before, stack_after = stack_before });
+
+            // ldarg, ldlen
+            var stack_after = ldarg(n, c, stack_before, 0);
+            stack_after = ldlen(n, c, stack_after);
+
+            // ret
+            var stack_after2 = new Stack<StackItem>(stack_after);
+            n.irnodes.Add(new cil.CilNode.IRNode { parent = n, opcode = Opcode.oc_ret, ct = ir.Opcode.ct_int32, stack_before = stack_after, stack_after = stack_after2 });
+
+            c.cil = new List<cil.CilNode> { n };
+            c.ir = n.irnodes;
+
+            c.starts = new List<cil.CilNode> { n };
+
+            return c;
+        }
         internal static Code CreateVectorget_Item(MethodSpec ms,
             Target t)
         {
