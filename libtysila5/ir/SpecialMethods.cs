@@ -57,6 +57,8 @@ namespace libtysila5.ir
 
         public int type_from_vtbl;
 
+        public int array_copyToManaged;
+
         public int rint;
 
         MetadataStream corlib;
@@ -133,6 +135,9 @@ namespace libtysila5.ir
                 new TypeSpec[] { Pa, i, i }, true);
 
             type_from_vtbl = CreateMethodSignature(o, new TypeSpec[] { I });
+
+            array_copyToManaged = CreateMethodSignature(null,
+                new TypeSpec[] { Pv, Pv, i, i }, false);
 
             debugger_Log = CreateMethodSignature(null,
                 new TypeSpec[] { i, s, s });

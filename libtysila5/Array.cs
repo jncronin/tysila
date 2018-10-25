@@ -484,6 +484,43 @@ namespace libtysila5.ir
 
             return c;
         }
+        internal static Code CreateVectorCopyTo(MethodSpec ms,
+            Target t)
+        {
+            Code c = new Code { t = t, ms = ms };
+            t.AllocateLocalVarsArgs(c);
+            cil.CilNode n = new cil.CilNode(ms, 0);
+
+            util.Stack<StackItem> stack_before = new util.Stack<StackItem>();
+
+            // enter
+            n.irnodes.Add(new cil.CilNode.IRNode { parent = n, opcode = Opcode.oc_enter, stack_before = stack_before, stack_after = stack_before });
+
+            // We call a libsupcs method here that expects arguments in the order
+            //  src, dst, startIndex, count (=length - startIndex)
+            var stack_after = ldarg(n, c, stack_before, 0);
+            stack_after = ldarg(n, c, stack_after, 1);
+            stack_after = ldarg(n, c, stack_after, 2);
+            stack_after = ldarg(n, c, stack_after, 0);
+            stack_after = ldlen(n, c, stack_after);
+            stack_after = ldarg(n, c, stack_after, 2);
+            stack_after = binnumop(n, c, stack_after, cil.Opcode.SingleOpcodes.sub, Opcode.ct_int32);
+
+            stack_after = call(n, c, stack_after, false,
+                "_ZW34System#2ERuntime#2EInteropServices7Marshal_13CopyToManaged_Rv_P4u1Iu1Oii",
+                c.special_meths, c.special_meths.array_copyToManaged);
+
+            // ret
+            n.irnodes.Add(new cil.CilNode.IRNode { parent = n, opcode = Opcode.oc_ret, ct = ir.Opcode.ct_unknown, stack_before = stack_after, stack_after = stack_after });
+
+            c.cil = new List<cil.CilNode> { n };
+            c.ir = n.irnodes;
+
+            c.starts = new List<cil.CilNode> { n };
+
+            return c;
+        }
+
         internal static Code CreateVectorget_Count(MethodSpec ms,
             Target t)
         {
