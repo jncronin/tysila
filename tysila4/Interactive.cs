@@ -36,6 +36,19 @@ namespace tysila4
             public InteractiveMethodSpec ms = null;
         }
 
+        class InteractiveFieldSpec
+        {
+            public string Name;
+            public int Offset;
+            public InteractiveTypeSpec Type;
+            public bool IsTls;
+
+            public override string ToString()
+            {
+                return (IsTls ? "TLS+" : "    ") +  Offset.ToString("X4") + ": " + Type.Name + " " + Name;
+            }
+        }
+
         class InteractiveMethodSpec
         {
             public metadata.MethodSpec ms = null;
@@ -130,8 +143,13 @@ namespace tysila4
                         sb.Append("[]");
                         break;
                     case TypeSpec.SpecialType.Ptr:
-                        GetName(ts.other, sb);
-                        sb.Append("*");
+                        if (ts.other == null)
+                            sb.Append("void *");
+                        else
+                        {
+                            GetName(ts.other, sb);
+                            sb.Append("*");
+                        }
                         break;
                     case TypeSpec.SpecialType.Var:
                         sb.Append("!");
@@ -156,8 +174,36 @@ namespace tysila4
             public static implicit operator InteractiveTypeSpec(metadata.TypeSpec _ts) { return new InteractiveTypeSpec(_ts); }
             public static implicit operator metadata.TypeSpec(InteractiveTypeSpec its) { return its.ts; }
 
-            internal Dictionary<string, InteractiveMethodSpec> all_methods = null;
+            internal Dictionary<string, InteractiveFieldSpec> all_fields = null;
+            public Dictionary<string, InteractiveFieldSpec> AllFields
+            {
+                get
+                {
+                    if(all_fields == null)
+                    {
+                        List<string> fld_names = new List<string>();
+                        List<TypeSpec> fld_types = new List<TypeSpec>();
+                        List<int> fld_offsets = new List<int>();
+                        libtysila5.layout.Layout.GetFieldOffset(ts, null, Program.t, out var is_tls,
+                            false, fld_types, fld_names, fld_offsets);
 
+                        all_fields = new Dictionary<string, InteractiveFieldSpec>();
+                        for(int i = 0; i < fld_names.Count; i++)
+                        {
+                            var ifs = new InteractiveFieldSpec()
+                            {
+                                Name = fld_names[i],
+                                Type = new InteractiveTypeSpec(fld_types[i]),
+                                Offset = fld_offsets[i]
+                            };
+                            all_fields[fld_names[i]] = ifs;
+                        }
+                    }
+                    return all_fields;
+                }
+            }
+
+            internal Dictionary<string, InteractiveMethodSpec> all_methods = null;
             public Dictionary<string, InteractiveMethodSpec> AllMethods
             {
                 get
@@ -237,6 +283,7 @@ namespace tysila4
         {
             "select.type",
             "select.method",
+            "select.module",
             "quit",
             "q",
             "continue",
@@ -246,6 +293,7 @@ namespace tysila4
             "list.methods",
             "implement.interface",
             "list.vmethods",
+            "list.fields",
         };
 
         internal Interactive(metadata.MetadataStream metadata, libtysila5.target.Target target)
@@ -284,6 +332,11 @@ namespace tysila4
                     s.ts = ParseType(cmd, ref idx);
                     s.ms = ParseMethod(cmd, ref idx);
                 }
+                else if(cmd[idx] == "select.module")
+                {
+                    idx++;
+                    s.m = ParseModule2(cmd, ref idx);
+                }
                 else if (cmd[idx] == "quit" || cmd[idx] == "q")
                 {
                     return false;
@@ -314,6 +367,15 @@ namespace tysila4
 
                     foreach (var meth in s.ts.AllMethods.Keys)
                         Console.WriteLine(meth);
+                }
+                else if(cmd[idx] == "list.fields")
+                {
+                    idx++;
+                    s.m = ParseModule(cmd, ref idx);
+                    s.ts = ParseType(cmd, ref idx);
+
+                    foreach (var fld in s.ts.AllFields.Keys)
+                        Console.WriteLine(s.ts.AllFields[fld].ToString());
                 }
                 else if (cmd[idx] == "list.vmethods")
                 {
@@ -416,6 +478,15 @@ namespace tysila4
                 return s.m;
             var new_m = s.m.m.al.GetAssembly(cmd[idx + 1]);
             idx += 3;
+            return new InteractiveMetadataStream { m = new_m };
+        }
+
+        private InteractiveMetadataStream ParseModule2(string[] cmd, ref int idx)
+        {
+            if (idx >= cmd.Length)
+                return s.m;
+            var new_m = s.m.m.al.GetAssembly(cmd[idx]);
+            idx++;
             return new InteractiveMetadataStream { m = new_m };
         }
 
@@ -551,6 +622,8 @@ namespace tysila4
                 var cmd = ctx[idx++];
                 if (cmd == "select.type")
                     return ParseTypeForOptions(ctx, ref idx, state);
+                else if (cmd == "select.module")
+                    return ParseModuleForOptions2(ctx, ref idx, state);
                 if (cmd == "implement.interface")
                     return ParseInterfaceForOptions(ctx, ref idx, state);
                 else if (cmd == "select.method")
@@ -562,7 +635,7 @@ namespace tysila4
                     else
                         return new List<string>();
                 }
-                else if (cmd == "list.methods" || cmd == "list.interfaces" || cmd == "list.vmethods")
+                else if (cmd == "list.methods" || cmd == "list.interfaces" || cmd == "list.vmethods" || cmd == "list.fields")
                 {
                     if (idx < ctx.Count || state.ts == null)
                         return ParseTypeForOptions(ctx, ref idx, state);
@@ -618,6 +691,11 @@ namespace tysila4
                 if (state.m.AllTypes.ContainsKey(ctx[idx]))
                     state.ts = state.m.AllTypes[ctx[idx++]];
                 return null;
+            }
+
+            private List<string> ParseModuleForOptions2(List<string> ctx, ref int idx, InteractiveState state)
+            {
+                return new List<string>(state.m.m.al.LoadedAssemblies);
             }
 
             private List<string> ParseModuleForOptions(List<string> ctx, ref int idx, InteractiveState state)

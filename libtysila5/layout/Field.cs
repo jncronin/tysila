@@ -210,7 +210,8 @@ namespace libtysila5.layout
 
         public static int GetFieldOffset(metadata.TypeSpec ts,
             string fname, target.Target t, out bool is_tls, bool is_static = false,
-            List<TypeSpec> field_types = null, List<string> field_names = null)
+            List<TypeSpec> field_types = null, List<string> field_names = null,
+            List<int> field_offsets = null)
         {
             int align = 1;
             is_tls = false;
@@ -237,6 +238,13 @@ namespace libtysila5.layout
                     field_types.Add(ts.m.SystemInt64);
                     field_types.Add(ts.m.SystemInt32);
                     field_types.Add(ts.m.SystemChar);
+                }
+                if(field_offsets != null)
+                {
+                    field_offsets.Add(0);
+                    field_offsets.Add(GetArrayFieldOffset(ArrayField.MutexLock, t));
+                    field_offsets.Add(GetTypeSize(ts.m.SystemObject, t));
+                    field_offsets.Add(GetTypeSize(ts.m.SystemObject, t) + t.GetPointerSize());
                 }
 
                 if(fname == null)
@@ -273,6 +281,8 @@ namespace libtysila5.layout
                 if (ts.GetExtends() == null)
                 {
                     // Add a vtable entry
+                    if (field_offsets != null)
+                        field_offsets.Add(cur_offset);
                     cur_offset += t.GetCTSize(ir.Opcode.ct_object);
                     cur_offset = util.util.align(cur_offset, align);
 
@@ -282,6 +292,8 @@ namespace libtysila5.layout
                         field_names.Add("__vtbl");
 
                     // Add a mutex lock entry
+                    if (field_offsets != null)
+                        field_offsets.Add(cur_offset);
                     cur_offset += t.GetCTSize(ir.Opcode.ct_int64);
                     cur_offset = util.util.align(cur_offset, align);
 
@@ -294,7 +306,7 @@ namespace libtysila5.layout
                 {
                     cur_offset = GetFieldOffset(ts.GetExtends(), (string)null, t,
                         out is_tls,
-                        is_static, field_types, field_names);
+                        is_static, field_types, field_names, field_offsets);
                     cur_offset = util.util.align(cur_offset, align);
                 }
             }
@@ -348,6 +360,13 @@ namespace libtysila5.layout
                         var cur_fname = ts.m.GetStringEntry(MetadataStream.tid_Field,
                             (int)fdef_row, 1);
                         field_names.Add(cur_fname);
+                    }
+                    if (field_offsets != null)
+                    {
+                        if (f_is_tls)
+                            field_offsets.Add(cur_tl_offset);
+                        else
+                            field_offsets.Add(cur_offset);
                     }
 
                     if (f_is_tls)

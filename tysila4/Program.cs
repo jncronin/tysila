@@ -51,6 +51,8 @@ namespace tysila4
         };
         static List<string> new_search_dirs = new List<string>();
 
+        internal static libtysila5.target.Target t;
+
         static bool func_sects = false;
         static bool data_sects = false;
 
@@ -204,7 +206,7 @@ namespace tysila4
                 throw new Exception(fname + " not found");
             }
 
-            var t = libtysila5.target.Target.targets[target];
+            t = libtysila5.target.Target.targets[target];
             // try and set target options
             foreach(var kvp in opts)
             {
