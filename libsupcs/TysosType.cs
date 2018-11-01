@@ -590,6 +590,23 @@ namespace libsupcs
             }
         }
 
+        [MethodAlias("_ZW6System17RuntimeTypeHandle_17GetCorElementType_RU19System#2EReflection14CorElementType_P1U6System11RuntimeType")]
+        [AlwaysCompile]
+        unsafe static int RTH_GetCorElementType(void *type)
+        {
+            // We can interpret the first byte of the signature to get the cor type
+            void* ti = **(void***)((byte*)type + ClassOperations.GetSystemTypeImplOffset());
+            var mod_count = *(int*)((void**)ti + 5);
+            var stype = *(int*)((void**)ti + 6 + mod_count) & 0xff;
+
+            if (stype == 0x31)
+                return (int)metadata.CorElementType.ValueType;
+            else if (stype == 0x32)
+                return (int)metadata.CorElementType.Class;
+
+            return stype;
+        }
+
         [MethodAlias("_ZW6System4Type_18type_is_subtype_of_Rb_P3V4TypeV4Typeb")]
         [AlwaysCompile]
         static unsafe bool IsSubtypeOf(void* subclass, void* superclass, bool check_interfaces)
