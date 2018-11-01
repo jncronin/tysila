@@ -178,6 +178,11 @@ namespace libsupcs
                 var mangled_name = mspec.MangleMethod();
                 System.Diagnostics.Debugger.Log(0, "libsupcs", "TysosMethod.Invoke: requesting run-time address for " + mangled_name);
                 MethodAddress = JitOperations.GetAddressOfObject(mspec.MangleMethod());
+                if(MethodAddress == null)
+                {
+                    System.Diagnostics.Debugger.Log(0, "libsupcs", "TysosMethod.Invoke: jit compiling method");
+                    MethodAddress = JitOperations.JitCompile(this);
+                }
             }
             if (MethodAddress == null)
                 throw new System.Reflection.TargetException("Method does not have a defined implementation (" + OwningType.FullName + "." + Name + "())");
