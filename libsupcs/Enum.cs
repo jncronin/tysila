@@ -60,6 +60,8 @@ namespace libsupcs
             return new_obj;
         }
 
+        [MethodAlias("_ZW6System4Enum_25InternalGetUnderlyingType_RV11RuntimeType_P1V11RuntimeType")]
+        [AlwaysCompile]
         static internal unsafe TysosType GetUnderlyingEnumType(TysosType enum_type)
         {
             void* e_type_vtbl = *enum_type.GetImplOffset();
