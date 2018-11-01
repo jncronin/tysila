@@ -576,13 +576,17 @@ namespace libsupcs
             get
             {
                 void* ti = **(void***)((byte*)CastOperations.ReinterpretAsPointer(this) + ClassOperations.GetSystemTypeImplOffset());
-                return *(int*)((void**)ti + 1) != 0;        // IsGenericType is true for instantiated and non-instantiated generic types
+                var gtid = *(int*)((void**)ti + 1);
+                // IsGenericType is true for instantiated and non-instantiated generic types
+                if (gtid == -1 || gtid == -2)
+                    return true;
+                return false;
             }
         }
         public unsafe override bool IsGenericTypeDefinition {
             get {
                 void* ti = **(void***)((byte*)CastOperations.ReinterpretAsPointer(this) + ClassOperations.GetSystemTypeImplOffset());
-                return *(int*)((void**)ti + 1) == 1;
+                return *(int*)((void**)ti + 1) == -1;
             }
         }
 

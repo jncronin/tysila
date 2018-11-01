@@ -100,7 +100,7 @@ namespace libtysila5
              * First: If this is an enum, its a pointer to the vtable for the underlying type
              * If it is a zero-based array, its a pointer to the vtable for the element type
              * If its a boxed value type, its the size of the value type
-             * Else zero if non-generic type, 1 is generic definition, 2 if instantiated
+             * Else zero if non-generic type, -1 if generic definition, -2 if instantiated
              * 
              * Second special field is initialized to zero, and is used at runtime
              * to hold the pointer to the System.Type instance
@@ -132,11 +132,11 @@ namespace libtysila5
             }
             else if (ts.IsGenericTemplate)
             {
-                str_tab.AddRange(t.IntPtrArray(BitConverter.GetBytes(1)));
+                str_tab.AddRange(t.IntPtrArray(BitConverter.GetBytes(-1L)));
             }
             else if(ts.IsGeneric)
             {
-                str_tab.AddRange(t.IntPtrArray(BitConverter.GetBytes(2)));
+                str_tab.AddRange(t.IntPtrArray(BitConverter.GetBytes(-2L)));
             }
             else
             {
