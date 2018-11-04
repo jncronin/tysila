@@ -174,6 +174,14 @@ namespace tysila4
             public static implicit operator InteractiveTypeSpec(metadata.TypeSpec _ts) { return new InteractiveTypeSpec(_ts); }
             public static implicit operator metadata.TypeSpec(InteractiveTypeSpec its) { return its.ts; }
 
+            public int TypeSize
+            {
+                get
+                {
+                    return libtysila5.layout.Layout.GetFieldOffset(ts, null, Program.t, out var is_tls, false);
+                }
+            }
+
             internal Dictionary<string, InteractiveFieldSpec> all_fields = null;
             public Dictionary<string, InteractiveFieldSpec> AllFields
             {
@@ -376,6 +384,7 @@ namespace tysila4
 
                     foreach (var fld in s.ts.AllFields.Keys)
                         Console.WriteLine(s.ts.AllFields[fld].ToString());
+                    Console.WriteLine("  Total size: " + s.ts.TypeSize.ToString("X"));
                 }
                 else if (cmd[idx] == "list.vmethods")
                 {
