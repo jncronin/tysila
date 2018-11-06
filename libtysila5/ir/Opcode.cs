@@ -105,8 +105,10 @@ namespace libtysila5.ir
             oc_names = new Dictionary<int, string>();
             cc_names = new Dictionary<int, string>();
             ct_names = new Dictionary<int, string>();
-            cc_single_map = new Dictionary<cil.Opcode.SingleOpcodes, int>();
-            cc_double_map = new Dictionary<cil.Opcode.DoubleOpcodes, int>();
+            cc_single_map = new Dictionary<cil.Opcode.SingleOpcodes, int>(
+                new metadata.GenericEqualityComparerEnum<cil.Opcode.SingleOpcodes>());
+            cc_double_map = new Dictionary<cil.Opcode.DoubleOpcodes, int>(
+                new metadata.GenericEqualityComparerEnum<cil.Opcode.DoubleOpcodes>());
             cc_invert_map = new Dictionary<int, int>();
             
             init_oc();
