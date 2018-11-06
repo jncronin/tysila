@@ -143,6 +143,7 @@ x86_instrs = [
 	"iret",
 	"int3",
 	"pushf", "popf", "cli",
+	"nop",
 
 	"movsd_xmm_xmmm64",
 	"movsd_xmm_xmmm64disp",

@@ -874,6 +874,10 @@ namespace libtysila5.target.x86
                         AddImm64(Code, I.p[2].v);
                         break;
 
+                    case x86_nop:
+                        Code.Add(0x90);
+                        break;
+
                     case x86_out_dx_al:
                         Code.Add(0xee);
                         break;

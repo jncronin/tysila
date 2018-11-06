@@ -2640,6 +2640,8 @@ namespace libtysila5.target.x86
                         // nop
                         if (!sreg.Equals(dreg))
                             handle_move(dreg, sreg, r, n, c);
+                        else
+                            r.Add(inst(x86_nop, n));    // in case this is a br target
                         return r;
                     case 0x0a:
                         // conv to i8
@@ -2755,6 +2757,8 @@ namespace libtysila5.target.x86
                             handle_move(dreg, sreg, r, n, c);
                         }
                         // nop - ignore high 32 bits
+                        else
+                            r.Add(inst(x86_nop, n));    // this could be a br target
                         return r;
                     case 0x0a:
                         // conv to i8
@@ -2885,6 +2889,8 @@ namespace libtysila5.target.x86
                         // float to float (all floats are 64-bit internally)
                         if (!dreg.Equals(sreg))
                             handle_move(dreg, sreg, r, n, c);
+                        else
+                            r.Add(inst(x86_nop, n));        // this could be a br target
                         return r;
                     default:
                         throw new NotImplementedException();
