@@ -362,6 +362,7 @@ namespace tysila4
 
                     t.InitIntcalls();
                     t.r = new libtysila5.CachingRequestor(s.m.m);
+                    t.st = new libtysila5.StringTable("Interactive", s.ms.ms.m.al, Program.t);
                     StringBuilder sb = new StringBuilder();
                     libtysila5.libtysila.AssembleMethod(s.ms.ms, new binary_library.binary.FlatBinaryFile(), t, sb);
 

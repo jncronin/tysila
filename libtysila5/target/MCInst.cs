@@ -31,6 +31,7 @@ namespace libtysila5.target
         public util.Set mreg_live_in, mreg_live_out;
         public cil.CilNode.IRNode parent;
         public int offset;
+        public int addr, end_addr;
 
         public override string ToString()
         {

@@ -344,6 +344,18 @@ namespace libtysila5
                     debug_passes.Append(mc.offset.ToString("X8"));
                     debug_passes.Append(": ");
                     debug_passes.AppendLine(mc.ToString());
+                    if (cil.t != null && cil.t.text_section != null && cil.t.text_section.Data != null)
+                    {
+                        debug_passes.Append("        ");
+                        int idx = 0;
+                        for (int i = mc.addr; i < mc.end_addr; i++, idx++)
+                        {
+                            if (idx > 0)
+                                debug_passes.Append(", ");
+                            debug_passes.Append(cil.t.text_section.Data[i].ToString("X2"));
+                        }
+                        debug_passes.AppendLine();
+                    }
                 }
                 debug_passes.AppendLine();
                 debug_passes.AppendLine();

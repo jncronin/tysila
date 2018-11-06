@@ -58,6 +58,8 @@ namespace libtysila5.target.x86
             {
                 var mc_offset = Code.Count - code_start;
                 I.offset = mc_offset;
+                I.addr = Code.Count;
+                I.end_addr = Code.Count;
 
                 if (I.parent != null)
                 {
@@ -1094,9 +1096,10 @@ namespace libtysila5.target.x86
 
                 if (tls_flag == 1)
                     throw new NotImplementedException("TLS not supported for " + insts[(int)I.p[0].v]);
+                I.end_addr = Code.Count;
             }
 
-
+            
             // Handle cil instructions which encode to nothing (e.g. nop) but may still be branch targets - point them to the next instruction
             int cur_il_start = -1;
             for (int i = 0; i < max_il; i++)
