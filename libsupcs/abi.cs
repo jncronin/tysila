@@ -424,6 +424,9 @@ namespace libsupcs
         public unsafe extern static void CallI(void* obj, void* address);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        public unsafe extern static T CallI<T>(void* address);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
         [IgnoreImplementation]
         public extern static int GetUsedStackSize();
 
