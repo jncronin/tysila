@@ -278,11 +278,12 @@ namespace libtysila5.layout
                         MethodSpec mdecl_ms;
                         impl_ts.m.GetMethodDefRow(mdecl_id, mdecl_row, out mdecl_ms, impl_ts.gtparams);
 
-                        if (MetadataStream.CompareString(mdecl_ms.m,
+                        /*if (MetadataStream.CompareString(mdecl_ms.m,
                             mdecl_ms.m.GetIntEntry(MetadataStream.tid_MethodDef, mdecl_ms.mdrow, 3),
                             iface_ms.m,
                             iface_ms.m.GetIntEntry(MetadataStream.tid_MethodDef, iface_ms.mdrow, 3)) &&
-                            MetadataStream.CompareSignature(mdecl_ms, iface_ms))
+                            MetadataStream.CompareSignature(mdecl_ms, iface_ms))*/
+                        if(mdecl_ms.Equals(iface_ms))
                         {
                             impl_ts.m.GetCodedIndexEntry(MetadataStream.tid_MethodImpl, i, 1,
                                 impl_ts.m.MethodDefOrRef, out mbody_id, out mbody_row);
@@ -376,11 +377,7 @@ namespace libtysila5.layout
                         MethodSpec mdecl_ms;
                         impl_ts.m.GetMethodDefRow(mdecl_id, mdecl_row, out mdecl_ms, impl_ts.gtparams);
 
-                        if (MetadataStream.CompareString(mdecl_ms.m,
-                            mdecl_ms.m.GetIntEntry(MetadataStream.tid_MethodDef, mdecl_ms.mdrow, 3),
-                            iface_ms.m,
-                            iface_ms.m.GetIntEntry(MetadataStream.tid_MethodDef, iface_ms.mdrow, 3)) &&
-                            MetadataStream.CompareSignature(mdecl_ms, iface_ms))
+                        if (mdecl_ms.Equals(iface_ms))
                         {
                             impl_ts.m.GetCodedIndexEntry(MetadataStream.tid_MethodImpl, i, 1,
                                 impl_ts.m.MethodDefOrRef, out mbody_id, out mbody_row);
