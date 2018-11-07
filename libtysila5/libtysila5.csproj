@@ -73,10 +73,7 @@
     <Compile Include="target\Trie.cs" />
     <Compile Include="target\x86\AssemblePass.cs" />
     <Compile Include="target\x86\Instructions.cs" />
-    <Compile Include="target\x86\lab.cs" />
-    <Compile Include="target\x86\stind.cs" />
     <Compile Include="target\x86\x86_Assembler.cs" />
-    <Compile Include="target\x86\zeromem.cs" />
     <Compile Include="util\set.cs" />
     <Compile Include="util\setT.cs" />
     <Compile Include="util\Stack.cs" />
