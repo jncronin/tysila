@@ -49,6 +49,7 @@ namespace libtysila5.ir
             intcalls["_ZN14libsupcs#2Edll8libsupcs15OtherOperations_3Sub_Ru1U_P2u1Uu1U"] = uintptr_Sub;
             intcalls["_ZN14libsupcs#2Edll8libsupcs15OtherOperations_5CallI_Rv_P1Pv"] = calli;
             intcalls["_ZN14libsupcs#2Edll8libsupcs15OtherOperations_5CallI_Rv_P2PvPv"] = calli_pvpv;
+            intcalls["_ZN14libsupcs#2Edll8libsupcs15OtherOperations_5CallI_Ru1p0_P1Pv"] = calli_gen;
 
             intcalls["_ZN14libsupcs#2Edll8libsupcs15OtherOperations_18GetFunctionAddress_RPv_P1u1S"] = get_func_address;
             intcalls["_ZN14libsupcs#2Edll8libsupcs15OtherOperations_22GetStaticObjectAddress_RPv_P1u1S"] = get_static_obj_address;
@@ -594,6 +595,18 @@ namespace libtysila5.ir
         private static Stack<StackItem> calli_pvpv(CilNode n, Code c, Stack<StackItem> stack_before)
         {
             return call(n, c, stack_before, true, "calli_target", c.special_meths, c.special_meths.static_Rv_P1Pv);
+        }
+
+        private static Stack<StackItem> calli_gen(CilNode n, Code c, Stack<StackItem> stack_before)
+        {
+            // get return type
+            var c_ms = c.ms.m.GetMethodSpec(n.inline_uint, c.ms.gtparams, c.ms.gmparams);
+            var rt = c_ms.ReturnType;
+
+            // build an appropriate signature
+            var sig = c.special_meths.CreateMethodSignature(rt, new TypeSpec[] { }, false);
+
+            return call(n, c, stack_before, true, "calli_target", c.special_meths, sig);
         }
 
         private static Stack<StackItem> poke_Ulong(CilNode n, Code c, Stack<StackItem> stack_before)
