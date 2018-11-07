@@ -95,6 +95,7 @@ namespace libtysila5.ir
             intcalls["_ZW35System#2ERuntime#2ECompilerServices14RuntimeHelpers_22get_OffsetToStringData_Ri_P0"] = runtimeHelpers_getOffsetToStringData;
             intcalls["_ZW35System#2ERuntime#2ECompilerServices14RuntimeHelpers_31IsReferenceOrContainsReferences_Rb_P0"] = runtimeHelpers_isReferenceOrContainsReferences;
             intcalls["_ZW35System#2ERuntime#2ECompilerServices14RuntimeHelpers_6Equals_Rb_P2u1Ou1O"] = runtimeHelpers_Equals;
+            intcalls["_ZW35System#2ERuntime#2ECompilerServices14RuntimeHelpers_11GetHashCode_Ri_P1u1O"] = runtimeHelpers_GetHashCode;
             intcalls["_ZW35System#2ERuntime#2ECompilerServices10JitHelpers_10UnsafeCast_Ru1p0_P1u1O"] = jitHelpers_unsafeCast;
             intcalls["_ZW35System#2ERuntime#2ECompilerServices10JitHelpers_24UnsafeCastToStackPointer_Ru1I_P1Ru1p0"] = jitHelpers_unsafeCastToStackPointer;
 
@@ -136,6 +137,14 @@ namespace libtysila5.ir
 
             n.irnodes.Add(new CilNode.IRNode { parent = n, opcode = Opcode.oc_stackcopy, arg_a = 0, res_a = 0, stack_before = stack_before, stack_after = stack_after });
             return stack_after;
+        }
+
+        private static Stack<StackItem> runtimeHelpers_GetHashCode(CilNode n, Code c, Stack<StackItem> stack_before)
+        {
+            // We are only required to return identical hashcodes for objects that have equal references
+            // First convert to an intptr to prevent conv_op_valid failing (this should encode to nop)
+            var stack_after = conv(n, c, stack_before, (int)CorElementType.I);
+            return conv(n, c, stack_after, (int)CorElementType.I4);
         }
 
         private static Stack<StackItem> runtimeHelpers_Equals(CilNode n, Code c, Stack<StackItem> stack_before)
