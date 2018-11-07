@@ -3171,7 +3171,10 @@ namespace libtysila5.target.x86
 
             int oc = x86_mov_rm32_imm32;
             if (n.imm_ul == 1 && t.psize == 8)
-                oc = x86_mov_rm64_imm32;        // ensure TLS address loads are sign-extended                
+                oc = x86_mov_rm64_imm32;        // ensure TLS address loads are sign-extended    
+
+            if ((string)t.Options["mcmodel"] == "large")
+                oc = x86_mov_r64_imm64;
 
             List<MCInst> r = new List<MCInst>();
             if (dest is ContentsReg)

@@ -100,6 +100,8 @@ namespace libtysila5.target.x86
         {
             // cpu features
             init_cpu_feature_option("sse4_1");
+
+            Options.InternalAdd("mcmodel", "small");
         }
 
         public override void InitIntcalls()

@@ -873,7 +873,31 @@ namespace libtysila5.target.x86
                     case x86_mov_r64_imm64:
                         AddRex(Code, Rex(I.p[0].v, null, I.p[1].mreg));
                         Code.Add(PlusRD(0xb8, I.p[1].mreg));
-                        AddImm64(Code, I.p[2].v);
+                        switch (I.p[2].t)
+                        {
+                            case ir.Opcode.vl_c:
+                            case ir.Opcode.vl_c32:
+                            case ir.Opcode.vl_c64:
+                                AddImm64(Code, I.p[2].v);
+                                break;
+                            case ir.Opcode.vl_str:
+                                var reloc = bf.CreateRelocation();
+                                reloc.DefinedIn = text_section;
+                                if (I.p[2].v2 == 1)
+                                {
+                                    throw new NotImplementedException("TLS label with mcmodel large");
+                                }
+                                reloc.Type = new binary_library.elf.ElfFile.Rel_x86_64_64();
+                                reloc.Addend = I.p[2].v;
+                                reloc.References = bf.CreateSymbol();
+                                reloc.References.Name = I.p[2].str;
+                                reloc.Offset = (ulong)Code.Count;
+                                bf.AddRelocation(reloc);
+                                AddImm64(Code, 0);
+                                break;
+                            default:
+                                throw new NotSupportedException();
+                        }
                         break;
 
                     case x86_nop:
