@@ -400,7 +400,7 @@ namespace tysila4
                     foreach (var vmeth in vmeths)
                     {
                         var impl_ms = vmeth.impl_meth;
-                        string impl_target = (impl_ms == null) ? "__cxa_pure_virtual" : impl_ms.MangleMethod();
+                        string impl_target = (impl_ms == null) ? "__cxa_pure_virtual" : impl_ms.MethodReferenceAlias;
                         var ims = new InteractiveMethodSpec(vmeth.unimpl_meth);
                         Console.WriteLine(ims.Name + " -> " + impl_target);
                     }
