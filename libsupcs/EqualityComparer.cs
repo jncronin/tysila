@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace libsupcs
 {
@@ -60,4 +61,75 @@ namespace libsupcs
             return x.Equals(y);
         }
     }
+
+    public class GenericComparer<T> : IComparer<T> where T : System.IComparable<T>
+    {
+        public int Compare(T x, T y)
+        {
+            return x.CompareTo(y);
+        }
+    }
+
+    public class IntPtrComparer : IComparer<IntPtr>
+    {
+        [MethodReferenceAlias("intptr_compare")]
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        extern public int Compare(IntPtr x, IntPtr y);
+
+        [MethodAlias("intptr_compare")]
+        [AlwaysCompile]
+        [Bits32Only]
+        int Compare32(int x, int y)
+        {
+            if (x > y)
+                return 1;
+            if (x == y)
+                return 0;
+            return -1;
+        }
+
+        [MethodAlias("intptr_compare")]
+        [AlwaysCompile]
+        [Bits64Only]
+        int Compare64(long x, long y)
+        {
+            if (x > y)
+                return 1;
+            if (x == y)
+                return 0;
+            return -1;
+        }
+    }
+
+    public class UIntPtrComparer : IComparer<UIntPtr>
+    {
+        [MethodReferenceAlias("uintptr_compare")]
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        extern public int Compare(UIntPtr x, UIntPtr y);
+
+        [MethodAlias("uintptr_compare")]
+        [AlwaysCompile]
+        [Bits32Only]
+        int Compare32(uint x, uint y)
+        {
+            if (x > y)
+                return 1;
+            if (x == y)
+                return 0;
+            return -1;
+        }
+
+        [MethodAlias("uintptr_compare")]
+        [AlwaysCompile]
+        [Bits64Only]
+        int Compare64(ulong x, ulong y)
+        {
+            if (x > y)
+                return 1;
+            if (x == y)
+                return 0;
+            return -1;
+        }
+    }
+
 }
