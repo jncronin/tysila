@@ -1,6 +1,12 @@
 ﻿next_reg_id = 0;
 export next_reg_id;
 
+export function ResetRegId()
+{
+	next_reg_id = 0;
+	export next_reg_id;
+}
+
 intmap("libtysila5.target", "Target", "rt", "rt_map", "init_rtmap", [
 	"gpr",
 	"float",

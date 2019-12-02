@@ -63,6 +63,8 @@
     <Compile Include="SignatureTable.cs" />
     <Compile Include="StringTable.cs" />
     <Compile Include="target\AllocateLocalVarsArgs.cs" />
+    <Compile Include="target\arm\arm_Assembler.cs" />
+    <Compile Include="target\arm\Instructions.cs" />
     <Compile Include="target\ChooseInstructions.cs" />
     <Compile Include="target\HashTable.cs" />
     <Compile Include="target\MCGraph.cs" />
@@ -92,6 +94,7 @@
   <ItemGroup>
     <None Include="ir\IrMappings.td" />
     <None Include="ir\IrOpcodes.td" />
+    <None Include="target\arm\arm.td" />
     <None Include="target\cc.td" />
     <None Include="target\Instr.td" />
     <None Include="target\Register.td" />

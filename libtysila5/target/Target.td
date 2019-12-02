@@ -26,7 +26,7 @@ intmap("libtysila5.target", "Generic", "g", "insts", "init_instrs", [
 
 // Include machine specific definitions here
 include "x86/x86.td";
-
+include "arm/arm.td";
 
 
 /* Dump a target definition */
