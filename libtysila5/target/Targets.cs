@@ -87,6 +87,8 @@ namespace libtysila5.target
         protected internal abstract bool NeedsBoxRetType(metadata.MethodSpec ms);
         protected internal abstract void AssemblePass(Code c);
 
+        protected internal virtual string MCInstToDebug(MCInst i) { return i.ToString(); }
+
         protected internal virtual int GetCTFromTypeForCC(metadata.TypeSpec t) { return ir.Opcode.GetCTFromType(t); }
 
         protected internal virtual void AddExtraVTableFields(metadata.TypeSpec ts, IList<byte> d, ref ulong offset) { }

@@ -64,6 +64,8 @@
     <Compile Include="StringTable.cs" />
     <Compile Include="target\AllocateLocalVarsArgs.cs" />
     <Compile Include="target\arm\arm_Assembler.cs" />
+    <Compile Include="target\arm\AssemblePass.cs" />
+    <Compile Include="target\arm\Debug.cs" />
     <Compile Include="target\arm\Instructions.cs" />
     <Compile Include="target\ChooseInstructions.cs" />
     <Compile Include="target\HashTable.cs" />

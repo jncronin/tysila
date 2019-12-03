@@ -5,7 +5,7 @@ assembler = name + "_Assembler";
 arm_def = target_init("arm", 4, 0);
 
 ResetRegId();
-regs = [ Rstack(), Rcontents(),
+regs = [ 
 	Ri32("r0"), Ri32("r1"), Ri32("r2"), Ri32("r3"),
 	Ri32("r4"), Ri32("r5"), Ri32("r6"), Ri32("r7"),
 	Ri32("r8"), Ri32("r9"), Ri32("r10"), Ri32("r11"),
@@ -21,6 +21,7 @@ regs = [ Rstack(), Rcontents(),
 	Ralias("r12", "ip"),
 	Ralias("r11", "fp"),
 
+	Rstack(), Rcontents(),
 
 	MultiReg("r0r1", [ r0, r1 ])
 ];
@@ -29,14 +30,44 @@ arm_def.regs = regs;
 // Where can cli types go?
 arm_def.ct_map = 
 	[
-		[ ct_int32, [ r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12 ] ],
+		[ ct_int32, [ r0, r1, r2, r3, r4, r5, r6, r7, r8, r9 ] ],
 		[ ct_int64, [ ] ],
 		[ ct_float, [ s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15 ] ],
 	];
 
 
 arm_instrs = [
+	"add_imm",
+	"add_reg",
+	"add_sp_imm",
+	"add_sp_reg",
 
+	"b",
+	"bl",
+	"blx",
+	"bx",
+	
+	"ldm",
+	"ldr_imm",
+	"ldr_lit",
+	"ldr_reg",
+
+	"mov_imm",
+	"mov_reg",
+
+	"orr_imm",
+	"orr_reg",
+
+	"pop",
+	"push",
+
+	"stmdb",
+	"str_imm",
+	"str_reg",
+	"sub_imm",
+	"sub_reg",
+	"sub_sp_imm",
+	"sub_sp_reg",
 ];
 
 intmap(nspace, assembler, name, "insts", "init_instrs", arm_instrs);

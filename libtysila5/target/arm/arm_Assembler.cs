@@ -66,11 +66,6 @@ namespace libtysila5.target.arm
             throw new NotImplementedException();
         }
 
-        protected internal override void AssemblePass(Code c)
-        {
-            throw new NotImplementedException();
-        }
-
         protected internal override void SetBranchDest(MCInst i, int d)
         {
             throw new NotImplementedException();
@@ -88,7 +83,7 @@ namespace libtysila5.target.arm
 
             return new ContentsReg
             {
-                basereg = r_r7,
+                basereg = r_fp,
                 disp = la_loc + 2 * psize,
                 size = la_size
             };
@@ -123,7 +118,7 @@ namespace libtysila5.target.arm
             disp = -lv_size - lv_loc;
             return new ContentsReg
             {
-                basereg = r_r7,
+                basereg = r_fp,
                 disp = disp,
                 size = lv_size
             };
