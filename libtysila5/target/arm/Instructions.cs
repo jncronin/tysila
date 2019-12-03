@@ -45,6 +45,8 @@ namespace libtysila5.target.arm
 
             Param[] register_list = null,
             
+            string str_target = null,
+
             bool is_tls = false)
         {
             string str = null;
@@ -63,7 +65,8 @@ namespace libtysila5.target.arm
                     imm,
                     W,
                     S,
-                    RegListToInt(register_list)
+                    RegListToInt(register_list),
+                    str_target
                 }
             };
 
@@ -89,6 +92,20 @@ namespace libtysila5.target.arm
            List<CilNode.IRNode> nodes,
            int start, int count, Code c)
         {
+            var n = nodes[start];
+            var a = n.stack_before.Peek(n.arg_a).reg;
+            var b = n.stack_before.Peek(n.arg_b).reg;
+            var res = n.stack_after.Peek(n.res_a).reg;
+
+            List<MCInst> r = new List<MCInst>();
+
+            if(a.type == rt_gpr && b.type == rt_gpr && res.type == rt_gpr)
+            {
+                r.Add(inst(n, arm_add_reg, Rd: res, Rn: a, Rm: b));
+
+                return r;
+            }
+
             throw new NotImplementedException();
         }
 
@@ -674,7 +691,14 @@ namespace libtysila5.target.arm
 
         private static void handle_const(Reg to_reg, long v, List<MCInst> r, CilNode.IRNode n, Code c)
         {
-            throw new NotImplementedException();
+            if (to_reg.type != rt_gpr)
+                throw new NotImplementedException();
+
+            r.Add(inst(n, arm_mov_imm, Rd: to_reg, imm: (int)(v & 0xffff)));
+            if(v < 0 || v > UInt16.MaxValue)
+            {
+                r.Add(inst(n, arm_movt_imm, Rd: to_reg, imm: (int)((v >> 16) & 0xffff)));
+            }
         }
 
         internal static List<MCInst> handle_cctor_runonce(
@@ -863,7 +887,12 @@ namespace libtysila5.target.arm
            List<CilNode.IRNode> nodes,
            int start, int count, Code c)
         {
-            throw new NotImplementedException();
+            var n = nodes[start];
+            List<MCInst> r = new List<MCInst>();
+
+            var dest = n.stack_after.Peek(n.res_a);
+            handle_const(dest.reg, n.imm_l, r, n, c);
+            return r;
         }
 
         internal static List<MCInst> handle_ldfp(
@@ -887,7 +916,14 @@ namespace libtysila5.target.arm
            List<CilNode.IRNode> nodes,
            int start, int count, Code c)
         {
-            throw new NotImplementedException();
+            var n = nodes[start];
+            List<MCInst> r = new List<MCInst>();
+
+            var dest = n.stack_after.Peek(n.res_a);
+            r.Add(inst(n, arm_mov_imm, Rd: dest.reg, imm: 0, str_target: n.imm_lab));
+            r.Add(inst(n, arm_movt_imm, Rd: dest.reg, imm: 0, str_target: n.imm_lab));
+
+            return r;
         }
 
         internal static List<MCInst> handle_ldloc(
@@ -895,6 +931,20 @@ namespace libtysila5.target.arm
            List<CilNode.IRNode> nodes,
            int start, int count, Code c)
         {
+            var n = nodes[start];
+
+            var n_ct = n.ct;
+            var src = c.lv_locs[(int)n.imm_l];
+            var dest = n.stack_after.Peek(n.res_a).reg;
+
+            List<MCInst> r = new List<MCInst>();
+
+            if (dest.type == rt_gpr)
+            {
+                handle_move(dest, src, r, n, c);
+                return r;
+            }
+
             throw new NotImplementedException();
         }
 
@@ -1174,7 +1224,13 @@ namespace libtysila5.target.arm
            List<CilNode.IRNode> nodes,
            int start, int count, Code c)
         {
-            throw new NotImplementedException();
+            var n = nodes[start];
+            var src = n.stack_before.Peek(n.arg_a).reg;
+            var dest = n.stack_after.Peek(n.res_a).reg;
+
+            List<MCInst> r = new List<MCInst>();
+            handle_move(dest, src, r, n, c);
+            return r;
         }
 
         internal static List<MCInst> handle_starg(
@@ -1190,6 +1246,20 @@ namespace libtysila5.target.arm
            List<CilNode.IRNode> nodes,
            int start, int count, Code c)
         {
+            var n = nodes[start];
+            var n_ct2 = n.ct2;
+            var addr = n.stack_before.Peek(n.arg_a).reg;
+            var val = n.stack_before.Peek(n.arg_b).reg;
+            bool is_tls = n.imm_ul == 1UL;
+
+            List<MCInst> r = new List<MCInst>();
+
+            if (addr.type == rt_gpr && val.type == rt_gpr)
+            {
+                handle_move(new ContentsReg { basereg = addr, size = c.t.psize }, val, r, n, c);
+                return r;
+            }
+
             throw new NotImplementedException();
         }
 
@@ -1198,6 +1268,20 @@ namespace libtysila5.target.arm
            List<CilNode.IRNode> nodes,
            int start, int count, Code c)
         {
+            var n = nodes[start];
+
+            var n_ct = n.ct;
+            var src = n.stack_before.Peek(n.arg_a).reg;
+            var dest = c.lv_locs[(int)n.imm_l];
+
+            List<MCInst> r = new List<MCInst>();
+
+            if(src.type == rt_gpr)
+            {
+                handle_move(dest, src, r, n, c);
+                return r;
+            }
+
             throw new NotImplementedException();
         }
 

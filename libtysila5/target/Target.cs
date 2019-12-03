@@ -1,7 +1,7 @@
-/* D:\tysila\libtysila5\target\Target.cs
+/* C:\Users\jncro\source\repos\tysila\libtysila5\target\Target.cs
  * This is an auto-generated file
  * DO NOT EDIT
- * It was generated at 14:46:56 on 03 December 2019
+ * It was generated at 21:17:05 on 03 December 2019
  * from libtysila5/target/Target.td
  * by TableMap (part of tysos: http://www.tysos.org)
  * Please edit the source file, rather than this file, to make any changes
@@ -801,17 +801,18 @@ namespace libtysila5.target.arm
 		public const int arm_ldr_reg = 219;
 		public const int arm_mov_imm = 220;
 		public const int arm_mov_reg = 221;
-		public const int arm_orr_imm = 222;
-		public const int arm_orr_reg = 223;
-		public const int arm_pop = 224;
-		public const int arm_push = 225;
-		public const int arm_stmdb = 226;
-		public const int arm_str_imm = 227;
-		public const int arm_str_reg = 228;
-		public const int arm_sub_imm = 229;
-		public const int arm_sub_reg = 230;
-		public const int arm_sub_sp_imm = 231;
-		public const int arm_sub_sp_reg = 232;
+		public const int arm_movt_imm = 222;
+		public const int arm_orr_imm = 223;
+		public const int arm_orr_reg = 224;
+		public const int arm_pop = 225;
+		public const int arm_push = 226;
+		public const int arm_stmdb = 227;
+		public const int arm_str_imm = 228;
+		public const int arm_str_reg = 229;
+		public const int arm_sub_imm = 230;
+		public const int arm_sub_reg = 231;
+		public const int arm_sub_sp_imm = 232;
+		public const int arm_sub_sp_reg = 233;
 		
 		internal static void init_instrs()
 		{
@@ -829,17 +830,18 @@ namespace libtysila5.target.arm
 			insts[219] = "ldr_reg";
 			insts[220] = "mov_imm";
 			insts[221] = "mov_reg";
-			insts[222] = "orr_imm";
-			insts[223] = "orr_reg";
-			insts[224] = "pop";
-			insts[225] = "push";
-			insts[226] = "stmdb";
-			insts[227] = "str_imm";
-			insts[228] = "str_reg";
-			insts[229] = "sub_imm";
-			insts[230] = "sub_reg";
-			insts[231] = "sub_sp_imm";
-			insts[232] = "sub_sp_reg";
+			insts[222] = "movt_imm";
+			insts[223] = "orr_imm";
+			insts[224] = "orr_reg";
+			insts[225] = "pop";
+			insts[226] = "push";
+			insts[227] = "stmdb";
+			insts[228] = "str_imm";
+			insts[229] = "str_reg";
+			insts[230] = "sub_imm";
+			insts[231] = "sub_reg";
+			insts[232] = "sub_sp_imm";
+			insts[233] = "sub_sp_reg";
 		}
 	}
 }
@@ -848,9 +850,9 @@ namespace libtysila5.target.arm
 {
 	partial class arm_Assembler
 	{
-		public const int eabic_MEMORY = 233;
-		public const int eabic_INTEGER = 234;
-		public const int eabic_FLOAT = 235;
+		public const int eabic_MEMORY = 234;
+		public const int eabic_INTEGER = 235;
+		public const int eabic_FLOAT = 236;
 	}
 }
 
@@ -862,15 +864,15 @@ namespace libtysila5.target.arm
 		public static System.Collections.Generic.Dictionary<int, int> cc_classmap_eabi = new System.Collections.Generic.Dictionary<int, int>(new libtysila5.GenericEqualityComparer<int>());
 		internal static void init_eabi()
 		{
-			cc_classmap_eabi[96] = 234;
-			cc_classmap_eabi[98] = 234;
-			cc_classmap_eabi[97] = 234;
-			cc_classmap_eabi[103] = 234;
-			cc_classmap_eabi[104] = 234;
-			cc_classmap_eabi[102] = 235;
-			cc_map_eabi[234] = new int[] { 0, 1, 2, 3, 32, };
-			cc_map_eabi[235] = new int[] { 16, 17, 18, 19, 20, 21, 22, 23, 32, };
-			cc_map_eabi[233] = new int[] { 32, };
+			cc_classmap_eabi[96] = 235;
+			cc_classmap_eabi[98] = 235;
+			cc_classmap_eabi[97] = 235;
+			cc_classmap_eabi[103] = 235;
+			cc_classmap_eabi[104] = 235;
+			cc_classmap_eabi[102] = 236;
+			cc_map_eabi[235] = new int[] { 0, 1, 2, 3, 32, };
+			cc_map_eabi[236] = new int[] { 16, 17, 18, 19, 20, 21, 22, 23, 32, };
+			cc_map_eabi[234] = new int[] { 32, };
 		}
 		
 		internal const ulong eabi_caller_preserves = 16715791;

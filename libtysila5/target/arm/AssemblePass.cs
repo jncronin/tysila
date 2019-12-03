@@ -246,10 +246,33 @@ namespace libtysila5.target.arm
                             throw new NotImplementedException();
                         break;
 
+                    case arm_mov_imm:
+                        if(Str(I) != null)
+                        {
+                            // this has an embedded string target, need to generate relocs
+                            throw new NotImplementedException();
+                        }
+                        else
+                        {
+                            // just an inline imm
+                            throw new NotImplementedException();
+                        }
 
                     case arm_mov_reg:
                         AddImm16(Code, (Rd(I) & 0x7) | ((Rm(I) & 0xf) << 3) | (((Rd(I) >> 3) & 0x1) << 7) | 0x4600);
                         break;
+
+                    case arm_movt_imm:
+                        if (Str(I) != null)
+                        {
+                            // this has an embedded string target, need to generate relocs
+                            throw new NotImplementedException();
+                        }
+                        else
+                        {
+                            // just an inline imm
+                            throw new NotImplementedException();
+                        }
 
                     case arm_push:
                         if(BitCount(Rlist(I)) == 0)
@@ -435,6 +458,11 @@ namespace libtysila5.target.arm
         private int Rlist(MCInst i)
         {
             return (int)i.p[8].v;
+        }
+
+        private string Str(MCInst i)
+        {
+            return i.p[9]?.str;
         }
     }
 }

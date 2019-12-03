@@ -54,6 +54,7 @@ arm_instrs = [
 
 	"mov_imm",
 	"mov_reg",
+	"movt_imm",
 
 	"orr_imm",
 	"orr_reg",
