@@ -1,7 +1,7 @@
-/* C:\Users\jncro\source\repos\tysila\libtysila5\target\Target.cs
+/* D:\tysila\libtysila5\target\Target.cs
  * This is an auto-generated file
  * DO NOT EDIT
- * It was generated at 21:04:00 on 02 December 2019
+ * It was generated at 12:23:48 on 03 December 2019
  * from libtysila5/target/Target.td
  * by TableMap (part of tysos: http://www.tysos.org)
  * Please edit the source file, rather than this file, to make any changes
@@ -819,12 +819,12 @@ namespace libtysila5.target.arm
 			cc_classmap_eabi[104] = 209;
 			cc_classmap_eabi[102] = 210;
 			cc_map_eabi[209] = new int[] { 2, 3, 4, 5, 0, };
-			cc_map_eabi[210] = new int[] { 17, 18, 19, 20, 21, 22, 23, 24, 0, };
+			cc_map_eabi[210] = new int[] { 18, 19, 20, 21, 22, 23, 24, 25, 0, };
 			cc_map_eabi[208] = new int[] { 0, };
 		}
 		
-		internal const ulong eabi_caller_preserves = 33439804;
-		internal const ulong eabi_callee_preserves = 8556396480;
+		internal const ulong eabi_caller_preserves = 66863164;
+		internal const ulong eabi_callee_preserves = 17112776640;
 	}
 }
 
@@ -840,8 +840,8 @@ namespace libtysila5.target.arm
 			cc_map_ret_eabi[98] = new int[] { 2, };
 			cc_map_ret_eabi[103] = new int[] { 2, };
 			cc_map_ret_eabi[104] = new int[] { 2, };
-			cc_map_ret_eabi[97] = new int[] { 33, };
-			cc_map_ret_eabi[102] = new int[] { 17, };
+			cc_map_ret_eabi[97] = new int[] { 34, };
+			cc_map_ret_eabi[102] = new int[] { 18, };
 		}
 		
 		internal const ulong ret_eabi_caller_preserves = 0;
@@ -1069,7 +1069,7 @@ namespace libtysila5.target
 			var arm = new libtysila5.target.arm.arm_Assembler();
 			arm.name = "arm";
 			arm.ptype = ir.Opcode.ct_int32;
-			libtysila5.target.arm.arm_Assembler.registers = new Target.Reg[34];
+			libtysila5.target.arm.arm_Assembler.registers = new Target.Reg[35];
 			arm.regs = libtysila5.target.arm.arm_Assembler.registers;
 			arm.regs[0] = new Target.Reg { name = "stack", id = 0, type = 2, size = 0, mask = 1 };
 			libtysila5.target.arm.arm_Assembler.r_stack = arm.regs[0];
@@ -1101,44 +1101,56 @@ namespace libtysila5.target
 			libtysila5.target.arm.arm_Assembler.r_r11 = arm.regs[13];
 			arm.regs[14] = new Target.Reg { name = "r12", id = 14, type = 0, size = 4, mask = 16384 };
 			libtysila5.target.arm.arm_Assembler.r_r12 = arm.regs[14];
-			arm.regs[15] = new Target.Reg { name = "sp", id = 15, type = 0, size = 4, mask = 32768 };
-			libtysila5.target.arm.arm_Assembler.r_sp = arm.regs[15];
+			arm.regs[15] = new Target.Reg { name = "r13", id = 15, type = 0, size = 4, mask = 32768 };
+			libtysila5.target.arm.arm_Assembler.r_r13 = arm.regs[15];
+			arm.regs[16] = new Target.Reg { name = "r14", id = 16, type = 0, size = 4, mask = 65536 };
+			libtysila5.target.arm.arm_Assembler.r_r14 = arm.regs[16];
+			arm.regs[17] = new Target.Reg { name = "r15", id = 17, type = 0, size = 4, mask = 131072 };
+			libtysila5.target.arm.arm_Assembler.r_r15 = arm.regs[17];
+			arm.regs[18] = new Target.Reg { name = "s0", id = 18, type = 1, size = 4, mask = 262144 };
+			libtysila5.target.arm.arm_Assembler.r_s0 = arm.regs[18];
+			arm.regs[19] = new Target.Reg { name = "s1", id = 19, type = 1, size = 4, mask = 524288 };
+			libtysila5.target.arm.arm_Assembler.r_s1 = arm.regs[19];
+			arm.regs[20] = new Target.Reg { name = "s2", id = 20, type = 1, size = 4, mask = 1048576 };
+			libtysila5.target.arm.arm_Assembler.r_s2 = arm.regs[20];
+			arm.regs[21] = new Target.Reg { name = "s3", id = 21, type = 1, size = 4, mask = 2097152 };
+			libtysila5.target.arm.arm_Assembler.r_s3 = arm.regs[21];
+			arm.regs[22] = new Target.Reg { name = "s4", id = 22, type = 1, size = 4, mask = 4194304 };
+			libtysila5.target.arm.arm_Assembler.r_s4 = arm.regs[22];
+			arm.regs[23] = new Target.Reg { name = "s5", id = 23, type = 1, size = 4, mask = 8388608 };
+			libtysila5.target.arm.arm_Assembler.r_s5 = arm.regs[23];
+			arm.regs[24] = new Target.Reg { name = "s6", id = 24, type = 1, size = 4, mask = 16777216 };
+			libtysila5.target.arm.arm_Assembler.r_s6 = arm.regs[24];
+			arm.regs[25] = new Target.Reg { name = "s7", id = 25, type = 1, size = 4, mask = 33554432 };
+			libtysila5.target.arm.arm_Assembler.r_s7 = arm.regs[25];
+			arm.regs[26] = new Target.Reg { name = "s8", id = 26, type = 1, size = 4, mask = 67108864 };
+			libtysila5.target.arm.arm_Assembler.r_s8 = arm.regs[26];
+			arm.regs[27] = new Target.Reg { name = "s9", id = 27, type = 1, size = 4, mask = 134217728 };
+			libtysila5.target.arm.arm_Assembler.r_s9 = arm.regs[27];
+			arm.regs[28] = new Target.Reg { name = "s10", id = 28, type = 1, size = 4, mask = 268435456 };
+			libtysila5.target.arm.arm_Assembler.r_s10 = arm.regs[28];
+			arm.regs[29] = new Target.Reg { name = "s11", id = 29, type = 1, size = 4, mask = 536870912 };
+			libtysila5.target.arm.arm_Assembler.r_s11 = arm.regs[29];
+			arm.regs[30] = new Target.Reg { name = "s12", id = 30, type = 1, size = 4, mask = 1073741824 };
+			libtysila5.target.arm.arm_Assembler.r_s12 = arm.regs[30];
+			arm.regs[31] = new Target.Reg { name = "s13", id = 31, type = 1, size = 4, mask = 2147483648 };
+			libtysila5.target.arm.arm_Assembler.r_s13 = arm.regs[31];
+			arm.regs[32] = new Target.Reg { name = "s14", id = 32, type = 1, size = 4, mask = 4294967296 };
+			libtysila5.target.arm.arm_Assembler.r_s14 = arm.regs[32];
+			arm.regs[33] = new Target.Reg { name = "s15", id = 33, type = 1, size = 4, mask = 8589934592 };
+			libtysila5.target.arm.arm_Assembler.r_s15 = arm.regs[33];
+			arm.regs[17] = new Target.Reg { name = "pc", id = 17, type = 0, size = 4, mask = 131072 };
+			libtysila5.target.arm.arm_Assembler.r_pc = arm.regs[17];
 			arm.regs[16] = new Target.Reg { name = "lr", id = 16, type = 0, size = 4, mask = 65536 };
 			libtysila5.target.arm.arm_Assembler.r_lr = arm.regs[16];
-			arm.regs[17] = new Target.Reg { name = "s0", id = 17, type = 1, size = 4, mask = 131072 };
-			libtysila5.target.arm.arm_Assembler.r_s0 = arm.regs[17];
-			arm.regs[18] = new Target.Reg { name = "s1", id = 18, type = 1, size = 4, mask = 262144 };
-			libtysila5.target.arm.arm_Assembler.r_s1 = arm.regs[18];
-			arm.regs[19] = new Target.Reg { name = "s2", id = 19, type = 1, size = 4, mask = 524288 };
-			libtysila5.target.arm.arm_Assembler.r_s2 = arm.regs[19];
-			arm.regs[20] = new Target.Reg { name = "s3", id = 20, type = 1, size = 4, mask = 1048576 };
-			libtysila5.target.arm.arm_Assembler.r_s3 = arm.regs[20];
-			arm.regs[21] = new Target.Reg { name = "s4", id = 21, type = 1, size = 4, mask = 2097152 };
-			libtysila5.target.arm.arm_Assembler.r_s4 = arm.regs[21];
-			arm.regs[22] = new Target.Reg { name = "s5", id = 22, type = 1, size = 4, mask = 4194304 };
-			libtysila5.target.arm.arm_Assembler.r_s5 = arm.regs[22];
-			arm.regs[23] = new Target.Reg { name = "s6", id = 23, type = 1, size = 4, mask = 8388608 };
-			libtysila5.target.arm.arm_Assembler.r_s6 = arm.regs[23];
-			arm.regs[24] = new Target.Reg { name = "s7", id = 24, type = 1, size = 4, mask = 16777216 };
-			libtysila5.target.arm.arm_Assembler.r_s7 = arm.regs[24];
-			arm.regs[25] = new Target.Reg { name = "s8", id = 25, type = 1, size = 4, mask = 33554432 };
-			libtysila5.target.arm.arm_Assembler.r_s8 = arm.regs[25];
-			arm.regs[26] = new Target.Reg { name = "s9", id = 26, type = 1, size = 4, mask = 67108864 };
-			libtysila5.target.arm.arm_Assembler.r_s9 = arm.regs[26];
-			arm.regs[27] = new Target.Reg { name = "s10", id = 27, type = 1, size = 4, mask = 134217728 };
-			libtysila5.target.arm.arm_Assembler.r_s10 = arm.regs[27];
-			arm.regs[28] = new Target.Reg { name = "s11", id = 28, type = 1, size = 4, mask = 268435456 };
-			libtysila5.target.arm.arm_Assembler.r_s11 = arm.regs[28];
-			arm.regs[29] = new Target.Reg { name = "s12", id = 29, type = 1, size = 4, mask = 536870912 };
-			libtysila5.target.arm.arm_Assembler.r_s12 = arm.regs[29];
-			arm.regs[30] = new Target.Reg { name = "s13", id = 30, type = 1, size = 4, mask = 1073741824 };
-			libtysila5.target.arm.arm_Assembler.r_s13 = arm.regs[30];
-			arm.regs[31] = new Target.Reg { name = "s14", id = 31, type = 1, size = 4, mask = 2147483648 };
-			libtysila5.target.arm.arm_Assembler.r_s14 = arm.regs[31];
-			arm.regs[32] = new Target.Reg { name = "s15", id = 32, type = 1, size = 4, mask = 4294967296 };
-			libtysila5.target.arm.arm_Assembler.r_s15 = arm.regs[32];
-			arm.regs[33] = new Target.Reg { name = "r0r1", id = 33, type = 4, size = 4, mask = 12 };
-			libtysila5.target.arm.arm_Assembler.r_r0r1 = arm.regs[33];
+			arm.regs[15] = new Target.Reg { name = "sp", id = 15, type = 0, size = 4, mask = 32768 };
+			libtysila5.target.arm.arm_Assembler.r_sp = arm.regs[15];
+			arm.regs[14] = new Target.Reg { name = "ip", id = 14, type = 0, size = 4, mask = 16384 };
+			libtysila5.target.arm.arm_Assembler.r_ip = arm.regs[14];
+			arm.regs[13] = new Target.Reg { name = "fp", id = 13, type = 0, size = 4, mask = 8192 };
+			libtysila5.target.arm.arm_Assembler.r_fp = arm.regs[13];
+			arm.regs[34] = new Target.Reg { name = "r0r1", id = 34, type = 4, size = 4, mask = 12 };
+			libtysila5.target.arm.arm_Assembler.r_r0r1 = arm.regs[34];
 			targets["arm"] = arm;
 		}
 	}
@@ -1473,8 +1485,9 @@ namespace libtysila5.target.arm
 		public static Target.Reg r_r10;
 		public static Target.Reg r_r11;
 		public static Target.Reg r_r12;
-		public static Target.Reg r_sp;
-		public static Target.Reg r_lr;
+		public static Target.Reg r_r13;
+		public static Target.Reg r_r14;
+		public static Target.Reg r_r15;
 		public static Target.Reg r_s0;
 		public static Target.Reg r_s1;
 		public static Target.Reg r_s2;
@@ -1491,6 +1504,11 @@ namespace libtysila5.target.arm
 		public static Target.Reg r_s13;
 		public static Target.Reg r_s14;
 		public static Target.Reg r_s15;
+		public static Target.Reg r_pc;
+		public static Target.Reg r_lr;
+		public static Target.Reg r_sp;
+		public static Target.Reg r_ip;
+		public static Target.Reg r_fp;
 		public static Target.Reg r_r0r1;
 		
 		void init_ccs()
@@ -1509,7 +1527,7 @@ namespace libtysila5.target.arm
 			init_options();
 			ct_regs[96] = 32764;
 			ct_regs[97] = 0;
-			ct_regs[102] = 8589803520;
+			ct_regs[102] = 17179607040;
 			ct_regs[98] = ct_regs[96];
 			ct_regs[103] = ct_regs[96];
 			ct_regs[104] = ct_regs[96];

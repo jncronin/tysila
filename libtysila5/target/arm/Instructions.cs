@@ -124,6 +124,22 @@ namespace libtysila5.target.arm
            List<CilNode.IRNode> nodes,
            int start, int count, Code c)
         {
+            List<MCInst> r = new List<MCInst>();
+            var n = nodes[start];
+
+            var lv_size = c.lv_total_size + c.stack_total_size;
+
+            if (ir.Opcode.GetCTFromType(c.ret_ts) == ir.Opcode.ct_vt)
+            {
+                throw new NotImplementedException();
+            }
+
+            /* standard ARM prologue is:
+             * 
+             * mov ip, sp
+             * stmdb sp!, {fp, ip, lr, pc}      (push fp, ip, lr and pc)
+             * sub fp, ip
+             */
             throw new NotImplementedException();
         }
 

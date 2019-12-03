@@ -114,7 +114,7 @@ export function Rcontents(string orig, int offset, int size, string new)
 
 export function Ralias(string orig, string new)
 {
-	orig_val = varget("orig");
+	orig_val = varget(orig);
 	ret = [
 		name = new,
 		id = orig_val.id,

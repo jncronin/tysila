@@ -83,7 +83,15 @@ namespace libtysila5.target.arm
 
         protected internal override Reg GetLALocation(int la_loc, int la_size, Code c)
         {
-            throw new NotImplementedException();
+            if (Opcode.GetCTFromType(c.ret_ts) == Opcode.ct_vt)
+                la_loc += psize;
+
+            return new ContentsReg
+            {
+                basereg = r_r7,
+                disp = la_loc + 2 * psize,
+                size = la_size
+            };
         }
 
         protected internal override bool IsBranch(MCInst i)
@@ -108,7 +116,17 @@ namespace libtysila5.target.arm
 
         protected internal override Reg GetLVLocation(int lv_loc, int lv_size, Code c)
         {
-            throw new NotImplementedException();
+            if (Opcode.GetCTFromType(c.ret_ts) == Opcode.ct_vt)
+                lv_loc += psize;
+
+            int disp = 0;
+            disp = -lv_size - lv_loc;
+            return new ContentsReg
+            {
+                basereg = r_r7,
+                disp = disp,
+                size = lv_size
+            };
         }
 
         protected internal override MCInst[] SetupStack(int lv_size)

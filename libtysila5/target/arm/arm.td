@@ -9,12 +9,18 @@ regs = [ Rstack(), Rcontents(),
 	Ri32("r0"), Ri32("r1"), Ri32("r2"), Ri32("r3"),
 	Ri32("r4"), Ri32("r5"), Ri32("r6"), Ri32("r7"),
 	Ri32("r8"), Ri32("r9"), Ri32("r10"), Ri32("r11"),
-	Ri32("r12"), 
-	Ri32("sp"), Ri32("lr"),
+	Ri32("r12"), Ri32("r13"), Ri32("r14"), Ri32("r15"),
 	Rf32("s0"), Rf32("s1"), Rf32("s2"), Rf32("s3"),
 	Rf32("s4"), Rf32("s5"), Rf32("s6"), Rf32("s7"),
 	Rf32("s8"), Rf32("s9"), Rf32("s10"), Rf32("s11"),
 	Rf32("s12"), Rf32("s13"), Rf32("s14"), Rf32("s15"),
+
+	Ralias("r15", "pc"),
+	Ralias("r14", "lr"),
+	Ralias("r13", "sp"),
+	Ralias("r12", "ip"),
+	Ralias("r11", "fp"),
+
 
 	MultiReg("r0r1", [ r0, r1 ])
 ];
