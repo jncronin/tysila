@@ -2,7 +2,7 @@
   <PropertyGroup>
     <ProjectGuid>{64B876B2-65A6-4D61-9F28-75580A91156F}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <AssemblyTitle>typeforwards</AssemblyTitle>
     <Product>typeforwards</Product>
