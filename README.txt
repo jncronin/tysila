@@ -9,6 +9,17 @@ Building
 
 Run 'msbuild' in the repository root
 
+For dotnet on linux/windows:
+
+dotnet publish -c Release -p:TargetLatestRuntimePatch=true -r <RID>
+
+where RID is selected from
+https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
+ (e.g. linux-x64 or win10-x64)
+ 
+Add the resultant 'publish' path (e.g.
+tysila4/bin/Release/netcoreapp2.0/publish) to PATH)
+
 
 Usage
 -----
