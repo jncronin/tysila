@@ -448,6 +448,7 @@ namespace libtysila5
             meth_syms.Add(meth_sym);
 
             Code c = ms.ret_type_needs_boxing ? t.AssembleBoxRetTypeMethod(ms) : t.AssembleBoxedMethod(ms);
+            c.t = t;
             t.AssemblePass(c);
 
             foreach (var sym in meth_syms)
