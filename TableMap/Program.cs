@@ -32,14 +32,6 @@ namespace TableMap
         static internal StreamWriter sw;
         static void Main(string[] args)
         {
-
-            var files = new string[]
-            {
-                @"D:\tysos\libtysila5\ir\IrMappings.td",
-                @"D:\tysos\libtysila5\ir\IrOpcodes.td",
-                @"D:\tysos\libtysila5\target\Target.td",
-            };
-
             var this_file = System.Reflection.Assembly.GetEntryAssembly().Location;
             var this_fi = new FileInfo(this_file);
 
