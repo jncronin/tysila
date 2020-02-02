@@ -246,9 +246,67 @@ namespace libtysila5.target.arm
                             throw new NotImplementedException();
                         break;
 
+                    case arm_mov_imm:
+                        if(Str(I) != null)
+                        {
+                            // this has an embedded string target, need to generate relocs
+                            var reloc = bf.CreateRelocation();
+                            reloc.DefinedIn = text_section;
+                            reloc.Type = new binary_library.elf.ElfFile.Rel_Arm_Thm_Movw_Abs_Nc();
+                            reloc.Addend = 0;
+                            reloc.References = bf.CreateSymbol();
+                            reloc.References.Name = Str(I);
+                            reloc.References.ObjectType = binary_library.SymbolObjectType.Object;
+                            reloc.Offset = (ulong)Code.Count;
+                            bf.AddRelocation(reloc);
+
+                            // encoding T3
+                            AddImm16(Code, 0xf240);
+                            AddImm16(Code, Rd(I) << 8);
+                        }
+                        else
+                        {
+                            // just an inline imm
+                            if(FitsBits(Rd(I), 3) && FitsBits(Imm(I), 8))
+                            {
+                                // encoding T1
+                                AddImm16(Code, (Rd(I) << 8) | Imm(I) | 0x2000);
+                            }
+                            else
+                            {
+                                // encoding T3
+                                throw new NotImplementedException();
+                            }
+                        }
+                        break;
 
                     case arm_mov_reg:
                         AddImm16(Code, (Rd(I) & 0x7) | ((Rm(I) & 0xf) << 3) | (((Rd(I) >> 3) & 0x1) << 7) | 0x4600);
+                        break;
+
+                    case arm_movt_imm:
+                        if (Str(I) != null)
+                        {
+                            // this has an embedded string target, need to generate relocs
+                            var reloc = bf.CreateRelocation();
+                            reloc.DefinedIn = text_section;
+                            reloc.Type = new binary_library.elf.ElfFile.Rel_Arm_Thm_Movt_Abs();
+                            reloc.Addend = 0;
+                            reloc.References = bf.CreateSymbol();
+                            reloc.References.Name = Str(I);
+                            reloc.References.ObjectType = binary_library.SymbolObjectType.Object;
+                            reloc.Offset = (ulong)Code.Count;
+                            bf.AddRelocation(reloc);
+
+                            // encoding T3
+                            AddImm16(Code, 0xf2c0);
+                            AddImm16(Code, Rd(I) << 8);
+                        }
+                        else
+                        {
+                            // just an inline imm
+                            throw new NotImplementedException();
+                        }
                         break;
 
                     case arm_push:
@@ -312,7 +370,7 @@ namespace libtysila5.target.arm
                         else if (FitsBits(Rn(I), 3) && FitsBits(Rt(I), 3) && FitsBits(Imm(I), 7) && ((Imm(I) & 0x3) == 0) && W(I) == 0)
                         {
                             // encoding T1
-                            throw new NotImplementedException();
+                            AddImm16(Code, Rt(I) | (Rn(I) << 3) | ((Imm(I) >> 2) << 6) | 0x6000);
                         }
                         else if (FitsBits(Imm(I), 12) && W(I) == 0)
                         {
@@ -435,6 +493,11 @@ namespace libtysila5.target.arm
         private int Rlist(MCInst i)
         {
             return (int)i.p[8].v;
+        }
+
+        private string Str(MCInst i)
+        {
+            return i.p[9]?.str;
         }
     }
 }
