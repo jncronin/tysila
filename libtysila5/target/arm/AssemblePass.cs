@@ -168,7 +168,8 @@ namespace libtysila5.target.arm
                             {
                                 var reloc = bf.CreateRelocation();
                                 reloc.DefinedIn = text_section;
-                                reloc.Type = new binary_library.elf.ElfFile.Rel_Arm_Thm_Call();
+                                throw new NotImplementedException();
+                                //reloc.Type = new binary_library.elf.ElfFile.Rel_Arm_Thm_Call();
                                 reloc.Addend = 0;
                                 reloc.References = bf.CreateSymbol();
                                 reloc.References.Name = target.str;

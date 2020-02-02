@@ -1,44 +1,27 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{725897E7-4A20-4D94-917E-BB0F6BFA1257}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>readline</RootNamespace>
-    <AssemblyName>readline</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Console2.cs" />
-    <Compile Include="IAutoCompleteHandler.cs" />
-    <Compile Include="IConsole.cs" />
-    <Compile Include="KeyHandler.cs" />
-    <Compile Include="ReadLine.cs" />
+    <Compile Remove="src\ReadLine\IAutoCompleteHandler.cs" />
+    <Compile Remove="src\ReadLine\KeyHandler.cs" />
+    <Compile Remove="src\ReadLine\ReadLine.cs" />
+    <Compile Remove="src\ReadLine.Demo\Program.cs" />
+    <Compile Remove="test\ReadLine.Tests\AutoCompleteHandler.cs" />
+    <Compile Remove="test\ReadLine.Tests\KeyHandlerTests.cs" />
+    <Compile Remove="test\ReadLine.Tests\ReadLineTests.cs" />
+    <Compile Remove="src\ReadLine\Abstractions\Console2.cs" />
+    <Compile Remove="src\ReadLine\Abstractions\IConsole.cs" />
+    <Compile Remove="src\ReadLine\Properties\AssemblyInfo.cs" />
+    <Compile Remove="test\ReadLine.Tests\Abstractions\Console2.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

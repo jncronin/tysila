@@ -538,7 +538,7 @@ namespace libtysila5.ir
             stack_after = ldlen(n, c, stack_after);
 
             // ret
-            var stack_after2 = new Stack<StackItem>(stack_after);
+            var stack_after2 = new util.Stack<StackItem>(stack_after);
             n.irnodes.Add(new cil.CilNode.IRNode { parent = n, opcode = Opcode.oc_ret, ct = ir.Opcode.ct_int32, stack_before = stack_after, stack_after = stack_after2 });
 
             c.cil = new List<cil.CilNode> { n };

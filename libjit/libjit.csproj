@@ -1,58 +1,23 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{43CDA38B-8F50-4325-8FD1-B9EEAB05F64F}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>libjit</RootNamespace>
-    <AssemblyName>libjit</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyTitle>libjit</AssemblyTitle>
+    <Product>libjit</Product>
+    <Copyright>Copyright ©  2019</Copyright>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SymbolTable.cs" />
+    <ProjectReference Include="..\binary_library\binary_library\binary_library.csproj" />
+    <ProjectReference Include="..\libsupcs\libsupcs.csproj" />
+    <ProjectReference Include="..\libtysila5\libtysila5.csproj" />
+    <ProjectReference Include="..\metadata\metadata.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\binary_library\binary_library.csproj">
-      <Project>{7d57589d-4c6c-4c24-945e-5a9cf736227e}</Project>
-      <Name>binary_library</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\libsupcs\libsupcs.csproj">
-      <Project>{566aa7ab-c8b8-417c-b16e-08c7d359cbb1}</Project>
-      <Name>libsupcs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\libtysila5\libtysila5.csproj">
-      <Project>{82697295-1aff-4174-97bc-6562732305f3}</Project>
-      <Name>libtysila5</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\metadata\metadata.csproj">
-      <Project>{577c93b9-acd1-4ec2-83f5-c0ff3246feba}</Project>
-      <Name>metadata</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

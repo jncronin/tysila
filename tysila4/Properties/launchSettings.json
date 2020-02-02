@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "tysila4": {
+      "commandName": "Project",
+      "commandLineArgs": "-i"
+    }
+  }
+}

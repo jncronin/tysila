@@ -119,7 +119,7 @@ namespace libtysila5.target.x86
 
         private static util.Stack<StackItem> enter_cli(cil.CilNode n, Code c, util.Stack<StackItem> stack_before)
         {
-            var stack_after = new Stack<StackItem>(stack_before);
+            var stack_after = new util.Stack<StackItem>(stack_before);
 
             stack_after.Push(new StackItem { ts = c.ms.m.SystemIntPtr });
             n.irnodes.Add(new cil.CilNode.IRNode { parent = n, opcode = Opcode.oc_target_specific, imm_l = x86_enter_cli, stack_before = stack_before, stack_after = stack_after });
@@ -129,7 +129,7 @@ namespace libtysila5.target.x86
 
         private static util.Stack<StackItem> exit_cli(cil.CilNode n, Code c, util.Stack<StackItem> stack_before)
         {
-            var stack_after = new Stack<StackItem>(stack_before);
+            var stack_after = new util.Stack<StackItem>(stack_before);
 
             stack_after.Pop();
             n.irnodes.Add(new cil.CilNode.IRNode { parent = n, opcode = Opcode.oc_target_specific, imm_l = x86_exit_cli, stack_before = stack_before, stack_after = stack_after });

@@ -181,7 +181,7 @@ namespace libtysila5.ir
             stack_before = ConvertToIR.ldc(n, c, stack_before, 0, (int)CorElementType.Object);
             var tstatic = c.next_mclabel--;
             stack_before = ConvertToIR.brif(n, c, stack_before, Opcode.cc_eq, tstatic);
-            var tstatic_stack_in = new Stack<StackItem>(stack_before);
+            var tstatic_stack_in = new util.Stack<StackItem>(stack_before);
 
             // Get number of params and push left to right
             var sig_idx = ms.msig;
