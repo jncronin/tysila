@@ -1,12 +1,19 @@
 // Build tysila and use it to build libsupcs
 
-ARCHS = [ "x86_64" ];
+ARCHS ?= [ "x86_64" ];
 CFLAGS ?= "-O2";
 
+EXEC_SUFFIX = "";
+if(PLATFORM == "win")
+{
+	EXEC_SUFFIX = ".exe";
+}
+
 // How to build tysila
-TYSILA = dir(THIS) + "/tysila4/bin/Release/tysila4.exe";
-GENMISSING = dir(THIS) + "/genmissing/bin/Release/genmissing.exe";
+TYSILA ?= dir(THIS) + "/tysila4/bin/tysila4" + EXEC_SUFFIX;
+GENMISSING ?= dir(THIS) + "/genmissing/bin/genmissing" + EXEC_SUFFIX;
 MSBUILD = "msbuild";
+
 
 rulefor(TYSILA, [ ], [ ], function()
 {
@@ -20,7 +27,7 @@ rulefor(GENMISSING, [ ], [ ], function()
 build(TYSILA);
 build(GENMISSING);
 
-MSCORLIB = find("mscorlib.dll", "mscorlib.dll from coreclr", "../tysos/coreclr/mscorlib.dll");
+MSCORLIB ?= find("mscorlib.dll", "mscorlib.dll from coreclr", "../tysos/coreclr/mscorlib.dll");
 MSCORLIBDIR = dir(MSCORLIB);
 
 // How to build an architecture
@@ -111,21 +118,13 @@ if(input("Install tysila?", [ "y", "n" ]) == "y")
 {
 	install_dir = input("Install directory", "bin");
 	mkdir(install_dir);
-	foreach(dll_file in files(dir(TYSILA), "*.dll"))
+	foreach(tyfile in files(dir(TYSILA)))
 	{
-		cp(dll_file, install_dir);
+		cp(tyfile, install_dir);
 	}
-	foreach(exe_file in files(dir(TYSILA), "*.exe"))
+	foreach(gmfile in files(dir(GENMISSING)))
 	{
-		cp(exe_file, install_dir);
-	}
-	foreach(dll_file in files(dir(GENMISSING), "*.dll"))
-	{
-		cp(dll_file, install_dir);
-	}
-	foreach(exe_file in files(dir(GENMISSING), "*.exe"))
-	{
-		cp(exe_file, install_dir);
+		cp(gmfile, install_dir);
 	}
 	foreach(arch in ARCHS)
 	{

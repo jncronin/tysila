@@ -2,7 +2,8 @@
   "profiles": {
     "tysila4": {
       "commandName": "Project",
-      "commandLineArgs": "-i -LD:/coreclr -t x86_64 mscorlib.dll"
+      "commandLineArgs": "-L/coreclr -t x86_64 -o tysos.o d:/tysos/build_processes/bin/tysos.dll",
+      "workingDirectory": "d:/tysila"
     }
   }
 }
