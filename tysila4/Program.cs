@@ -199,6 +199,10 @@ namespace tysila4
             //search_dirs.Add(@"..\mono\corlib");
             al.RequireVersionMatch = require_metadata_version_match;
 
+            // add containing directory of input to search dirs
+            var ifi = new FileInfo(fname);
+            search_dirs.Add(ifi.DirectoryName);
+
             var m = al.GetAssembly(fname);
             if(m == null)
             {
