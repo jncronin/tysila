@@ -2,7 +2,7 @@
   "profiles": {
     "tysila4": {
       "commandName": "Project",
-      "commandLineArgs": "-L/coreclr -t x86_64 -o barebones.o d:/csbarebones/kernel.exe",
+      "commandLineArgs": "-L/coreclr -t x86 -o mscorlib_x86.o mscorlib.dll",
       "workingDirectory": "d:/tysila"
     }
   }

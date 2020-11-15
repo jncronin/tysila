@@ -925,13 +925,14 @@ namespace libtysila5.target.x86
                 // load up the address of the return value
 
                 var ret_to = to_locs[0];
-                if(!(ret_to is ContentsReg))
-                    r.Add(inst(t.psize == 4 ? x86_lea_r32 : x86_lea_r64, ret_to, act_dest, n));
-                else
+                if (ret_to is ContentsReg || (ret_to.type == rt_stack))
                 {
                     r.Add(inst(t.psize == 4 ? x86_lea_r32 : x86_lea_r64, r_eax, act_dest, n));
                     handle_move(ret_to, r_eax, r, n, c);
-
+                }
+                else
+                {
+                    r.Add(inst(t.psize == 4 ? x86_lea_r32 : x86_lea_r64, ret_to, act_dest, n));
                 }
 
                 to_do--;

@@ -1506,6 +1506,17 @@ namespace libtysila5.target.x86
             else if (rm.Equals(x86_64.x86_64_Assembler.r_xmm15))
                 return 7;
 
+            if(rm.type == rt_stack)
+            {
+                var rm_reg = new ContentsReg
+                {
+                    basereg = r_esp,
+                    disp = rm.stack_loc,
+                    size = rm.size
+                };
+                return GetRM(rm_reg);
+            }
+
             throw new NotSupportedException();
         }
 
