@@ -17,7 +17,7 @@ regs = [ Rstack(), Rcontents(),
 	MultiReg("eaxedx", [ eax, edx ]) ];
 x86_def.regs = regs;
 
-x86_64_def.regs = [ Rstack(), Rcontents(),
+x86_64_def.regs = [ 
 	Ralias("eip", "rip", 8),
 	Ralias("eax", "rax", 8),
 	Ralias("ebx", "rbx", 8),

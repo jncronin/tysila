@@ -1,7 +1,7 @@
 /* D:\tysila\libtysila5\ir\IrMappings.cs
  * This is an auto-generated file
  * DO NOT EDIT
- * It was generated at 14:04:12 on 02 February 2020
+ * It was generated at 13:45:14 on 15 November 2020
  * from libtysila5/ir/IrMappings.td
  * by TableMap (part of tysos: http://www.tysos.org)
  * Please edit the source file, rather than this file, to make any changes

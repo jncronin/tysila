@@ -1,7 +1,7 @@
 /* D:\tysila\libtysila5\target\Target.cs
  * This is an auto-generated file
  * DO NOT EDIT
- * It was generated at 14:03:30 on 02 February 2020
+ * It was generated at 13:45:15 on 15 November 2020
  * from libtysila5/target/Target.td
  * by TableMap (part of tysos: http://www.tysos.org)
  * Please edit the source file, rather than this file, to make any changes
@@ -461,13 +461,13 @@ namespace libtysila5.target.x86
 		public static System.Collections.Generic.Dictionary<int, int> cc_classmap_sysv = new System.Collections.Generic.Dictionary<int, int>(new libtysila5.GenericEqualityComparer<int>());
 		internal static void init_sysv()
 		{
-			cc_map_sysv[96] = new int[] { 25, };
-			cc_map_sysv[98] = new int[] { 25, };
-			cc_map_sysv[97] = new int[] { 25, };
-			cc_map_sysv[103] = new int[] { 25, };
-			cc_map_sysv[104] = new int[] { 25, };
-			cc_map_sysv[105] = new int[] { 25, };
-			cc_map_sysv[102] = new int[] { 25, };
+			cc_map_sysv[96] = new int[] { 4, };
+			cc_map_sysv[98] = new int[] { 4, };
+			cc_map_sysv[97] = new int[] { 4, };
+			cc_map_sysv[103] = new int[] { 4, };
+			cc_map_sysv[104] = new int[] { 4, };
+			cc_map_sysv[105] = new int[] { 4, };
+			cc_map_sysv[102] = new int[] { 4, };
 		}
 		
 		internal const ulong sysv_caller_preserves = 1664;
@@ -596,13 +596,13 @@ namespace libtysila5.target.x86_64
 			cc_classmap_sysv[103] = 202;
 			cc_classmap_sysv[104] = 202;
 			cc_classmap_sysv[102] = 203;
-			cc_map_sysv[202] = new int[] { 11, 12, 10, 9, 27, 28, 25, };
-			cc_map_sysv[203] = new int[] { 16, 17, 18, 19, 20, 21, 22, 23, 25, };
-			cc_map_sysv[201] = new int[] { 25, };
+			cc_map_sysv[202] = new int[] { 11, 12, 10, 9, 25, 26, 4, };
+			cc_map_sysv[203] = new int[] { 16, 17, 18, 19, 20, 21, 22, 23, 4, };
+			cc_map_sysv[201] = new int[] { 4, };
 		}
 		
-		internal const ulong sysv_caller_preserves = 8763763269248;
-		internal const ulong sysv_callee_preserves = 32212254976;
+		internal const ulong sysv_caller_preserves = 2190953356928;
+		internal const ulong sysv_callee_preserves = 8053063936;
 	}
 }
 
@@ -644,7 +644,7 @@ namespace libtysila5.target.x86_64
 		}
 		
 		internal const ulong isr_caller_preserves = 0;
-		internal const ulong isr_callee_preserves = 8795975524224;
+		internal const ulong isr_callee_preserves = 2199006420864;
 	}
 }
 
@@ -680,7 +680,7 @@ namespace libtysila5.target.x86_64
 		}
 		
 		internal const ulong isrec_caller_preserves = 0;
-		internal const ulong isrec_callee_preserves = 8795975524224;
+		internal const ulong isrec_callee_preserves = 2199006420864;
 	}
 }
 
@@ -1045,12 +1045,8 @@ namespace libtysila5.target
 			var x86_64 = new libtysila5.target.x86_64.x86_64_Assembler();
 			x86_64.name = "x86_64";
 			x86_64.ptype = ir.Opcode.ct_int64;
-			libtysila5.target.x86_64.x86_64_Assembler.registers = new Target.Reg[44];
+			libtysila5.target.x86_64.x86_64_Assembler.registers = new Target.Reg[42];
 			x86_64.regs = libtysila5.target.x86_64.x86_64_Assembler.registers;
-			x86_64.regs[25] = new Target.Reg { name = "stack", id = 25, type = 2, size = 0, mask = 33554432 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_stack = x86_64.regs[25];
-			x86_64.regs[26] = new Target.Reg { name = "contents", id = 26, type = 3, size = 0, mask = 67108864 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_contents = x86_64.regs[26];
 			x86_64.regs[6] = new Target.Reg { name = "rip", id = 6, type = 0, size = 8, mask = 64 };
 			libtysila5.target.x86_64.x86_64_Assembler.r_rip = x86_64.regs[6];
 			x86_64.regs[7] = new Target.Reg { name = "rax", id = 7, type = 0, size = 8, mask = 128 };
@@ -1065,22 +1061,22 @@ namespace libtysila5.target
 			libtysila5.target.x86_64.x86_64_Assembler.r_rsi = x86_64.regs[12];
 			x86_64.regs[11] = new Target.Reg { name = "rdi", id = 11, type = 0, size = 8, mask = 2048 };
 			libtysila5.target.x86_64.x86_64_Assembler.r_rdi = x86_64.regs[11];
-			x86_64.regs[27] = new Target.Reg { name = "r8", id = 27, type = 0, size = 8, mask = 134217728 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_r8 = x86_64.regs[27];
-			x86_64.regs[28] = new Target.Reg { name = "r9", id = 28, type = 0, size = 8, mask = 268435456 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_r9 = x86_64.regs[28];
-			x86_64.regs[29] = new Target.Reg { name = "r10", id = 29, type = 0, size = 8, mask = 536870912 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_r10 = x86_64.regs[29];
-			x86_64.regs[30] = new Target.Reg { name = "r11", id = 30, type = 0, size = 8, mask = 1073741824 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_r11 = x86_64.regs[30];
-			x86_64.regs[31] = new Target.Reg { name = "r12", id = 31, type = 0, size = 8, mask = 2147483648 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_r12 = x86_64.regs[31];
-			x86_64.regs[32] = new Target.Reg { name = "r13", id = 32, type = 0, size = 8, mask = 4294967296 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_r13 = x86_64.regs[32];
-			x86_64.regs[33] = new Target.Reg { name = "r14", id = 33, type = 0, size = 8, mask = 8589934592 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_r14 = x86_64.regs[33];
-			x86_64.regs[34] = new Target.Reg { name = "r15", id = 34, type = 0, size = 8, mask = 17179869184 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_r15 = x86_64.regs[34];
+			x86_64.regs[25] = new Target.Reg { name = "r8", id = 25, type = 0, size = 8, mask = 33554432 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_r8 = x86_64.regs[25];
+			x86_64.regs[26] = new Target.Reg { name = "r9", id = 26, type = 0, size = 8, mask = 67108864 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_r9 = x86_64.regs[26];
+			x86_64.regs[27] = new Target.Reg { name = "r10", id = 27, type = 0, size = 8, mask = 134217728 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_r10 = x86_64.regs[27];
+			x86_64.regs[28] = new Target.Reg { name = "r11", id = 28, type = 0, size = 8, mask = 268435456 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_r11 = x86_64.regs[28];
+			x86_64.regs[29] = new Target.Reg { name = "r12", id = 29, type = 0, size = 8, mask = 536870912 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_r12 = x86_64.regs[29];
+			x86_64.regs[30] = new Target.Reg { name = "r13", id = 30, type = 0, size = 8, mask = 1073741824 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_r13 = x86_64.regs[30];
+			x86_64.regs[31] = new Target.Reg { name = "r14", id = 31, type = 0, size = 8, mask = 2147483648 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_r14 = x86_64.regs[31];
+			x86_64.regs[32] = new Target.Reg { name = "r15", id = 32, type = 0, size = 8, mask = 4294967296 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_r15 = x86_64.regs[32];
 			x86_64.regs[16] = new Target.Reg { name = "xmm0", id = 16, type = 1, size = 8, mask = 65536 };
 			libtysila5.target.x86_64.x86_64_Assembler.r_xmm0 = x86_64.regs[16];
 			x86_64.regs[17] = new Target.Reg { name = "xmm1", id = 17, type = 1, size = 8, mask = 131072 };
@@ -1097,24 +1093,24 @@ namespace libtysila5.target
 			libtysila5.target.x86_64.x86_64_Assembler.r_xmm6 = x86_64.regs[22];
 			x86_64.regs[23] = new Target.Reg { name = "xmm7", id = 23, type = 1, size = 8, mask = 8388608 };
 			libtysila5.target.x86_64.x86_64_Assembler.r_xmm7 = x86_64.regs[23];
-			x86_64.regs[35] = new Target.Reg { name = "xmm8", id = 35, type = 1, size = 8, mask = 34359738368 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_xmm8 = x86_64.regs[35];
-			x86_64.regs[36] = new Target.Reg { name = "xmm9", id = 36, type = 1, size = 8, mask = 68719476736 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_xmm9 = x86_64.regs[36];
-			x86_64.regs[37] = new Target.Reg { name = "xmm10", id = 37, type = 1, size = 8, mask = 137438953472 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_xmm10 = x86_64.regs[37];
-			x86_64.regs[38] = new Target.Reg { name = "xmm11", id = 38, type = 1, size = 8, mask = 274877906944 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_xmm11 = x86_64.regs[38];
-			x86_64.regs[39] = new Target.Reg { name = "xmm12", id = 39, type = 1, size = 8, mask = 549755813888 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_xmm12 = x86_64.regs[39];
-			x86_64.regs[40] = new Target.Reg { name = "xmm13", id = 40, type = 1, size = 8, mask = 1099511627776 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_xmm13 = x86_64.regs[40];
-			x86_64.regs[41] = new Target.Reg { name = "xmm14", id = 41, type = 1, size = 8, mask = 2199023255552 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_xmm14 = x86_64.regs[41];
-			x86_64.regs[42] = new Target.Reg { name = "xmm15", id = 42, type = 1, size = 8, mask = 4398046511104 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_xmm15 = x86_64.regs[42];
-			x86_64.regs[43] = new Target.Reg { name = "raxrdx", id = 43, type = 4, size = 8, mask = 1152 };
-			libtysila5.target.x86_64.x86_64_Assembler.r_raxrdx = x86_64.regs[43];
+			x86_64.regs[33] = new Target.Reg { name = "xmm8", id = 33, type = 1, size = 8, mask = 8589934592 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_xmm8 = x86_64.regs[33];
+			x86_64.regs[34] = new Target.Reg { name = "xmm9", id = 34, type = 1, size = 8, mask = 17179869184 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_xmm9 = x86_64.regs[34];
+			x86_64.regs[35] = new Target.Reg { name = "xmm10", id = 35, type = 1, size = 8, mask = 34359738368 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_xmm10 = x86_64.regs[35];
+			x86_64.regs[36] = new Target.Reg { name = "xmm11", id = 36, type = 1, size = 8, mask = 68719476736 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_xmm11 = x86_64.regs[36];
+			x86_64.regs[37] = new Target.Reg { name = "xmm12", id = 37, type = 1, size = 8, mask = 137438953472 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_xmm12 = x86_64.regs[37];
+			x86_64.regs[38] = new Target.Reg { name = "xmm13", id = 38, type = 1, size = 8, mask = 274877906944 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_xmm13 = x86_64.regs[38];
+			x86_64.regs[39] = new Target.Reg { name = "xmm14", id = 39, type = 1, size = 8, mask = 549755813888 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_xmm14 = x86_64.regs[39];
+			x86_64.regs[40] = new Target.Reg { name = "xmm15", id = 40, type = 1, size = 8, mask = 1099511627776 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_xmm15 = x86_64.regs[40];
+			x86_64.regs[41] = new Target.Reg { name = "raxrdx", id = 41, type = 4, size = 8, mask = 1152 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_raxrdx = x86_64.regs[41];
 			targets["x86_64"] = x86_64;
 			libtysila5.target.arm.arm_Assembler.init_eabi();
 			libtysila5.target.arm.arm_Assembler.init_ret_eabi();
@@ -1361,8 +1357,6 @@ namespace libtysila5.target.x86_64
 	public partial class x86_64_Assembler
 	{
 		public static Target.Reg[] registers;
-		public static Target.Reg r_stack;
-		public static Target.Reg r_contents;
 		public static Target.Reg r_rip;
 		public static Target.Reg r_rax;
 		public static Target.Reg r_rbx;
@@ -1410,9 +1404,9 @@ namespace libtysila5.target.x86_64
 		{
 			init_ccs();
 			init_options();
-			ct_regs[96] = 34225527552;
-			ct_regs[97] = 34225527552;
-			ct_regs[102] = 8761741541376;
+			ct_regs[96] = 8556387072;
+			ct_regs[97] = 8556387072;
+			ct_regs[102] = 2190441578496;
 			ct_regs[98] = ct_regs[97];
 			ct_regs[103] = ct_regs[97];
 			ct_regs[104] = ct_regs[97];
