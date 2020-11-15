@@ -2,7 +2,7 @@
   "profiles": {
     "tysila4": {
       "commandName": "Project",
-      "commandLineArgs": "-L/coreclr -t x86_64 -o tysos.o d:/tysos/build_processes/bin/tysos.dll",
+      "commandLineArgs": "-L/coreclr -t x86_64 -o barebones.o d:/csbarebones/kernel.exe",
       "workingDirectory": "d:/tysila"
     }
   }

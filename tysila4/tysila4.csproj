@@ -7,8 +7,12 @@
     <Product>tysila4</Product>
     <Copyright>Copyright ©  2016</Copyright>
     <OutputPath>bin\$(Configuration)\</OutputPath>
+    <Configurations>Debug;Release;BareBones</Configurations>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='BareBones|AnyCPU'">
     <DebugType>full</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -95,7 +99,7 @@
     <ProjectReference Include="..\libsupcs\libsupcs.csproj" />
     <ProjectReference Include="..\libtysila5\libtysila5.csproj" />
     <ProjectReference Include="..\metadata\metadata.csproj" />
-    <ProjectReference Include="readline\readline.csproj" />
+    <ProjectReference Include="..\readline\readline.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="dftest.cs" />

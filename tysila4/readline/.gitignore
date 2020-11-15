@@ -1,7 +1,0 @@
-[Bb]in/
-[Oo]bj/
-.vscode
-.DS_Store
-*.user
-project.lock.json
-.vs/
