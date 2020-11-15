@@ -305,6 +305,15 @@ namespace libtysila5.target.x86
                     }
                     else if (src.type == rt_float)
                         r.Add(inst(x86_movsd_xmmm64_xmm, dest, src, n));
+                    else if(src.type == rt_multi)
+                    {
+                        for(int i = 0; i < dest.size; i+= c.t.psize)
+                        {
+                            var sa = src.SubReg(i, c.t.psize, c.t);
+                            var da = dest.SubReg(i, c.t.psize, c.t);
+                            handle_move(da, sa, r, n, c, temp_reg);
+                        }
+                    }
                     else
                         throw new NotImplementedException();
                 }
@@ -2593,7 +2602,12 @@ namespace libtysila5.target.x86
 
                 var actdreg = dreg;
                 if (dreg is ContentsReg)
-                    dreg = r_edx;
+                {
+                    if (actdreg.size == 8 && t.psize == 4)
+                        dreg = r_eaxedx;
+                    else
+                        dreg = r_edx;
+                }
 
                 if(to_type == 0x18)
                 {
@@ -2649,13 +2663,21 @@ namespace libtysila5.target.x86
                         {
                             if (t.psize == 4)
                             {
-                                DoubleReg dr = dreg as DoubleReg;
-                                if (!(dr.a.Equals(sreg)))
+                                if (dreg.type != rt_multi)
+                                    throw new NotSupportedException();
+
+                                List<Reg> set_regs = new List<Reg>();
+                                for(int i = 0; i < 63; i++)
                                 {
-                                    handle_move(dr.a, sreg, r, n, c);
+                                    if ((dreg.mask & (1UL << i)) != 0UL)
+                                        set_regs.Add(t.regs[i]);
                                 }
-                                handle_move(dr.b, sreg, r, n, c);
-                                r.Add(inst(x86_sar_rm32_imm8, dr.b, 31, n));
+                                if (!(set_regs[0].Equals(sreg)))
+                                {
+                                    handle_move(set_regs[0], sreg, r, n, c);
+                                }
+                                handle_move(set_regs[1], sreg, r, n, c);
+                                r.Add(inst(x86_sar_rm32_imm8, set_regs[1], 31, n));
                             }
                             else
                             {

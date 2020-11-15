@@ -245,7 +245,7 @@ namespace libtysila5.target
                 return b.Equals(dr.b);
             }
 
-            public override Reg SubReg(int sroffset, int srsize)
+            public override Reg SubReg(int sroffset, int srsize, Target t = null)
             {
                 if (sroffset == 0)
                     return a;
@@ -286,7 +286,7 @@ namespace libtysila5.target
                 return disp == cr.disp;
             }
 
-            public override Reg SubReg(int sroffset, int srsize)
+            public override Reg SubReg(int sroffset, int srsize, Target t = null)
             {
                 if (sroffset + srsize > size)
                     throw new NotSupportedException();
@@ -324,8 +324,29 @@ namespace libtysila5.target
             public ulong mask;
             public int stack_loc;
 
-            public virtual Reg SubReg(int sroffset, int srsize)
+            public virtual Reg SubReg(int sroffset, int srsize, Target t = null)
             {
+                if(type == rt_multi)
+                {
+                    List<Reg> comps = new List<Reg>();
+                    for(int i = 0; i < 64; i++)
+                    {
+                        if((mask & (1UL << i)) != 0UL)
+                        {
+                            comps.Add(t.regs[i]);
+                        }
+                    }
+
+                    int cur_pos = 0;
+                    foreach(var r in comps)
+                    {
+                        if(cur_pos == sroffset)
+                        {
+                            return r;
+                        }
+                        cur_pos += r.size;
+                    }
+                }
                 throw new NotSupportedException();
             }
 
