@@ -114,7 +114,7 @@ namespace libtysila5.target.x86
             }
         }
 
-        private static void handle_stind(Reg val, Reg addr, int disp, int vt_size, List<MCInst> r, CilNode.IRNode n, bool is_tls = false)
+        private static void handle_stind(Reg val, Reg addr, int disp, int vt_size, List<MCInst> r, CilNode.IRNode n, Code c, bool is_tls = false)
         {
             if (is_tls)
                 throw new NotImplementedException();
@@ -130,6 +130,11 @@ namespace libtysila5.target.x86
             {
                 val = r_edx;
                 r.Add(inst(x86_mov_r32_rm32, val, act_val, n));
+            }
+
+            if((addr.Equals(r_esi) || addr.Equals(r_edi)) && n.vt_size == 1 && c.t.psize == 4)
+            {
+                throw new NotImplementedException();
             }
 
             switch (vt_size)
@@ -2772,7 +2777,7 @@ namespace libtysila5.target.x86
                     case 0x19:
                         if (!srca.Equals(dreg))
                         {
-                            handle_move(dreg, sreg, r, n, c);
+                            handle_move(dreg, sreg.SubReg(0, 4, c.t), r, n, c);
                         }
                         // nop - ignore high 32 bits
                         else
@@ -2941,6 +2946,20 @@ namespace libtysila5.target.x86
                     val = r_edx;
                 }
 
+                if(n.vt_size == 1 && c.t.psize == 4)        // r8 and r/m8 can only be al/bl/cl/dl on x86_32
+                {
+                    if (addr.Equals(r_edi) || addr.Equals(r_esi))
+                    {
+                        handle_move(r_eax, addr, r, n, c);
+                        addr = r_eax;
+                    }
+                    if (val.Equals(r_edi) || val.Equals(r_esi))
+                    {
+                        handle_move(r_edx, val, r, n, c);
+                        val = r_edx;
+                    }
+                }
+
                 switch (n.vt_size)
                 {
                     case 1:
@@ -2972,6 +2991,14 @@ namespace libtysila5.target.x86
                 {
                     r.Add(inst(x86_mov_r64_rm64, r_edx, val, n));
                     val = r_edx;
+                }
+
+                if (n.vt_size == 1 && c.t.psize == 4)
+                {
+                    if (addr.Equals(r_edi) || addr.Equals(r_esi))
+                        throw new NotImplementedException();
+                    if (val.Equals(r_edi) || addr.Equals(r_esi))
+                        throw new NotImplementedException();
                 }
 
                 switch (n.vt_size)
@@ -3007,8 +3034,8 @@ namespace libtysila5.target.x86
                     addr = r_eax;
                 }
 
-                handle_stind(dra, addr, 0, 4, r, n, is_tls);
-                handle_stind(drb, addr, 4, 4, r, n, is_tls);
+                handle_stind(dra, addr, 0, 4, r, n, c, is_tls);
+                handle_stind(drb, addr, 4, 4, r, n, c, is_tls);
                 return r;
             }
             else if (n_ct2 == ir.Opcode.ct_vt)
