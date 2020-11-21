@@ -252,82 +252,53 @@ namespace libtysila5.target.x86
             }
             else if (src is ContentsReg)
             {
-                if (dest is DoubleReg)
+                if (dest.type == rt_gpr)
                 {
-                    if (src.size != 8)
-                        throw new Exception("invalid contentsreg size");
-
-                    var drd = dest as DoubleReg;
-                    var crs = src as ContentsReg;
-                    var crsa = new ContentsReg { basereg = crs.basereg, disp = crs.disp, size = 4 };
-                    var crsb = new ContentsReg { basereg = crs.basereg, disp = crs.disp + 4, size = 4 };
-                    handle_move(drd.a, crsa, r, n, c, temp_reg);
-                    handle_move(drd.b, crsb, r, n, c, temp_reg);
-                }
-                else
-                {
-                    if (dest.type == rt_gpr)
-                    {
-                        if (src.size == 4 || size == 4)
-                            r.Add(inst(x86_mov_r32_rm32, dest, src, n));
-                        else if (c.t.psize == 8)
-                            r.Add(inst(x86_mov_r64_rm64, dest, src, n));
-                        else
-                            throw new NotImplementedException();
-                    }
-                    else if (dest.type == rt_float)
-                        r.Add(inst(x86_movsd_xmm_xmmm64, dest, src, n));
+                    if (src.size == 4 || size == 4)
+                        r.Add(inst(x86_mov_r32_rm32, dest, src, n));
+                    else if (c.t.psize == 8)
+                        r.Add(inst(x86_mov_r64_rm64, dest, src, n));
                     else
                         throw new NotImplementedException();
                 }
+                else if (dest.type == rt_float)
+                    r.Add(inst(x86_movsd_xmm_xmmm64, dest, src, n));
+                else
+                    throw new NotImplementedException();
             }
             else
             {
-                if (src is DoubleReg)
+                if (src.type == rt_gpr)
                 {
-                    if (dest.size != 8)
-                        throw new Exception("invalid contentsreg size");
-
-                    var drs = src as DoubleReg;
-                    var da = dest.SubReg(0, 4);
-                    var db = dest.SubReg(4, 4);
-                    handle_move(da, drs.a, r, n, c, temp_reg);
-                    handle_move(db, drs.b, r, n, c, temp_reg);
+                    if (c.t.psize == 4)
+                        r.Add(inst(x86_mov_rm32_r32, dest, src, n));
+                    else
+                        r.Add(inst(x86_mov_rm64_r64, dest, src, n));
                 }
-                else
+                else if (src.type == rt_float)
                 {
-                    if (src.type == rt_gpr)
+                    if (src.Equals(r_st0))
                     {
-                        if (c.t.psize == 4)
-                            r.Add(inst(x86_mov_rm32_r32, dest, src, n));
-                        else
-                            r.Add(inst(x86_mov_rm64_r64, dest, src, n));
-                    }
-                    else if (src.type == rt_float)
-                    {
-                        if (src.Equals(r_st0))
-                        {
-                            // Need to copy via the stack
-                            r.Add(inst(x86_fstp_m64, new ContentsReg { basereg = r_esp, disp = -8, size = 8 }, n));
-                            r.Add(inst(x86_movsd_xmm_xmmm64, dest, new ContentsReg { basereg = r_esp, disp = -8, size = 8 }, n));
-                        }
-                        else
-                        {
-                            r.Add(inst(x86_movsd_xmmm64_xmm, dest, src, n));
-                        }
-                    }
-                    else if (src.type == rt_multi)
-                    {
-                        for (int i = 0; i < dest.size; i += c.t.psize)
-                        {
-                            var sa = src.SubReg(i, c.t.psize, c.t);
-                            var da = dest.SubReg(i, c.t.psize, c.t);
-                            handle_move(da, sa, r, n, c, temp_reg);
-                        }
+                        // Need to copy via the stack
+                        r.Add(inst(x86_fstp_m64, new ContentsReg { basereg = r_esp, disp = -8, size = 8 }, n));
+                        r.Add(inst(x86_movsd_xmm_xmmm64, dest, new ContentsReg { basereg = r_esp, disp = -8, size = 8 }, n));
                     }
                     else
-                        throw new NotImplementedException();
+                    {
+                        r.Add(inst(x86_movsd_xmmm64_xmm, dest, src, n));
+                    }
                 }
+                else if (src.type == rt_multi)
+                {
+                    for (int i = 0; i < dest.size; i += c.t.psize)
+                    {
+                        var sa = src.SubReg(i, c.t.psize, c.t);
+                        var da = dest.SubReg(i, c.t.psize, c.t);
+                        handle_move(da, sa, r, n, c, temp_reg);
+                    }
+                }
+                else
+                    throw new NotImplementedException();
             }
         }
 
@@ -584,9 +555,10 @@ namespace libtysila5.target.x86
                     case ir.Opcode.ct_int64:
                         if (t.psize == 4)
                         {
-                            var dr = reg as DoubleReg;
-                            r.Add(inst(x86_mov_r32_rm32, r_eax, dr.a, n));
-                            r.Add(inst(x86_mov_r32_rm32, r_edx, dr.b, n));
+                            var dra = reg.SubReg(0, 4, c.t);
+                            var drb = reg.SubReg(4, 4, c.t);
+                            r.Add(inst(x86_mov_r32_rm32, r_eax, dra, n));
+                            r.Add(inst(x86_mov_r32_rm32, r_edx, drb, n));
                         }
                         else
                             r.Add(inst(x86_mov_r64_rm64, r_eax, reg, n));
@@ -1220,9 +1192,10 @@ namespace libtysila5.target.x86
                 {
                     if (t.psize == 4)
                     {
-                        var drd = dest as DoubleReg;
-                        r.Add(inst(x86_mov_rm32_r32, drd.a, r_eax, n));
-                        r.Add(inst(x86_mov_rm32_r32, drd.b, r_edx, n));
+                        var drda = dest.SubReg(0, 4, c.t);
+                        var drdb = dest.SubReg(4, 4, c.t);
+                        r.Add(inst(x86_mov_rm32_r32, drda, r_eax, n));
+                        r.Add(inst(x86_mov_rm32_r32, drdb, r_edx, n));
                     }
                     else
                     {
@@ -1258,12 +1231,6 @@ namespace libtysila5.target.x86
                         cr, r, n, c);
                 }
                 push_length += util.util.align(cr.size, c.t.psize);
-            }
-            else if (reg is DoubleReg)
-            {
-                var dr = reg as DoubleReg;
-                handle_push(dr.b, ref push_length, r, n, c);
-                handle_push(dr.a, ref push_length, r, n, c);
             }
             else
             {
@@ -1301,12 +1268,6 @@ namespace libtysila5.target.x86
                         r.Add(inst(c.t.psize == 4 ? x86_add_rm32_imm32 : x86_add_rm64_imm32, r_esp, psize, n));
                 }
                 pop_length += 4;
-            }
-            else if (reg is DoubleReg)
-            {
-                var dr = reg as DoubleReg;
-                handle_pop(dr.b, ref pop_length, r, n, c);
-                handle_pop(dr.a, ref pop_length, r, n, c);
             }
             else
             {
@@ -1517,11 +1478,14 @@ namespace libtysila5.target.x86
                     }
                     else
                     {
-                        var dra = srca as DoubleReg;
-                        var drb = srcb as DoubleReg;
-                        var drd = dest as DoubleReg;
-                        handle_sub(t, dra.a, drb.a, drd.a, r, n);
-                        handle_sub(t, dra.b, drb.b, drd.b, r, n, true);
+                        var draa = srca.SubReg(0, 4, c.t);
+                        var drab = srca.SubReg(4, 4, c.t);
+                        var drba = srcb.SubReg(0, 4, c.t);
+                        var drbb = srcb.SubReg(4, 4, c.t);
+                        var drda = dest.SubReg(0, 4, c.t);
+                        var drdb = dest.SubReg(4, 4, c.t);
+                        handle_sub(t, draa, drba, drda, r, n);
+                        handle_sub(t, drab, drbb, drdb, r, n, true);
                         return r;
                     }
 
@@ -1720,11 +1684,14 @@ namespace libtysila5.target.x86
                     }
                     else
                     {
-                        var dra = srca as DoubleReg;
-                        var drb = srcb as DoubleReg;
-                        var drd = dest as DoubleReg;
-                        handle_and(dra.a, drb.a, drd.a, r, n);
-                        handle_and(dra.b, drb.b, drd.b, r, n);
+                        var draa = srca.SubReg(0, 4, c.t);
+                        var drab = srca.SubReg(4, 4, c.t);
+                        var drba = srcb.SubReg(0, 4, c.t);
+                        var drbb = srcb.SubReg(4, 4, c.t);
+                        var drda = dest.SubReg(0, 4, c.t);
+                        var drdb = dest.SubReg(4, 4, c.t);
+                        handle_and(draa, drba, drda, r, n);
+                        handle_and(drab, drbb, drdb, r, n);
                         return r;
                     }
             }
@@ -1758,11 +1725,14 @@ namespace libtysila5.target.x86
                     }
                     else
                     {
-                        var dra = srca as DoubleReg;
-                        var drb = srcb as DoubleReg;
-                        var drd = dest as DoubleReg;
-                        handle_or(dra.a, drb.a, drd.a, r, n);
-                        handle_or(dra.b, drb.b, drd.b, r, n);
+                        var draa = srca.SubReg(0, 4, c.t);
+                        var drab = srca.SubReg(4, 4, c.t);
+                        var drba = srcb.SubReg(0, 4, c.t);
+                        var drbb = srcb.SubReg(4, 4, c.t);
+                        var drda = dest.SubReg(0, 4, c.t);
+                        var drdb = dest.SubReg(4, 4, c.t);
+                        handle_or(draa, drba, drda, r, n);
+                        handle_or(drab, drbb, drdb, r, n);
                         return r;
                     }
             }
@@ -1796,11 +1766,14 @@ namespace libtysila5.target.x86
                     }
                     else
                     {
-                        var dra = srca as DoubleReg;
-                        var drb = srcb as DoubleReg;
-                        var drd = dest as DoubleReg;
-                        handle_xor(dra.a, drb.a, drd.a, r, n);
-                        handle_xor(dra.b, drb.b, drd.b, r, n);
+                        var draa = srca.SubReg(0, 4, c.t);
+                        var drab = srca.SubReg(4, 4, c.t);
+                        var drba = srcb.SubReg(0, 4, c.t);
+                        var drbb = srcb.SubReg(4, 4, c.t);
+                        var drda = dest.SubReg(0, 4, c.t);
+                        var drdb = dest.SubReg(4, 4, c.t);
+                        handle_xor(draa, drba, drda, r, n);
+                        handle_xor(drab, drbb, drdb, r, n);
                         return r;
                     }
             }
@@ -2415,8 +2388,13 @@ namespace libtysila5.target.x86
             {
                 if (t.psize == 4)
                 {
-                    var srca = n.stack_before.Peek(n.arg_a).reg as DoubleReg;
-                    var srcb = n.stack_before.Peek(n.arg_b).reg as DoubleReg;
+                    var srca = n.stack_before.Peek(n.arg_a).reg;
+                    var srcb = n.stack_before.Peek(n.arg_b).reg;
+
+                    var srcaa = srca.SubReg(0, 4, c.t);
+                    var srcab = srca.SubReg(4, 4, c.t);
+                    var srcba = srcb.SubReg(0, 4, c.t);
+                    var srcbb = srcb.SubReg(4, 4, c.t);
 
                     List<MCInst> r = new List<MCInst>();
 
@@ -2426,8 +2404,8 @@ namespace libtysila5.target.x86
                     // the following is untested
                     var other_cc = ir.Opcode.cc_invert_map[cc];
                     var neq_path = c.next_mclabel--;
-                    handle_brifi32(srca.b, srcb.b, other_cc, neq_path, r, n);
-                    handle_brifi32(srca.a, srcb.a, cc, target, r, n);
+                    handle_brifi32(srcab, srcbb, other_cc, neq_path, r, n);
+                    handle_brifi32(srcaa, srcba, cc, target, r, n);
                     r.Add(inst(Generic.g_mclabel, new ir.Param { t = ir.Opcode.vl_br_target, v = neq_path }, n));
 
                     return r;
@@ -2705,14 +2683,13 @@ namespace libtysila5.target.x86
                         // conv to u8
                         if(t.psize == 4)
                         {
-                            DoubleReg dr = dreg as DoubleReg;
                             var dra = dreg.SubReg(0, 4, c.t);
                             var drb = dreg.SubReg(4, 4, c.t);
-                            if (!(dr.a.Equals(sreg)))
+                            if (!(dra.Equals(sreg)))
                             {
-                                handle_move(dr.a, sreg, r, n, c);
+                                handle_move(dra, sreg, r, n, c);
                             }
-                            r.Add(inst(x86_mov_rm32_imm32, dr.b, new ir.Param { t = ir.Opcode.vl_c, v = 0 }, n));
+                            r.Add(inst(x86_mov_rm32_imm32, drb, new ir.Param { t = ir.Opcode.vl_c, v = 0 }, n));
                         }
                         else
                         {
@@ -3017,11 +2994,11 @@ namespace libtysila5.target.x86
 
                 return r;
             }
-            else if ((n_ct2 == ir.Opcode.ct_int64 || 
-                (n_ct2 == ir.Opcode.ct_vt && val is DoubleReg)) &&
+            else if (n_ct2 == ir.Opcode.ct_int64 &&
                 t.psize == 4)
             {
-                var dr = val as DoubleReg;
+                var dra = val.SubReg(0, 4, c.t);
+                var drb = val.SubReg(4, 4, c.t);
 
                 List<MCInst> r = new List<MCInst>();
                 if (addr is ContentsReg)
@@ -3030,8 +3007,8 @@ namespace libtysila5.target.x86
                     addr = r_eax;
                 }
 
-                handle_stind(dr.a, addr, 0, 4, r, n, is_tls);
-                handle_stind(dr.b, addr, 4, 4, r, n, is_tls);
+                handle_stind(dra, addr, 0, 4, r, n, is_tls);
+                handle_stind(drb, addr, 4, 4, r, n, is_tls);
                 return r;
             }
             else if (n_ct2 == ir.Opcode.ct_vt)
@@ -3118,12 +3095,12 @@ namespace libtysila5.target.x86
 
                 return r;
             }
-            else if ((n_ct == ir.Opcode.ct_int64 && t.psize == 4) ||
-                (n_ct == ir.Opcode.ct_vt && val is DoubleReg))
+            else if (n_ct == ir.Opcode.ct_int64 && t.psize == 4)
             {
                 List<MCInst> r = new List<MCInst>();
 
-                var dr = val as DoubleReg;
+                var dra = val.SubReg(0, 4, c.t);
+                var drb = val.SubReg(4, 4, c.t);
 
                 /* Do this here so its only done once.  We don't need the [esi]/[edi]
                  * check as the vt_size is guaranteed to be 4.  However, the address
@@ -3132,14 +3109,14 @@ namespace libtysila5.target.x86
                  * so that this is less likely (e.g. stack goes from
                  * ..., esi to ..., esi, edi thus assigning first to edi won't
                  * cause a problem */
-                if (addr is ContentsReg || addr.Equals(dr.b))
+                if (addr is ContentsReg || addr.Equals(drb))
                 {
                     r.Add(inst(x86_mov_r32_rm32, r_eax, addr, n));
                     addr = r_eax;
                 }
 
-                handle_ldind(dr.b, addr, 4, 4, r, n, t, is_tls);
-                handle_ldind(dr.a, addr, 0, 4, r, n, t, is_tls);
+                handle_ldind(drb, addr, 4, 4, r, n, t, is_tls);
+                handle_ldind(dra, addr, 0, 4, r, n, t, is_tls);
 
                 return r;
             }

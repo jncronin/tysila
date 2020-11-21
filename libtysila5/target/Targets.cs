@@ -216,46 +216,6 @@ namespace libtysila5.target
             }
         }
 
-        public class DoubleReg : Reg, IEquatable<Reg>
-        {
-            public Reg a, b;
-
-            public DoubleReg(Reg _a, Reg _b)
-            {
-                type = rt_multi;
-                a = _a;
-                b = _b;
-                size = a.size + b.size;
-
-                mask = a.mask | b.mask;
-            }
-
-            public override string ToString()
-            {
-                return a.ToString() + ":" + b.ToString();
-            }
-
-            public override bool Equals(Reg other)
-            {
-                var dr = other as DoubleReg;
-                if (dr == null)
-                    return false;
-                if (a.Equals(dr.a) == false)
-                    return false;
-                return b.Equals(dr.b);
-            }
-
-            public override Reg SubReg(int sroffset, int srsize, Target t = null)
-            {
-                if (sroffset == 0)
-                    return a;
-                else if (sroffset == a.size)
-                    return b;
-                else
-                    throw new NotSupportedException();
-            }
-        }
-
         public class ContentsReg : Reg, IEquatable<Reg>
         {
             public Reg basereg;

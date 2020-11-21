@@ -491,7 +491,7 @@ namespace libtysila5.ir
                     stack_after = new Stack<StackItem>(stack_before);
                     var brtf_ct = get_brtf_type(n.opcode, stack_before.Peek().ct);
                     stack_after.Push(new StackItem { ts = ir.Opcode.GetTypeFromCT(brtf_ct, c.ms.m), min_l = 0, max_l = 0, min_ul = 0, max_ul = 0 });
-                    n.irnodes.Add(new CilNode.IRNode { parent = n, opcode = Opcode.oc_ldc, ctret = brtf_ct, imm_l = 0, imm_ul = 0, stack_before = stack_before, stack_after = stack_after });
+                    n.irnodes.Add(new CilNode.IRNode { parent = n, opcode = Opcode.oc_ldc, ctret = brtf_ct, imm_l = 0, imm_ul = 0, imm_val = new byte[8], stack_before = stack_before, stack_after = stack_after });
 
                     switch(n.opcode.opcode1)
                     {
