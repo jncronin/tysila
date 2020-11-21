@@ -1,7 +1,7 @@
 /* D:\tysila\libtysila5\ir\IrOpcodes.cs
  * This is an auto-generated file
  * DO NOT EDIT
- * It was generated at 13:45:15 on 15 November 2020
+ * It was generated at 18:23:18 on 21 November 2020
  * from libtysila5/ir/IrOpcodes.td
  * by TableMap (part of tysos: http://www.tysos.org)
  * Please edit the source file, rather than this file, to make any changes

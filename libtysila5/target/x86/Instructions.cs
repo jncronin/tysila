@@ -304,10 +304,21 @@ namespace libtysila5.target.x86
                             r.Add(inst(x86_mov_rm64_r64, dest, src, n));
                     }
                     else if (src.type == rt_float)
-                        r.Add(inst(x86_movsd_xmmm64_xmm, dest, src, n));
-                    else if(src.type == rt_multi)
                     {
-                        for(int i = 0; i < dest.size; i+= c.t.psize)
+                        if (src.Equals(r_st0))
+                        {
+                            // Need to copy via the stack
+                            r.Add(inst(x86_fstp_m64, new ContentsReg { basereg = r_esp, disp = -8, size = 8 }, n));
+                            r.Add(inst(x86_movsd_xmm_xmmm64, dest, new ContentsReg { basereg = r_esp, disp = -8, size = 8 }, n));
+                        }
+                        else
+                        {
+                            r.Add(inst(x86_movsd_xmmm64_xmm, dest, src, n));
+                        }
+                    }
+                    else if (src.type == rt_multi)
+                    {
+                        for (int i = 0; i < dest.size; i += c.t.psize)
                         {
                             var sa = src.SubReg(i, c.t.psize, c.t);
                             var da = dest.SubReg(i, c.t.psize, c.t);
@@ -1186,10 +1197,15 @@ namespace libtysila5.target.x86
             if (rt != null && rct != ir.Opcode.ct_vt && rct != ir.Opcode.ct_unknown)
             {
                 var rt_size = c.t.GetSize(rt);
+                var retccmap = c.t.retcc_map["ret_" + call_ms.CallingConvention];
+
                 if (rct == ir.Opcode.ct_float)
                 {
                     if (t.psize == 4)
-                        throw new NotImplementedException(); // move from st0 to dest
+                    {
+                        var from = t.regs[retccmap[rct][0]];
+                        handle_move(dest, from, r, n, c);
+                    }
                     else
                     {
                         if (!dest.Equals(r_xmm0))
@@ -2690,6 +2706,8 @@ namespace libtysila5.target.x86
                         if(t.psize == 4)
                         {
                             DoubleReg dr = dreg as DoubleReg;
+                            var dra = dreg.SubReg(0, 4, c.t);
+                            var drb = dreg.SubReg(4, 4, c.t);
                             if (!(dr.a.Equals(sreg)))
                             {
                                 handle_move(dr.a, sreg, r, n, c);

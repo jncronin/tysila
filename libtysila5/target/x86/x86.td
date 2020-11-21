@@ -145,6 +145,9 @@ x86_instrs = [
 	"pushf", "popf", "cli",
 	"nop",
 
+	"fstp_m64",
+	"fld_m64",
+
 	"movsd_xmm_xmmm64",
 	"movsd_xmm_xmmm64disp",
 	"movsd_xmmm64_xmm",
@@ -292,6 +295,21 @@ eaxreg | ecxreg | edxreg,			// caller preserves
 ebxreg | esireg | edireg			// callee preserves
 );
 
+cc_sysv_xmm = cc(nspace, assembler, "sysv_xmm",
+[
+	[ ct_int32, [ stack ] ],
+	[ ct_intptr, [ stack ] ],
+	[ ct_int64, [ stack ] ],
+	[ ct_object, [ stack ] ],
+	[ ct_ref, [ stack ] ],
+	[ ct_vt, [ stack ] ],
+	[ ct_float, [ stack ] ],
+],
+eaxreg | ecxreg | edxreg,			// caller preserves
+ebxreg | esireg | edireg			// callee preserves
+);
+
+
 cc_ret_sysv = cc(nspace, assembler, "ret_sysv",
 [
 	[ ct_int32, [ eax ] ],
@@ -304,11 +322,25 @@ cc_ret_sysv = cc(nspace, assembler, "ret_sysv",
 	[ ct_float, [ st0 ] ],
 ]);
 
+cc_ret_sysv_xmm = cc(nspace, assembler, "ret_sysv_xmm",
+[
+	[ ct_int32, [ eax ] ],
+	[ ct_intptr, [ eax ] ],
+	[ ct_object, [ eax ] ],
+	[ ct_ref, [ eax ] ],
+
+	[ ct_int64, [ eaxedx ] ],
+
+	[ ct_float, [ xmm0 ] ],
+]);
+
 x86_def.cc = cc_map(nspace, assembler, [
-	[ "sysv", cc_sysv ]
+	[ "sysv", cc_sysv ],
+	[ "sysv_xmm", cc_sysv_xmm ]
 ]);
 x86_def.retcc = retcc_map(nspace, assembler, [
-	[ "ret_sysv", cc_ret_sysv ]
+	[ "ret_sysv", cc_ret_sysv ],
+	[ "ret_sysv_xmm", cc_ret_sysv_xmm ]
 ]);
 
 

@@ -1114,6 +1114,11 @@ namespace libtysila5.target.x86
                         Code.Add(0xfa);
                         break;
 
+                    case x86_fstp_m64:
+                        Code.Add(0xdd);
+                        Code.AddRange(ModRMSIB(3, I.p[1].mreg));
+                        break;
+
                     default:
                         throw new NotImplementedException(insts[(int)I.p[0].v]);
                 }
