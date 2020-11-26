@@ -102,4 +102,5 @@ cd ~/src/tysila
 mkdir -p tysila4/bin/Release
 dotnet build -c Release libsupcs
 cp tysila4/bin/Release/netcoreapp2.0/libsupcs.dll tysila4/bin/Release/netcoreapp2.0/metadata.dll tysila4/bin/Release
-tymake "TYSILA=\"/usr/local/tysila/tysila4\";GENMISSING=\"/usr/local/tysila/genmissing\";MSCORLIB=\"/usr/local/coreclr/mscorlib.dll\";INSTALL_DIR=\"/usr/local/tysila\";" libsupcs.tmk
+tymake "TYSILA=\"/usr/local/tysila/tysila4\";GENMISSING=\"/usr/local/tysila/genmissing\";MSCORLIB=\"/usr/local/coreclr/mscorlib.dll\";INSTALL_DIR=\"/usr/local/libsupcs\";" libsupcs.tmk
+export PATH="/usr/local/libsupcs:$PATH"
