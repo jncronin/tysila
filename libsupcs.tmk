@@ -14,6 +14,8 @@ TYSILA ?= dir(THIS) + "/tysila4/bin/tysila4" + EXEC_SUFFIX;
 GENMISSING ?= dir(THIS) + "/genmissing/bin/genmissing" + EXEC_SUFFIX;
 MSBUILD = "msbuild";
 
+// Where to put the finished build
+INSTALL_DIR ?= "none";
 
 rulefor(TYSILA, [ ], [ ], function()
 {
@@ -114,20 +116,29 @@ foreach(arch in ARCHS)
 	buildarch(arch);
 }
 
-if(input("Install tysila?", [ "y", "n" ]) == "y")
+if(INSTALL_DIR != "none")
 {
-	install_dir = input("Install directory", "bin");
-	mkdir(install_dir);
+	INSTALL = "y";
+}
+INSTALL ?= input("Install tysila?", [ "y", "n" ]);
+
+if(INSTALL == "y")
+{
+	if(INSTALL_DIR == "none")
+	{
+		INSTALL_DIR = input("Install directory", "bin");
+	}
+	autodir(INSTALL_DIR);
 	foreach(tyfile in files(dir(TYSILA)))
 	{
-		cp(tyfile, install_dir);
+		cp(tyfile, INSTALL_DIR);
 	}
 	foreach(gmfile in files(dir(GENMISSING)))
 	{
-		cp(gmfile, install_dir);
+		cp(gmfile, INSTALL_DIR);
 	}
 	foreach(arch in ARCHS)
 	{
-		cp("libsupcs.$arch.a", install_dir);
+		cp("libsupcs.$arch.a", INSTALL_DIR);
 	}
 }
