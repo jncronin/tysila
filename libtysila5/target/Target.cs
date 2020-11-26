@@ -1,7 +1,7 @@
 /* D:\tysila\libtysila5\target\Target.cs
  * This is an auto-generated file
  * DO NOT EDIT
- * It was generated at 18:23:18 on 21 November 2020
+ * It was generated at 17:21:03 on 26 November 2020
  * from libtysila5/target/Target.td
  * by TableMap (part of tysos: http://www.tysos.org)
  * Please edit the source file, rather than this file, to make any changes
@@ -1102,6 +1102,10 @@ namespace libtysila5.target
 			x86_64.ptype = ir.Opcode.ct_int64;
 			libtysila5.target.x86_64.x86_64_Assembler.registers = new Target.Reg[42];
 			x86_64.regs = libtysila5.target.x86_64.x86_64_Assembler.registers;
+			x86_64.regs[4] = new Target.Reg { name = "stack", id = 4, type = 2, size = 0, mask = 16 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_stack = x86_64.regs[4];
+			x86_64.regs[5] = new Target.Reg { name = "contents", id = 5, type = 3, size = 0, mask = 32 };
+			libtysila5.target.x86_64.x86_64_Assembler.r_contents = x86_64.regs[5];
 			x86_64.regs[6] = new Target.Reg { name = "rip", id = 6, type = 0, size = 8, mask = 64 };
 			libtysila5.target.x86_64.x86_64_Assembler.r_rip = x86_64.regs[6];
 			x86_64.regs[7] = new Target.Reg { name = "rax", id = 7, type = 0, size = 8, mask = 128 };
@@ -1412,6 +1416,8 @@ namespace libtysila5.target.x86_64
 	public partial class x86_64_Assembler
 	{
 		public static Target.Reg[] registers;
+		public static Target.Reg r_stack;
+		public static Target.Reg r_contents;
 		public static Target.Reg r_rip;
 		public static Target.Reg r_rax;
 		public static Target.Reg r_rbx;

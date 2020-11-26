@@ -8,7 +8,11 @@ x86_64_def = target_init("x86_64", 8, 0);
 nspace_64 = x86_64_def.nspace;
 
 next_reg_id = 0;
-regs = [ Rstack(), Rcontents(),
+
+rstack_reg = Rstack();
+rcontents_reg = Rcontents();
+
+regs = [ rstack_reg, rcontents_reg,
 	Ri32("eip"), Ri32("eax"), Ri32("ebx"), Ri32("ecx"),
 	Ri32("edx"), Ri32("edi"), Ri32("esi"), Ri32("esp"),
 	Ri32("ebp"), Rf64("st0"),
@@ -18,6 +22,7 @@ regs = [ Rstack(), Rcontents(),
 x86_def.regs = regs;
 
 x86_64_def.regs = [ 
+	rstack_reg, rcontents_reg,
 	Ralias("eip", "rip", 8),
 	Ralias("eax", "rax", 8),
 	Ralias("ebx", "rbx", 8),

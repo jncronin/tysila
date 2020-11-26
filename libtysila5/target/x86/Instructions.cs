@@ -285,8 +285,18 @@ namespace libtysila5.target.x86
                     if (src.Equals(r_st0))
                     {
                         // Need to copy via the stack
-                        r.Add(inst(x86_fstp_m64, new ContentsReg { basereg = r_esp, disp = -8, size = 8 }, n));
-                        r.Add(inst(x86_movsd_xmm_xmmm64, dest, new ContentsReg { basereg = r_esp, disp = -8, size = 8 }, n));
+                        r.Add(inst(c.t.psize == 4 ? x86_sub_rm32_imm8 : x86_sub_rm64_imm8, r_esp, 8, n));
+                        r.Add(inst(x86_fstp_m64, new ContentsReg { basereg = r_esp, disp = 0, size = 8 }, n));
+                        r.Add(inst(x86_movsd_xmm_xmmm64, dest, new ContentsReg { basereg = r_esp, disp = 0, size = 8 }, n));
+                        r.Add(inst(c.t.psize == 4 ? x86_add_rm32_imm8 : x86_add_rm64_imm8, r_esp, 8, n));
+                    }
+                    else if(dest.Equals(r_st0))
+                    {
+                        // Need to copy via the stack
+                        r.Add(inst(c.t.psize == 4 ? x86_sub_rm32_imm8 : x86_sub_rm64_imm8, r_esp, 8, n));
+                        r.Add(inst(x86_movsd_xmmm64_xmm, new ContentsReg { basereg = r_esp, disp = 0, size = 8 }, src, n));
+                        r.Add(inst(x86_fld_m64, new ContentsReg { basereg = r_esp, disp = 0, size = 8 }, n));
+                        r.Add(inst(c.t.psize == 4 ? x86_add_rm32_imm8 : x86_add_rm64_imm8, r_esp, 8, n));
                     }
                     else
                     {
@@ -484,11 +494,16 @@ namespace libtysila5.target.x86
         }
 
         private static void handle_ldind(Reg val, Reg addr, int disp, int vt_size,
-            List<MCInst> r, CilNode.IRNode n, Target t, bool is_tls = false)
+            List<MCInst> r, CilNode.IRNode n, Target t, Code c, bool is_tls = false)
         {
             if (addr is ContentsReg)
             {
                 r.Add(inst(t.psize == 4 ? x86_mov_r32_rm32 : x86_mov_r64_rm64, r_eax, addr, n));
+                addr = r_eax;
+            }
+            else if(vt_size == 1 && t.psize == 4 && (addr.Equals(r_edi) || addr.Equals(r_esi)))
+            {
+                handle_move(r_eax, addr, r, n, c);
                 addr = r_eax;
             }
 
@@ -498,6 +513,11 @@ namespace libtysila5.target.x86
             {
                 val = r_edx;
             }
+            else if (vt_size == 1 && t.psize == 4 && (val.Equals(r_edi) || val.Equals(r_esi)))
+            {
+                val = r_edx;
+            }
+
 
             switch (vt_size)
             {
@@ -582,13 +602,10 @@ namespace libtysila5.target.x86
                         break;
 
                     case ir.Opcode.ct_float:
-                        if(t.psize == 4)
-                        {
-                            // move to st0
-                            throw new NotImplementedException();
-                        }
-                        else
-                            handle_move(r_xmm0, reg, r, n, c);
+                        var retccmap = c.t.retcc_map["ret_" + c.ms.CallingConvention];
+                        var retreg = t.regs[retccmap[n.ct][0]];
+                        handle_move(retreg, reg, r, n, c);
+
                         break;
 
                     default:
@@ -3118,7 +3135,7 @@ namespace libtysila5.target.x86
                 (n_ct == ir.Opcode.ct_int64 && t.psize == 8))
             {
                 List<MCInst> r = new List<MCInst>();
-                handle_ldind(val, addr, 0, n.vt_size, r, n, t, is_tls);
+                handle_ldind(val, addr, 0, n.vt_size, r, n, t, c, is_tls);
 
                 return r;
             }
@@ -3142,8 +3159,8 @@ namespace libtysila5.target.x86
                     addr = r_eax;
                 }
 
-                handle_ldind(drb, addr, 4, 4, r, n, t, is_tls);
-                handle_ldind(dra, addr, 0, 4, r, n, t, is_tls);
+                handle_ldind(drb, addr, 4, 4, r, n, t, c, is_tls);
+                handle_ldind(dra, addr, 0, 4, r, n, t, c, is_tls);
 
                 return r;
             }
@@ -3357,7 +3374,21 @@ namespace libtysila5.target.x86
                     return null;
             }
 
+            var act_dest = dest;
+            if (tsize == 1 && t.psize == 4 && (dest.Equals(r_esi) || dest.Equals(r_edi)))
+            {
+                handle_move(r_eax, dest, r, n, c);
+                dest = r_eax;
+            }
+            if (tsize == 1 && t.psize == 4 && (index.Equals(r_esi) || index.Equals(r_edi)))
+            {
+                handle_move(r_edx, index, r, n, c);
+                index = r_edx;
+            }
+
             r.Add(inst(oc, dest, dest, index, tsize, 0, n));
+
+            handle_move(act_dest, dest, r, n, c);
 
             return r;
         }
@@ -3474,6 +3505,18 @@ namespace libtysila5.target.x86
             }
 
             List<MCInst> r = new List<MCInst>();
+
+            if(size == 1 && t.psize == 4 && (val.Equals(r_esi) || val.Equals(r_edi)))
+            {
+                handle_move(r_eax, val, r, n, c);
+                val = r_eax;
+            }
+            if(size == 1 && t.psize == 4 && (obj.Equals(r_esi) || obj.Equals(r_edi)))
+            {
+                handle_move(r_edx, obj, r, n, c);
+                obj = r_edx;
+            }
+                
             r.Add(inst(oc, val, obj, disp, n));
 
             return r;
@@ -3612,6 +3655,17 @@ namespace libtysila5.target.x86
                     break;
                 default:
                     return null;
+            }
+
+            if (size == 1 && t.psize == 4 && (val.Equals(r_esi) || val.Equals(r_edi)))
+            {
+                handle_move(r_eax, val, r, n, c);
+                val = r_eax;
+            }
+            if (size == 1 && t.psize == 4 && (obj.Equals(r_esi) || obj.Equals(r_edi)))
+            {
+                handle_move(r_edx, obj, r, n, c);
+                obj = r_edx;
             }
 
             r.Add(inst(oc, obj, disp, val, n));
