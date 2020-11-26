@@ -8,7 +8,7 @@ DEBIAN_FRONTEND='noninteractive' apt-get update
 DEBIAN_FRONTEND='noninteractive' apt-get install -y \
   curl nasm build-essential bison flex libgmp3-dev \
   libmpc-dev libmpfr-dev texinfo yasm libunwind8 libunwind-dev \
-  unzip
+  unzip mono-mcs
 
 # download and extract sources
 mkdir ~/src && cd ~/src
@@ -100,6 +100,7 @@ export PATH="/usr/local/coreclr:$PATH"
 # build libsupcs
 cd ~/src/tysila
 mkdir -p tysila4/bin/Release
+mkdir -p /usr/local/libsupcs
 dotnet build -c Release libsupcs
 cp tysila4/bin/Release/netcoreapp2.0/libsupcs.dll tysila4/bin/Release/netcoreapp2.0/metadata.dll tysila4/bin/Release
 tymake "TYSILA=\"/usr/local/tysila/tysila4\";GENMISSING=\"/usr/local/tysila/genmissing\";MSCORLIB=\"/usr/local/coreclr/mscorlib.dll\";INSTALL_DIR=\"/usr/local/libsupcs\";" libsupcs.tmk
