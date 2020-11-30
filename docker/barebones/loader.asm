@@ -1,4 +1,7 @@
 global sthrow
+global throw
+global gcmalloc
+global __cxa_pure_virtual
  
 extern kmain
  
@@ -14,7 +17,10 @@ align 4
 dd MAGIC
 dd FLAGS
 dd CHECKSUM
- 
+
+gcmalloc:
+throw:
 sthrow:
+__cxa_pure_virtual:
     hlt
     jmp sthrow

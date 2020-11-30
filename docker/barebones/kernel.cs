@@ -12,6 +12,8 @@ namespace BareBones
  
             // Say hi
             Print("Hello World!");
+
+            while(true);
         }
  
         static void Print(string s)
