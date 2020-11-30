@@ -11,6 +11,7 @@ DEBIAN_FRONTEND='noninteractive' apt-get install -y \
   unzip mono-mcs
 
 # download and extract sources
+rm -rf ~/src
 mkdir ~/src && cd ~/src
 curl -s https://ftp.gnu.org/gnu/binutils/binutils-2.30.tar.gz \
   --output binutils-2.30.tar.gz > /dev/null
@@ -105,3 +106,11 @@ dotnet build -c Release libsupcs
 cp tysila4/bin/Release/netcoreapp2.0/libsupcs.dll tysila4/bin/Release/netcoreapp2.0/metadata.dll tysila4/bin/Release
 tymake "TYSILA=\"/usr/local/tysila/tysila4\";GENMISSING=\"/usr/local/tysila/genmissing\";MSCORLIB=\"/usr/local/coreclr/mscorlib.dll\";INSTALL_DIR=\"/usr/local/libsupcs\";" libsupcs.tmk
 export PATH="/usr/local/libsupcs:$PATH"
+
+# compile mscorlib
+tysila4 -o /app/mscorlib.x86_64.o -t x86_64 /usr/local/coreclr/mscorlib.dll
+
+# bring all together into /app
+cp /usr/local/libsupcs/libsupcs.x86_64.a /app
+
+
