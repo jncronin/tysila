@@ -1,6 +1,6 @@
 // Build tysila and use it to build libsupcs
 
-ARCHS ?= [ "x86_64" ];
+ARCHS ?= [ "x86_64", "x86" ];
 CFLAGS ?= "-O2";
 
 EXEC_SUFFIX = "";
