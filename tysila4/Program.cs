@@ -55,6 +55,7 @@ namespace tysila4
 
         static bool func_sects = false;
         static bool data_sects = false;
+        static bool class_sects = false;
 
         public static string DirectoryDelimiter
         {
@@ -370,6 +371,11 @@ namespace tysila4
                             tsect = get_decorated_section(bf, bf.GetTextSection(), "." + ms.ms.MangleMethod());
                             datasect = get_decorated_section(bf, bf.GetDataSection(), "." + ms.ms.MangleMethod() + "_SignatureTable");
                         }
+                        else if(class_sects && !ms.ms.AlwaysCompile)
+                        {
+                            tsect = get_decorated_section(bf, bf.GetTextSection(), "." + ms.ms.type.MangleType());
+                            datasect = get_decorated_section(bf, bf.GetDataSection(), "." + ms.ms.type.MangleType() + "_SignatureTable");
+                        }
 
                         libtysila5.libtysila.AssembleMethod(ms.ms,
                             bf, t, debug, m, ms.c, tsect, datasect);
@@ -383,6 +389,10 @@ namespace tysila4
                         ISection tsect = null;
                         if (data_sects && !sf.AlwaysCompile)
                             tsect = get_decorated_section(bf, bf.GetDataSection(), "." + sf.MangleType() + "S");
+                        else if (class_sects && !sf.AlwaysCompile)
+                        {
+                            tsect = get_decorated_section(bf, bf.GetDataSection(), "." + sf.MangleType() + "S");
+                        }
 
                         libtysila5.layout.Layout.OutputStaticFields(sf,
                             t, bf, m, tsect, tlsos);
@@ -396,6 +406,10 @@ namespace tysila4
                         ISection tsect = null;
                         if (func_sects && !eh.ms.AlwaysCompile)
                             tsect = get_decorated_section(bf, bf.GetRDataSection(), "." + eh.ms.MangleMethod() + "EH");
+                        else if (class_sects && !eh.ms.AlwaysCompile)
+                        {
+                            tsect = get_decorated_section(bf, bf.GetRDataSection(), "." + eh.ms.type.MangleType() + "EH");
+                        }
 
                         libtysila5.layout.Layout.OutputEHdr(eh,
                             t, bf, m, tsect);
@@ -411,6 +425,11 @@ namespace tysila4
                         if (data_sects && !vt.AlwaysCompile)
                         {
                             tsect = get_decorated_section(bf, bf.GetRDataSection(), "." + vt.MangleType());
+                            data_sect = get_decorated_section(bf, bf.GetDataSection(), "." + vt.MangleType() + "_SignatureTable");
+                        }
+                        else if (class_sects && !vt.AlwaysCompile)
+                        {
+                            tsect = get_decorated_section(bf, bf.GetTextSection(), "." + vt.MangleType());
                             data_sect = get_decorated_section(bf, bf.GetDataSection(), "." + vt.MangleType() + "_SignatureTable");
                         }
 
@@ -431,8 +450,12 @@ namespace tysila4
                         var bm = t.r.BoxedMethodRequestor.GetNext();
 
                         ISection tsect = null;
-                        if (data_sects && !bm.ms.AlwaysCompile)
+                        if (func_sects && !bm.ms.AlwaysCompile)
                             tsect = get_decorated_section(bf, bf.GetTextSection(), "." + bm.ms.MangleMethod());
+                        else if (class_sects && !bm.ms.AlwaysCompile)
+                        {
+                            tsect = get_decorated_section(bf, bf.GetTextSection(), "." + bm.ms.type.MangleType());
+                        }
 
                         libtysila5.libtysila.AssembleBoxedMethod(bm.ms,
                             bf, t, debug, tsect);
@@ -528,8 +551,7 @@ namespace tysila4
             var sect = bf.FindSection(decorated_name);
             if(sect == null)
             {
-                sect = bf.CopySectionType(section);
-                sect.Name = decorated_name;
+                sect = bf.CopySectionType(section, decorated_name);
             }
             return sect;
         }
@@ -540,6 +562,8 @@ namespace tysila4
                 func_sects = true;
             else if (go.Optarg == "data-sections")
                 data_sects = true;
+            else if (go.Optarg == "class-sections")
+                class_sects = true;
             else
                 throw new NotImplementedException();
         }

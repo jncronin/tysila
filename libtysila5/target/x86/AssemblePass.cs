@@ -1172,6 +1172,13 @@ namespace libtysila5.target.x86
                 tls_flag = 0;
                 return new byte[] { 0x64 };
             }
+            else
+            {
+                // use %gs for TLS
+                tls_flag = 0;
+                return new byte[] { 0x65 };
+            }
+
             throw new NotImplementedException();
         }
 
