@@ -90,6 +90,7 @@ x86_instrs = [
 	"cmp_rm8_imm8",
 	"lock_cmpxchg_rm8_r8",
 	"lock_cmpxchg_rm32_r32",
+	"lock_cmpxchg8b_m64",
 	"pause",
 	"set_rm32",
 	"movsxbd", 	"movsxwd", 	"movzxbd", 	"movzxwd",

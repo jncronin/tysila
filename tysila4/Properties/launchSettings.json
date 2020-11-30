@@ -2,7 +2,7 @@
   "profiles": {
     "tysila4": {
       "commandName": "Project",
-      "commandLineArgs": "-L/coreclr -t x86 -t x86_64 -o docker/libsupcs.o docker/libsupcs.dll",
+      "commandLineArgs": "-L/coreclr -t x86 -o docker/mscorlib.x86.o /coreclr/mscorlib.dll",
       "workingDirectory": "d:/tysila"
     }
   }

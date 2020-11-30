@@ -268,6 +268,15 @@ namespace libtysila5.target.x86
                 }
                 else if (dest.type == rt_float)
                     r.Add(inst(x86_movsd_xmm_xmmm64, dest, src, n));
+                else if (dest.type == rt_multi)
+                {
+                    for (int i = 0; i < src.size; i += c.t.psize)
+                    {
+                        var sa = src.SubReg(i, c.t.psize, c.t);
+                        var da = dest.SubReg(i, c.t.psize, c.t);
+                        handle_move(da, sa, r, n, c, temp_reg);
+                    }
+                }
                 else
                     throw new NotImplementedException();
             }
@@ -2763,6 +2772,12 @@ namespace libtysila5.target.x86
                 if (dreg is ContentsReg)
                     dreg = r_edx;
 
+                if((to_type == 0x04 || to_type == 0x05) && t.psize == 4)
+                {
+                    if (sreg.Equals(r_esi) || sreg.Equals(r_edi))
+                        throw new NotImplementedException();
+                }
+
                 switch (to_type)
                 {
                     case 0x04:
@@ -2774,6 +2789,8 @@ namespace libtysila5.target.x86
                         break;
                     case 0x05:
                         // u1
+                        if (dreg.Equals(r_edi) || dreg.Equals(r_esi))
+                            dreg = r_edx;
                         if (!srca.Equals(dreg))
                             handle_move(dreg, srca, r, n, c);
                         r.Add(inst(x86_movzxbd, dreg, dreg, n));
@@ -4112,6 +4129,9 @@ namespace libtysila5.target.x86
 
             bool is_tls = ir.Opcode.IsTLSCT(n.stack_before.Peek(n.arg_a).ct);
 
+            if (size == 8 && t.psize == 4)
+                throw new NotImplementedException();
+
             if ((ptr is ContentsReg) && (newval is ContentsReg))
             {
                 // we need another spare register for this
@@ -4179,6 +4199,13 @@ namespace libtysila5.target.x86
             var issigned = n.imm_ul == 0 ? false : true;
 
 
+            var ptr = n.stack_before.Peek(n.arg_c).reg;
+            var oldval = n.stack_before.Peek(n.arg_b).reg;
+            var newval = n.stack_before.Peek(n.arg_a).reg;
+            var dest = n.stack_after.Peek(n.res_a).reg;
+
+            bool is_tls = ir.Opcode.IsTLSCT(n.stack_before.Peek(n.arg_c).ct);
+
             int oc = 0;
             int oc2 = 0;
             switch(size)
@@ -4195,6 +4222,9 @@ namespace libtysila5.target.x86
                     oc2 = 0;
                     break;
                 case 8:
+                    if (t.psize == 4)
+                        return handle_syncvalcompareandswap_8b(t, r, n, c, issigned, is_tls,
+                            ptr, oldval, newval, dest);
                     oc = x86_lock_cmpxchg_rm64_r64;
                     oc2 = 0;
                     break;
@@ -4202,12 +4232,6 @@ namespace libtysila5.target.x86
                     throw new NotImplementedException();
             }
 
-            var ptr = n.stack_before.Peek(n.arg_c).reg;
-            var oldval = n.stack_before.Peek(n.arg_b).reg;
-            var newval = n.stack_before.Peek(n.arg_a).reg;
-            var dest = n.stack_after.Peek(n.res_a).reg;
-
-            bool is_tls = ir.Opcode.IsTLSCT(n.stack_before.Peek(n.arg_c).ct);
 
             // lock cmpxchg takes the old value in rax,
             //  ptr in first argument and new val in second
@@ -4243,6 +4267,29 @@ namespace libtysila5.target.x86
                 r.Add(inst(oc2, dest, r_eax, n));
             else
                 handle_move(dest, r_eax, r, n, c);            
+
+            return r;
+        }
+
+        private static List<MCInst> handle_syncvalcompareandswap_8b(Target t, List<MCInst> r, CilNode.IRNode n, Code c, bool issigned, bool is_tls, Reg ptr, Reg oldval, Reg newval, Reg dest)
+        {
+            /* we need to use cmpxchg8b here
+             * This assumes oldval is in eaxedx and newval is in ecxebx
+             * dest will be returned in eaxedx
+             */
+
+            handle_move(r_eaxedx, oldval, r, n, c);
+            r.Add(inst(x86_push_r32, r_ebx, n));
+            r.Add(inst(x86_push_r32, r_ecx, n));
+            r.Add(inst(x86_mov_r32_rm32, r_ebx, newval.SubReg(0, 4, t), n));
+            r.Add(inst(x86_mov_r32_rm32, r_ecx, newval.SubReg(4, 4, t), n));
+
+            r.Add(inst(x86_lock_cmpxchg8b_m64, ptr, n, is_tls));
+
+            r.Add(inst(x86_pop_r32, r_ecx, n));
+            r.Add(inst(x86_pop_r32, r_ebx, n));
+
+            handle_move(dest, r_eaxedx, r, n, c);
 
             return r;
         }
