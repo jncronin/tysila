@@ -199,6 +199,16 @@ namespace libtysila5.target.x86
                 throw new NotImplementedException();
             if (dest.Equals(src))
                 return;
+
+            if(src.type == rt_stack)
+            {
+                src = new ContentsReg { basereg = r_esp, size = src.size, disp = src.stack_loc };
+            }
+            if(dest.type == rt_stack)
+            {
+                dest = new ContentsReg { basereg = r_esp, size = dest.size, disp = dest.stack_loc };
+            }
+
             if (src is ContentsReg && dest is ContentsReg)
             {
                 var crs = src as ContentsReg;
@@ -2770,7 +2780,16 @@ namespace libtysila5.target.x86
 
                 var actdreg = dreg;
                 if (dreg is ContentsReg)
-                    dreg = r_edx;
+                {
+                    if ((to_type == 0x0a || to_type == 0x0b) && t.psize == 4)
+                    {
+                        dreg = r_eaxedx;
+                    }
+                    else
+                    {
+                        dreg = r_edx;
+                    }
+                }                    
 
                 if((to_type == 0x04 || to_type == 0x05) && t.psize == 4)
                 {
@@ -4130,7 +4149,7 @@ namespace libtysila5.target.x86
             bool is_tls = ir.Opcode.IsTLSCT(n.stack_before.Peek(n.arg_a).ct);
 
             if (size == 8 && t.psize == 4)
-                throw new NotImplementedException();
+                return t.handle_external(t, nodes, start, count, c, "__sync_val_swap_8");
 
             if ((ptr is ContentsReg) && (newval is ContentsReg))
             {
