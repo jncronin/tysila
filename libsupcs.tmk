@@ -2,6 +2,7 @@
 
 ARCHS ?= [ "x86_64", "x86" ];
 CFLAGS ?= "-O2";
+TYSILAFLAGS ?= "-fclass-sections";
 
 EXEC_SUFFIX = "";
 if(PLATFORM == "win")
@@ -35,10 +36,16 @@ MSCORLIBDIR = dir(MSCORLIB);
 // How to build an architecture
 function buildarch(string arch)
 {
+	gccarch = arch;
+	if(gccarch == "x86")
+	{
+		gccarch = "i686";
+	}
+
 	// Required tools
-	XCC = find("$arch-elf-gcc", "cross compiler for $arch-elf", "");
-	XAR = find("$arch-elf-ar", "cross archiver for $arch-elf", "");
-	XRANLIB = find("$arch-elf-ranlib", "cross ranlib for $arch-elf", "");
+	XCC = find("$gccarch-elf-gcc", "cross compiler for $gccarch-elf", "");
+	XAR = find("$gccarch-elf-ar", "cross archiver for $gccarch-elf", "");
+	XRANLIB = find("$gccarch-elf-ranlib", "cross ranlib for $gccarch-elf", "");
 
 	// Rules
 	rulefor("%.$arch.o", [ "%.c" ], [ THIS, XCC ], function() {
@@ -51,11 +58,11 @@ function buildarch(string arch)
 
 	rulefor("%.$arch.obj", [ "%.exe" ], [ TYSILA, THIS ], function()
 	{
-		shellcmd("$TYSILA -o $_RULE_OUTPUT -D -d " + dir(_RULE_OUTPUT) + "/" + basefname(_RULE_OUTPUT) + ".txt -t $arch -q -L$MSCORLIBDIR $_RULE_INPUT");
+		shellcmd("$TYSILA -o $_RULE_OUTPUT $TYSILAFLAGS -D -d " + dir(_RULE_OUTPUT) + "/" + basefname(_RULE_OUTPUT) + ".txt -t $arch -q -L$MSCORLIBDIR $_RULE_INPUT");
 	});
 	rulefor("%.$arch.obj", [ "%.dll" ], [ TYSILA, THIS ], function()
 	{
-		shellcmd("$TYSILA -o $_RULE_OUTPUT -D -d " + dir(_RULE_OUTPUT) + "/" + basefname(_RULE_OUTPUT) + ".txt -t $arch -q -L$MSCORLIBDIR $_RULE_INPUT");
+		shellcmd("$TYSILA -o $_RULE_OUTPUT $TYSILAFLAGS -D -d " + dir(_RULE_OUTPUT) + "/" + basefname(_RULE_OUTPUT) + ".txt -t $arch -q -L$MSCORLIBDIR $_RULE_INPUT");
 	});
 	
 	// Compiler RT library from netlib/llvm
@@ -91,8 +98,21 @@ function buildarch(string arch)
 			ROOT + "/libsupcs/x86_64_Invoke.$arch.o",
 			ROOT + "/libsupcs/x86_64_Spinlock.$arch.o" ];
 	}
+	else if(arch == "x86")
+	{
+		YASM = find("yasm", "YASM-like assembler", "");
+		rulefor("%.$arch.o", [ "%.asm" ], [ THIS, YASM ], function() {
+			shellcmd("$YASM -o $_RULE_OUTPUT -felf $_RULE_INPUT");
+		});
+		
+		LIBSUPCS_CPU_OBJ = [ // TODO: ROOT + "/libsupcs/x86_cpu.$arch.o",
+			ROOT + "/libsupcs/x86_Invoke.$arch.o",
+			ROOT + "/libsupcs/x86_Spinlock.$arch.o" ];
+
+	}
 	else
 	{
+
 		error("Unsupported target: $arch");
 	}
 	
