@@ -11,13 +11,13 @@ Run 'msbuild' in the repository root
 
 For dotnet on linux/windows:
 
-dotnet publish -c Release -p:TargetLatestRuntimePatch=true -p:PublishDir=bin -r <RID>
+dotnet publish -c Release -p:TargetLatestRuntimePatch=true -p:PublishDir=bin/Release -r <RID>
 
 where RID is selected from
 https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
  (e.g. linux-x64 or win10-x64)
  
-Add the resultant 'publish' path for tysila4 (e.g. tysila4/bin) to PATH)
+Add the resultant 'publish' path for tysila4 (e.g. tysila4/bin/Release) to PATH)
 
 
 Usage
@@ -25,7 +25,7 @@ Usage
 
 tysila4 -t arch [-L repository_path] [-i] [-o output_file] input_file
 
-Currently, only arch=x86_64 is supported.
+Currently, only arch=x86_64 is fully supported, with limited support for x86 and experimental arm support.
 
 
 tysila expects mscorlib from coreclr (https://github.com/dotnet/coreclr) to
@@ -61,8 +61,8 @@ path_to_tymake/tymake.exe "libsupcs.tmk"
 and answer the prompts with the appropriate paths (alternatively add all
 executables to the PATH environment variable).
 
-This buils script expects tysila4 to be installed under ./tysila4/bin (default
-if the above dotnet publish command is used).  If not, please edit libsupcs.tmk
-appropriately to set the TYSILA and GENMISSING variables, or set them as
-environment variables prior to running.
+This buils script expects tysila4 to be installed under ./tysila4/bin/Release
+(default if the above dotnet publish command is used).  If not, please edit
+libsupcs.tmk appropriately to set the TYSILA and GENMISSING variables, or set
+them as environment variables prior to running.
 

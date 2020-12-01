@@ -11,8 +11,8 @@ if(PLATFORM == "win")
 }
 
 // How to build tysila
-TYSILA ?= dir(THIS) + "/tysila4/bin/tysila4" + EXEC_SUFFIX;
-GENMISSING ?= dir(THIS) + "/genmissing/bin/genmissing" + EXEC_SUFFIX;
+TYSILA ?= dir(THIS) + "/tysila4/bin/Release/tysila4" + EXEC_SUFFIX;
+GENMISSING ?= dir(THIS) + "/genmissing/bin/Release/genmissing" + EXEC_SUFFIX;
 MSBUILD = "msbuild";
 
 // Where to put the finished build
