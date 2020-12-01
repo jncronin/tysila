@@ -3595,6 +3595,12 @@ namespace libtysila5.target.x86
             if (size > t.psize)
                 return null;
 
+            var actobj = obj;
+            if((obj.Equals(r_edi) || obj.Equals(r_esi)) && t.psize == 4)
+            {
+                obj = r_eax;
+            }
+
             int oc = 0;
             switch (size)
             {
@@ -3616,6 +3622,8 @@ namespace libtysila5.target.x86
 
             List<MCInst> r = new List<MCInst>();
             r.Add(inst(oc, obj, disp, val, n));
+
+            handle_move(actobj, obj, r, n, c);
 
             return r;
         }
