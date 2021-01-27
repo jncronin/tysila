@@ -81,14 +81,20 @@ namespace libsupcs.x86_64
             if (rettype != null && rettype.IsValueType)
             {
                 // Get the size of the return type
-                var tsize = meth._ReturnType.GetClassSize();
+                var tsize = meth._ReturnType.GetClassSize() - ClassOperations.GetBoxedTypeDataOffset();     // GetClassSize always returns boxed size
+                
+                /* TODO: handle VTypes that don't fit in a register */
                 if(tsize > 8)
-                    throw new NotImplementedException("InternalInvoke: return type " + rettype.FullName + " not supported");
+                    throw new NotImplementedException("InternalInvoke: return type " + rettype.FullName + " ( " +
+                        CastOperations.ReinterpretAsUlong(rettype).ToString("X") + " (not supported (size " +
+                        tsize.ToString() + ")");
 
                 // Build a new boxed version of the type
                 var obj = (void**)MemoryOperations.GcMalloc(tsize + ClassOperations.GetBoxedTypeDataOffset());
                 *obj = meth._ReturnType._impl;
                 *(int*)((byte*)obj + ClassOperations.GetMutexLockOffset()) = 0;
+
+                System.Diagnostics.Debugger.Log(0, "libsupcs", "x86_64_invoke: returning boxed " + rettype.FullName + " of size " + tsize.ToString());
 
                 if (tsize > 4)
                     *(long*)((byte*)obj + ClassOperations.GetBoxedTypeDataOffset()) = (long)ret;
@@ -97,8 +103,17 @@ namespace libsupcs.x86_64
 
                 return obj;
             }
-            else
+            else if (rettype == null)
+            {
+                System.Diagnostics.Debugger.Log(0, "libsupcs", "x86_64_invoke: returning void");
                 return ret;
+            }
+            else
+            {
+                System.Diagnostics.Debugger.Log(0, "libsupcs", "x86_64_invoke: returning " + rettype.FullName + " (" +
+                    CastOperations.ReinterpretAsUlong(rettype).ToString("X") + ")");
+                return ret;
+            }
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
