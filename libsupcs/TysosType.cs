@@ -728,7 +728,8 @@ namespace libsupcs
         {
             unsafe
             {
-                void* extends = *(void**)((byte*)CastOperations.ReinterpretAsPointer(this) + ClassOperations.GetVtblExtendsVtblPtrOffset());
+                void* vtbl = *(void**)((byte*)CastOperations.ReinterpretAsPointer(this) + ClassOperations.GetSystemTypeImplOffset());
+                void* extends = *(void**)((byte*)vtbl + ClassOperations.GetVtblExtendsVtblPtrOffset());
 
                 if (extends == OtherOperations.GetStaticObjectAddress("_Zu1L") ||
                     extends == OtherOperations.GetStaticObjectAddress("_ZW6System4Enum"))
