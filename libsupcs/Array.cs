@@ -26,7 +26,7 @@ using System.Runtime.CompilerServices;
 
 namespace libsupcs
 {
-    class Array
+    public class Array
     {
         [MethodAlias("_ZW6System5Array_4Copy_Rv_P6V5ArrayiV5Arrayiib")]
         [WeakLinkage]
@@ -513,6 +513,44 @@ namespace libsupcs
                 /* Its a reference type, so just return the pointer */
                 return *(void**)sptr;                 
             }
+        }
+
+        /* Build an array of a particular type */
+        public static unsafe T[] CreateSZArray<T>(int nitems, void* data_addr)
+        {
+            TysosType arrtt = (TysosType)typeof(T[]);
+            TysosType elemtt = (TysosType)typeof(T);
+
+            int elemsize;
+            if (elemtt.IsValueType)
+            {
+                elemsize = elemtt.GetClassSize() - ClassOperations.GetBoxedTypeDataOffset();
+            }
+            else
+            {
+                elemsize = OtherOperations.GetPointerSize();
+            }
+
+            if (data_addr == null)
+                data_addr = MemoryOperations.GcMalloc(elemsize * nitems);
+
+            byte* ret = (byte*)MemoryOperations.GcMalloc(ArrayOperations.GetArrayClassSize() + 8);     // extra space for lobounds and length array
+
+            void* vtbl = *(void**)((byte*)CastOperations.ReinterpretAsPointer(arrtt) + ClassOperations.GetSystemTypeImplOffset());
+
+            *(void**)(ret + ClassOperations.GetVtblFieldOffset()) = vtbl;
+            *(ulong*)(ret + ClassOperations.GetMutexLockOffset()) = 0;
+
+            *(void**)(ret + ArrayOperations.GetElemTypeOffset()) = (byte*)CastOperations.ReinterpretAsPointer(elemtt) + ClassOperations.GetSystemTypeImplOffset();
+            *(int*)(ret + ArrayOperations.GetElemSizeOffset()) = elemsize;
+            *(void**)(ret + ArrayOperations.GetInnerArrayOffset()) = data_addr;
+            *(void**)(ret + ArrayOperations.GetLoboundsOffset()) =  ret + ArrayOperations.GetArrayClassSize();
+            *(void**)(ret + ArrayOperations.GetSizesOffset()) = ret + ArrayOperations.GetArrayClassSize() + 4;
+            *(int*)(ret + ArrayOperations.GetRankOffset()) = 1;
+            *(int*)(ret + ArrayOperations.GetArrayClassSize()) = 0; // lobounds[0]
+            *(int*)(ret + ArrayOperations.GetArrayClassSize() + 4) = nitems;    // sizes[0]
+
+            return (T[])CastOperations.ReinterpretAsObject(ret);
         }
     }
 }
