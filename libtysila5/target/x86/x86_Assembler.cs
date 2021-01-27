@@ -643,8 +643,21 @@ namespace libtysila5.target.x86_64
 
         protected internal override void AddExtraVTableFields(TypeSpec ts, IList<byte> d, ref ulong offset)
         {
+            // Unboxed versions here (all VTables refer to boxed types by definition as only these
+            //  have a vtbl, however for Invoke et al we want to unbox members of the object[] array)
+            if (ts.IsBoxed)
+                ts = ts.Unbox;
+
             // We add the SysV ABI calling convention class code here
-            var size = GetSize(ts);
+            int size;
+            if (ts.IsInterface || ts.IsGenericTemplate || ts.stype == TypeSpec.SpecialType.MPtr || ts.stype == TypeSpec.SpecialType.Ptr)
+            {
+                size = 0;
+            }
+            else
+            {
+                size = GetSize(ts);
+            }
 
             var cmap = cc_classmap["sysv"];
             var ct = GetCTFromTypeForCC(ts);
