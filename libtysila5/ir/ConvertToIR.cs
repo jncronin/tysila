@@ -252,6 +252,7 @@ namespace libtysila5.ir
             {
                 case cil.Opcode.SingleOpcodes.nop:
                     stack_after = stack_before;
+                    n.irnodes.Add(new CilNode.IRNode { parent = n, opcode = Opcode.oc_nop, stack_after = stack_after, stack_before = stack_before });
                     break;
 
                 case cil.Opcode.SingleOpcodes.ldc_i4_0:

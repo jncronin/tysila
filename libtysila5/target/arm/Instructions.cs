@@ -1012,6 +1012,14 @@ namespace libtysila5.target.arm
             throw new NotImplementedException();
         }
 
+        internal static List<MCInst> handle_nop(
+           Target t,
+           List<CilNode.IRNode> nodes,
+           int start, int count, Code c)
+        {
+            throw new NotImplementedException();
+        }
+
         internal static List<MCInst> handle_or(
            Target t,
            List<CilNode.IRNode> nodes,

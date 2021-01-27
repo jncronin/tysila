@@ -1869,6 +1869,17 @@ namespace libtysila5.target.x86
             throw new NotImplementedException();
         }
 
+        internal static List<MCInst> handle_nop(
+           Target t,
+           List<CilNode.IRNode> nodes,
+           int start, int count, Code c)
+        {
+            var n = nodes[start];
+            var r = new List<MCInst>();
+            r.Add(inst(x86_nop, n));
+            return r;
+        }
+
         internal static List<MCInst> handle_neg(
            Target t,
            List<CilNode.IRNode> nodes,

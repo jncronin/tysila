@@ -91,6 +91,7 @@ export function target_init(string name, int ptr_size, int is_msb)
 	instr(tdef, "syncvalswap");
 	instr(tdef, "spinlockhint");
 	instr(tdef, "target_specific");
+	instr(tdef, "nop");
 
 	target_defs.add(tdef);
 
