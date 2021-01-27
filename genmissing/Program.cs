@@ -31,6 +31,7 @@ namespace genmissing
         static List<string> input_files = new List<string>();
         static string arch = "x86_64";
         static string output_name = "missing.o";
+        static List<string> new_search_dirs = new List<string>();
 
         static int Main(string[] args)
         {
@@ -48,7 +49,7 @@ namespace genmissing
                         arch = go.Optarg;
                         break;
                     case 'L':
-                        tysila4.Program.search_dirs.Add(go.Optarg);
+                        new_search_dirs.Add(go.Optarg);
                         break;
                     case 'o':
                         output_name = go.Optarg;
@@ -58,6 +59,7 @@ namespace genmissing
                         return -1;
                 }
             }
+            tysila4.Program.search_dirs.InsertRange(0, new_search_dirs);
             var curopt = go.Optind;
             while (curopt < argc)
                 input_files.Add(args[curopt++]);
