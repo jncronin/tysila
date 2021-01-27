@@ -122,6 +122,9 @@ namespace libtysila5.ir
             intcalls["_ZW18System#2EThreading11Interlocked_8Exchange_Rx_P2Rxx"] = threading_Exchange_long;
 
             intcalls["_ZW35System#2ERuntime#2ECompilerServices6Unsafe_2As_RRu1p1_P1Ru1p0"] = unsafe_as_generic;
+
+            intcalls["_ZW35System#2ERuntime#2ECompilerServices6Unsafe_13ReadUnaligned_Ru1p0_P1Rh"] = unsafe_readunaligned_generic;
+            intcalls["_ZW35System#2ERuntime#2ECompilerServices6Unsafe_13ReadUnaligned_Ru1p0_P1Pv"] = unsafe_readunaligned_generic;
         }
 
         private static Stack<StackItem> unsafe_as_generic(CilNode n, Code c, Stack<StackItem> stack_before)
@@ -137,6 +140,20 @@ namespace libtysila5.ir
             stack_after.Push(new_st);
 
             n.irnodes.Add(new CilNode.IRNode { parent = n, opcode = Opcode.oc_stackcopy, arg_a = 0, res_a = 0, stack_before = stack_before, stack_after = stack_after });
+            return stack_after;
+        }
+
+        private static Stack<StackItem> unsafe_readunaligned_generic(CilNode n, Code c, Stack<StackItem> stack_before)
+        {
+            var c_ms = c.ms.m.GetMethodSpec(n.inline_uint, c.ms.gtparams, c.ms.gmparams);
+            var ts = c_ms.ReturnType;
+
+            var stack_after = new Stack<StackItem>(stack_before);
+            stack_after.Pop();
+            stack_after.Push(new StackItem { ts = ts });
+
+            n.irnodes.Add(new CilNode.IRNode { parent = n, opcode = Opcode.oc_ldind, ct = Opcode.GetCTFromType(ts), vt_size = c.t.GetSize(ts), imm_ul = 0, imm_l = ts.IsSigned ? 1 : 0, stack_before = stack_before, stack_after = stack_after });
+
             return stack_after;
         }
 
