@@ -139,8 +139,8 @@ namespace libsupcs
     public sealed class IgnoreImplementationAttribute : System.Attribute
     { }
 
-    [global::System.AttributeUsage(System.AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
-    public sealed class AlwaysCompileAttribute : System.Attribute
+    [global::System.AttributeUsage(System.AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
+    public class AlwaysCompileAttribute : System.Attribute
     { }
 
     [global::System.AttributeUsage(System.AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
