@@ -361,6 +361,16 @@ namespace libsupcs
         public static extern int GetVtblTypeSizeOffset();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        public static extern int GetVtblFlagsOffset();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        public static extern int GetVtblBaseTypeVtblOffset();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        public static extern int GetVtblTargetFieldsOffset();
+
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
         public static extern int GetBoxedTypeDataOffset();
 
         [MethodImpl(MethodImplOptions.InternalCall)]

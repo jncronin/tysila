@@ -72,6 +72,9 @@ namespace libtysila5.ir
             intcalls["_ZN14libsupcs#2Edll8libsupcs15ClassOperations_22GetBoxedTypeDataOffset_Ri_P0"] = class_getBoxedTypeDataOffset;
             intcalls["_ZN14libsupcs#2Edll8libsupcs15ClassOperations_18GetVtblFieldOffset_Ri_P0"] = class_getVtblFieldOffset;
             intcalls["_ZN14libsupcs#2Edll8libsupcs15ClassOperations_21GetVtblTypeSizeOffset_Ri_P0"] = class_getVtblTypeSizeOffset;
+            intcalls["_ZN14libsupcs#2Edll8libsupcs15ClassOperations_18GetVtblFlagsOffset_Ri_P0"] = class_getVtblFlagsOffset;
+            intcalls["_ZN14libsupcs#2Edll8libsupcs15ClassOperations_25GetVtblBaseTypeVtblOffset_Ri_P0"] = class_getVtblBaseTypeVtblOffset;
+            intcalls["_ZN14libsupcs#2Edll8libsupcs15ClassOperations_25GetVtblTargetFieldsOffset_Ri_P0"] = class_getVtblTargetFieldsOffset;
             intcalls["_ZN14libsupcs#2Edll8libsupcs15ClassOperations_18GetMutexLockOffset_Ri_P0"] = class_getMutexLockOffset;
             intcalls["_ZN14libsupcs#2Edll8libsupcs15ClassOperations_23GetSystemTypeImplOffset_Ri_P0"] = class_getSystemTypeImplOffset;
             intcalls["_ZN14libsupcs#2Edll8libsupcs15ClassOperations_14GetFieldOffset_Ri_P2u1Su1S"] = class_getFieldOffset;
@@ -698,6 +701,22 @@ namespace libtysila5.ir
         {
             return ldc(n, c, stack_before, 3 * c.t.GetPointerSize());
         }
+
+        private static Stack<StackItem> class_getVtblFlagsOffset(CilNode n, Code c, Stack<StackItem> stack_before)
+        {
+            return ldc(n, c, stack_before, 4 * c.t.GetPointerSize());
+        }
+
+        private static Stack<StackItem> class_getVtblBaseTypeVtblOffset(CilNode n, Code c, Stack<StackItem> stack_before)
+        {
+            return ldc(n, c, stack_before, 5 * c.t.GetPointerSize());
+        }
+
+        private static Stack<StackItem> class_getVtblTargetFieldsOffset(CilNode n, Code c, Stack<StackItem> stack_before)
+        {
+            return ldc(n, c, stack_before, 6 * c.t.GetPointerSize());
+        }
+
 
         private static Stack<StackItem> class_getMutexLockOffset(CilNode n, Code c, Stack<StackItem> stack_before)
         {

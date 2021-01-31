@@ -873,18 +873,37 @@ namespace libsupcs
 
             /* If both are arrays with non-null elem types, do an array-element-compatible-with
              *  (CIL I:8.7.1) comparison */
-            void* from_extends = *(void**)((byte*)from_vtbl + ClassOperations.GetVtblExtendsVtblPtrOffset());
-            void* to_extends = *(void**)((byte*)to_vtbl + ClassOperations.GetVtblExtendsVtblPtrOffset());
-            if (from_extends == OtherOperations.GetStaticObjectAddress("_ZW6System5Array") &&
-                from_extends == to_extends)
+            var from_flags = *(uint*)((byte*)from_vtbl + ClassOperations.GetVtblFlagsOffset());
+            var to_flags = *(uint*)((byte*)to_vtbl + ClassOperations.GetVtblFlagsOffset());
+            var from_stype = from_flags & 0xf;
+            var to_stype = to_flags & 0xf;
+
+            if ((from_stype == 1 || from_stype == 2) && from_stype == to_stype)
             {
-                void* from_et = *(((void**)from_type) + 1);
-                void* to_et = *(((void**)to_type) + 1);
+                /* Non-SZ array needs rank checking too */
+                if(from_stype == 2)
+                {
+                    var from_rank = (from_flags >> 8) & 0xff;
+                    var to_rank = (to_flags >> 8) & 0xff;
+
+                    if (from_rank != to_rank)
+                        return false;
+                }
+
+                void* from_et = *(void**)((byte*)from_vtbl + ClassOperations.GetVtblBaseTypeVtblOffset());
+                void* to_et = *(void**)((byte*)to_vtbl + ClassOperations.GetVtblBaseTypeVtblOffset());
 
                 if (from_et != null && to_et != null)
                 {
-                    from_et = get_array_element_compatible_with_vt(from_et);
-                    to_et = get_array_element_compatible_with_vt(to_et);
+                    /* array-element-compatible-with is either:
+                     *  compatible-with
+                     * or
+                     *  equality of reduced types */
+                    if (CanCast(from_et, to_et))
+                        return true;
+
+                    from_et = get_reduced_type_vt(from_et);
+                    to_et = get_reduced_type_vt(to_et);
 
                     if (from_et == to_et)
                         return true;
@@ -892,6 +911,8 @@ namespace libsupcs
                         return false;
                 }
             }
+
+            /* TODO: check from_type = V[] and to_type = IList<W> */
 
             /* Check whether we extend the type */
             void* cur_extends_vtbl = *(void**)((byte*)from_vtbl + ClassOperations.GetVtblExtendsVtblPtrOffset());
@@ -921,7 +942,7 @@ namespace libsupcs
 
         [AlwaysCompile]
         [MethodAlias("castclassex")]
-        internal static unsafe void *CastClassEx(void *from_obj, void *to_vtbl)
+        internal static unsafe void *CastClassEx(void *from_obj, void *to_vtbl, int is_castclass)
         {
             if (from_obj == null)
             {
@@ -936,6 +957,8 @@ namespace libsupcs
                 return from_obj;
             else
             {
+                // TODO: if is_castclass and fails, then throw System.InvalidCastException
+
                 System.Diagnostics.Debugger.Log(0, "libsupcs", "CastClassEx failing");
                 System.Diagnostics.Debugger.Log((int)from_obj, "libsupcs", "from_obj");
                 System.Diagnostics.Debugger.Log((int)to_vtbl, "libsupcs", "to_vtbl");
@@ -950,7 +973,7 @@ namespace libsupcs
             }
         }
 
-        private static unsafe void* get_array_element_compatible_with_vt(void* et)
+        private static unsafe void* get_reduced_type_vt(void* et)
         {
             /* If this is an enum, get underlying type */
             et = get_enum_underlying_type(et);

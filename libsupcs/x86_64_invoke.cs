@@ -68,7 +68,7 @@ namespace libsupcs.x86_64
                 {
                     // the type we need is encoded in the vtable
                     var vtbl = types[i];
-                    var cur_class = *((byte*)vtbl + 0x21);
+                    var cur_class = *((byte*)vtbl + 0x1 + ClassOperations.GetVtblTargetFieldsOffset());
                     types[i] = (void*)cur_class;
                 }
             }

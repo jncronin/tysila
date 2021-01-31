@@ -139,6 +139,12 @@ namespace libtysila5.layout
                 for (int i = 0; i < ptr_size; i++, offset++)
                     d.Add(0);
 
+                /* Flags */
+                AddFlags(d, ts, ref offset, t);
+
+                /* BaseType */
+                AddBaseType(d, ts, of, os, ref offset, t);
+
                 // Target-specific information
                 t.AddExtraVTableFields(ts, d, ref offset);
             }
@@ -151,6 +157,12 @@ namespace libtysila5.layout
                     d.Add(b);
                     offset++;
                 }
+
+                /* Flags */
+                AddFlags(d, ts, ref offset, t);
+
+                /* BaseType */
+                AddBaseType(d, ts, of, os, ref offset, t);
 
                 // Target specific information
                 t.AddExtraVTableFields(ts, d, ref offset);
@@ -218,6 +230,69 @@ namespace libtysila5.layout
             if (data_sect == null)
                 data_sect = of.GetDataSection();
             t.sigt.WriteToOutput(of, base_m, t, data_sect);
+        }
+
+        private static void AddBaseType(IList<byte> d, TypeSpec ts, IBinaryFile of, ISection os, ref ulong offset, Target t)
+        {
+            if(ts.other != null && ts.stype != TypeSpec.SpecialType.Boxed)
+            {
+                var bt = ts.other.Box;
+
+                var ext_reloc = of.CreateRelocation();
+                ext_reloc.Addend = 0;
+                ext_reloc.DefinedIn = os;
+                ext_reloc.Offset = offset;
+                ext_reloc.Type = t.GetDataToDataReloc();
+
+                var ext_sym = of.CreateSymbol();
+                ext_sym.Name = bt.MangleType();
+
+                ext_reloc.References = ext_sym;
+                of.AddRelocation(ext_reloc);
+
+                t.r.VTableRequestor.Request(bt);
+            }
+            for (int i = 0; i < t.GetPointerSize(); i++, offset++)
+                d.Add(0);
+        }
+
+        private static void AddFlags(IList<byte> d, TypeSpec ts, ref ulong offset, Target t)
+        {
+            /* VTbl flags - minimum necessary to get CanCast working without need
+             *  for reflection */
+            uint flags = 0;
+
+            switch(ts.stype)
+            {
+                case TypeSpec.SpecialType.SzArray:
+                    flags |= 1;
+                    break;
+
+                case TypeSpec.SpecialType.Array:
+                    flags |= 2;
+
+                    // rank in next 8 bits
+                    if (ts.arr_rank >= 256)
+                        throw new Exception("Array rank too large");
+                    flags |= (uint)ts.arr_rank << 8;
+                    break;
+
+                case TypeSpec.SpecialType.MPtr:
+                    flags |= 3;
+                    break;
+
+                case TypeSpec.SpecialType.Ptr:
+                    flags |= 4;
+                    break;
+            }
+
+            for(int i = 0; i < t.GetPointerSize(); i++, offset++)
+            {
+                if (i < 4)
+                    d.Add((byte)((flags >> (i * 8)) & 0xff));
+                else
+                    d.Add(0);
+            }
         }
 
         public class InterfaceMethodImplementation
@@ -747,7 +822,7 @@ namespace libtysila5.layout
                             ms.m, ms.msig, ms.gtparams, ms.gmparams))
                         {
                             if (ts.IsInterface == false)
-                                i += (4 + t.ExtraVTableFieldsPointerLength);
+                                i += (6 + t.ExtraVTableFieldsPointerLength);
                             return i;
                         }
                     }
