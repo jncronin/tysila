@@ -2,7 +2,7 @@
   "profiles": {
     "tysila4": {
       "commandName": "Project",
-      "commandLineArgs": "-L/coreclr -t x86 -o docker/libsupcs.x86.o -fclass-sections libsupcs.dll",
+      "commandLineArgs": "-o D:/tysos/processes/drivers/acpipc/bin/Release/acpipc.obj -mno-sse4_1 -D -d D:\\tysos\\processes\\drivers\\acpipc\\bin\\Release/acpipc.txt -t x86_64 -q -Ld:\\coreclr -Ld:\\tysila\\bin -LD:\\tysos\\processes\\drivers\\acpipc\\bin\\Release D:/tysos/processes/drivers/acpipc/bin/Release/acpipc.dll",
       "workingDirectory": "d:/tysila"
     }
   }

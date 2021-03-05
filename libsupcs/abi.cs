@@ -34,6 +34,11 @@ namespace libsupcs
         public NullTerminatedListOfAttribute(System.Type type) { }
     }
 
+    /** <summary>Apply to an interface or method to have the call changed to one to __invoke(void *mptr, object[] params) </summary> */
+    [System.AttributeUsage(System.AttributeTargets.Interface | System.AttributeTargets.Method, AllowMultiple = false)]
+    public sealed class AlwaysInvokeAttribute : System.Attribute
+    { }
+
     /** <summary>Have the class or method only be compiled for a particular architecture</summary> */
     [global::System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     public sealed class ArchDependentAttribute : System.Attribute
