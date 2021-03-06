@@ -286,6 +286,14 @@ namespace libsupcs
 
     public class CastOperations
     {
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        [ReinterpretAsMethod]
+        public static extern T ReinterpretAs<T>(object o);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        [ReinterpretAsMethod]
+        public unsafe static extern T ReinterpretAs<T>(void* o);
+
         [Bits64Only]
         [MethodImpl(MethodImplOptions.InternalCall)]
         [ReinterpretAsMethod]
