@@ -37,7 +37,7 @@ namespace libsupcs.x86_64
         [MethodAlias("__invoke")]
         [AlwaysCompile]
         [Bits64Only]
-        static unsafe void* InternalInvoke(void* maddr, int pcnt, void **parameters, void **types, TysosMethod meth)
+        static unsafe void* InternalInvoke(void* maddr, int pcnt, void **parameters, void **types, void *ret_vtbl, uint flags)
         {
             /* Modify the types array to contain the call locations of each parameter
              * 
@@ -52,9 +52,9 @@ namespace libsupcs.x86_64
             for(int i = 0; i < pcnt; i++)
             {
                 // handle this pointer
-                if(i == 0 && !meth.IsStatic)
+                if(i == 0 && ((flags & TysosMethod.invoke_flag_instance) != 0))
                 {
-                    if (meth.OwningType.IsValueType)
+                    if ((flags & TysosMethod.invoke_flag_vt) != 0)
                     {
                         // we need to unbox the this pointer to a managed pointer
                         types[i] = (void*)5;
@@ -75,26 +75,24 @@ namespace libsupcs.x86_64
 
             var ret = asm_invoke(maddr, pcnt, parameters, types);
 
-            var rettype = meth.ReturnType;
-
             // See if we have to box the return type
-            if (rettype != null && rettype.IsValueType)
+            if (ret_vtbl != null && ((flags & TysosMethod.invoke_flag_vt_ret) != 0))
             {
                 // Get the size of the return type
-                var tsize = meth._ReturnType.GetClassSize() - ClassOperations.GetBoxedTypeDataOffset();     // GetClassSize always returns boxed size
+                var tsize = *(int*)((byte*)ret_vtbl + ClassOperations.GetVtblTypeSizeOffset())
+                    - ClassOperations.GetBoxedTypeDataOffset();
                 
                 /* TODO: handle VTypes that don't fit in a register */
                 if(tsize > 8)
-                    throw new NotImplementedException("InternalInvoke: return type " + rettype.FullName + " ( " +
-                        CastOperations.ReinterpretAsUlong(rettype).ToString("X") + " (not supported (size " +
+                    throw new NotImplementedException("InternalInvoke: return type not supported (size " +
                         tsize.ToString() + ")");
 
                 // Build a new boxed version of the type
                 var obj = (void**)MemoryOperations.GcMalloc(tsize + ClassOperations.GetBoxedTypeDataOffset());
-                *obj = meth._ReturnType._impl;
+                *obj = ret_vtbl;
                 *(int*)((byte*)obj + ClassOperations.GetMutexLockOffset()) = 0;
 
-                System.Diagnostics.Debugger.Log(0, "libsupcs", "x86_64_invoke: returning boxed " + rettype.FullName + " of size " + tsize.ToString());
+                System.Diagnostics.Debugger.Log(0, "libsupcs", "x86_64_invoke: returning boxed type of size " + tsize.ToString());
 
                 if (tsize > 4)
                     *(long*)((byte*)obj + ClassOperations.GetBoxedTypeDataOffset()) = (long)ret;
@@ -103,15 +101,14 @@ namespace libsupcs.x86_64
 
                 return obj;
             }
-            else if (rettype == null)
+            else if (ret_vtbl == null)
             {
                 System.Diagnostics.Debugger.Log(0, "libsupcs", "x86_64_invoke: returning void");
                 return ret;
             }
             else
             {
-                System.Diagnostics.Debugger.Log(0, "libsupcs", "x86_64_invoke: returning " + rettype.FullName + " (" +
-                    CastOperations.ReinterpretAsUlong(rettype).ToString("X") + ")");
+                System.Diagnostics.Debugger.Log(0, "libsupcs", "x86_64_invoke: returning object");
                 return ret;
             }
         }

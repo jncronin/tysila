@@ -581,13 +581,13 @@ namespace libtysila5.ir
 
                         stack_after = stack_before;
 
-                        if(n.constrained)
+                        if (n.constrained)
                         {
                             var cts = c.ms.m.GetTypeSpec(n.constrained_tok, c.ms.gtparams, c.ms.gmparams);
 
                             if (!cts.ManagedPointer.Equals(stack_before.Peek(pc - 1).ts))
                                 throw new Exception("Invalid constrained prefix: " +
-                                    cts.ManagedPointer.MangleType() + " vs " + 
+                                    cts.ManagedPointer.MangleType() + " vs " +
                                     stack_before.Peek(pc - 1).ts);
 
                             if (cts.IsValueType == false)
@@ -626,17 +626,37 @@ namespace libtysila5.ir
                                 stack_after.Pop();
                             }
                             // else do nothing if this is a value type which implements call_ms
-                        }                       
+                        }
 
                         if((call_ms_flags & 0x40) == 0x40)
                         {
                             // Calling a virtual function
                             stack_after = get_virt_ftn_ptr(n, c, stack_after, pc - 1);
-                            stack_after = call(n, c, stack_after, true);
+                            if (call_ms.IsAlwaysInvoke)
+                            {
+                                stack_after = params_to_invoke_array(n, c, stack_after, call_ms);
+                                stack_after = call(n, c, stack_after, false, "invoke",
+                                    c.special_meths, c.special_meths.invoke);
+                                if(call_ms.ReturnType != null)
+                                {
+                                    stack_after = unbox_any(n, c, stack_after, call_ms.ReturnType);
+                                }
+                                else
+                                {
+                                    // pop the unwanted return type
+                                    stack_after = pop(n, c, stack_after);
+                                }
+                            }
+                            else
+                            {
+                                stack_after = call(n, c, stack_after, true);
+                            }
                         }
                         else
                         {
                             // Calling an instance function
+                            if (call_ms.IsAlwaysInvoke)
+                                throw new NotImplementedException();        // Implement as above
                             stack_after = call(n, c, stack_after);
                         }
                     }                    
@@ -984,6 +1004,75 @@ namespace libtysila5.ir
 
             //foreach (var after in n.il_offsets_after)
             //    DoConversion(c.offset_map[after], c, stack_after);
+        }
+
+        private static Stack<StackItem> params_to_invoke_array(CilNode n, Code c, Stack<StackItem> stack_after, MethodSpec call_ms)
+        {
+            // On entry to this function, the stack is ..., param_0, param_1, ..., param_n, mptr
+            // On exit it should be ..., mptr, param_array, rettype_vtbl, flags
+
+            // Package the parameters into an object[] array
+
+            var pcount = call_ms.m.GetMethodDefSigParamCountIncludeThis(call_ms.msig);
+
+            stack_after = ldc(n, c, stack_after, pcount);
+            stack_after = newarr(n, c, stack_after, call_ms.m.SystemObject.Type);
+
+            var psig_idx = call_ms.msig;
+            psig_idx = call_ms.m.GetMethodDefSigRetTypeIndex(psig_idx);
+            call_ms.m.GetTypeSpec(ref psig_idx, call_ms.gtparams == null ? c.ms.gtparams : call_ms.gtparams, c.ms.gmparams);
+
+            for (int i = 0; i < pcount; i++)
+            {
+                // Make the top of stack be ..., array, index, value
+                stack_after = copy_to_front(n, c, stack_after);
+                stack_after = ldc(n, c, stack_after, i);
+                stack_after = copy_to_front(n, c, stack_after, pcount + 3 - i);
+
+                // Get param type
+                TypeSpec ptype;
+                if (i == 0 && call_ms.m.GetMethodDefSigHasNonExplicitThis(call_ms.msig))
+                    ptype = call_ms.type;
+                else
+                    ptype = call_ms.m.GetTypeSpec(ref psig_idx, call_ms.gtparams, call_ms.gmparams);
+
+                if (ptype.IsValueType && !ptype.IsBoxed)
+                    stack_after = box(n, c, stack_after, ptype);
+
+                stack_after = stelem(n, c, stack_after, call_ms.m.SystemObject.Type);
+            }
+
+            // Make the fnptr and object[] array replace the parameters
+            stack_after = stackcopy(n, c, stack_after, 1, pcount + 1);
+            stack_after = stackcopy(n, c, stack_after, 0, pcount);
+
+            stack_after = new Stack<StackItem>(stack_after);
+            for (int i = 0; i < pcount; i++)
+            {
+                stack_after.Pop();
+            }
+
+            // Add a rettype vtbl ptr
+            if(call_ms.ReturnType != null)
+            {
+                stack_after = ldlab(n, c, stack_after, call_ms.ReturnType.MangleType());
+            }
+            else
+            {
+                stack_after = ldc(n, c, stack_after, 0, 0x18);
+            }
+
+            // Add flags
+            uint flags = 0;
+            if (!call_ms.IsStatic)
+                flags |= 1;
+            if (call_ms.type != null && call_ms.type.IsValueType)
+                flags |= 2;
+            if (call_ms.ReturnType != null && call_ms.ReturnType.IsValueType)
+                flags |= 4;
+            stack_after = ldc(n, c, stack_after, flags, 0x9);
+
+            return stack_after;
         }
 
         private static Stack<StackItem> refanytype(CilNode n, Code c, Stack<StackItem> stack_before)
@@ -1429,9 +1518,9 @@ namespace libtysila5.ir
             return stack_after;
         }
 
-        private static Stack<StackItem> box(CilNode n, Code c, Stack<StackItem> stack_before)
+        private static Stack<StackItem> box(CilNode n, Code c, Stack<StackItem> stack_before, TypeSpec ts = null)
         {
-            var ts = n.GetTokenAsTypeSpec(c);
+            if (ts == null) ts = n.GetTokenAsTypeSpec(c);
 
             if (ts.IsValueType)
             {
@@ -1498,9 +1587,9 @@ namespace libtysila5.ir
             return stack_after;
         }
 
-        private static Stack<StackItem> unbox_any(CilNode n, Code c, Stack<StackItem> stack_before)
+        private static Stack<StackItem> unbox_any(CilNode n, Code c, Stack<StackItem> stack_before, TypeSpec ts = null)
         {
-            var ts = n.GetTokenAsTypeSpec(c);
+            if (ts == null) ts = n.GetTokenAsTypeSpec(c);
 
             if (ts.IsValueType)
             {
@@ -1513,7 +1602,7 @@ namespace libtysila5.ir
             }
             else
             {
-                return castclass(n, c, stack_before);
+                return castclass(n, c, stack_before, false, stack_before.Peek().ts, ts);
             }
         }
 
@@ -1929,9 +2018,9 @@ namespace libtysila5.ir
             return stack_after;
         }
 
-        private static Stack<StackItem> newarr(CilNode n, Code c, Stack<StackItem> stack_before)
+        private static Stack<StackItem> newarr(CilNode n, Code c, Stack<StackItem> stack_before, TypeSpec arr_elem_type = null)
         {
-            var arr_elem_type = n.GetTokenAsTypeSpec(c);
+            if(arr_elem_type == null) arr_elem_type = n.GetTokenAsTypeSpec(c);
             var arr_type = new metadata.TypeSpec { m = arr_elem_type.m, stype = TypeSpec.SpecialType.SzArray, other = arr_elem_type };
             var et_size = c.t.GetSize(arr_elem_type);
 
@@ -2645,6 +2734,8 @@ namespace libtysila5.ir
                 }
             }
 
+            int imm_l = ms.IsAlwaysInvoke ? 1 : 0;               
+
             var pc = m.GetMethodDefSigParamCountIncludeThis((int)sig_idx);
             var rt_idx = m.GetMethodDefSigRetTypeIndex((int)sig_idx);
             var rt = m.GetTypeSpec(ref rt_idx, ms.gtparams, ms.gmparams);
@@ -2679,7 +2770,7 @@ namespace libtysila5.ir
             int oc = Opcode.oc_call;
             if (is_calli)
                 oc = Opcode.oc_calli;
-            n.irnodes.Add(new CilNode.IRNode { parent = n, opcode = oc, imm_ms = ms, ct = ct, stack_before = stack_before, stack_after = stack_after });
+            n.irnodes.Add(new CilNode.IRNode { parent = n, opcode = oc, imm_ms = ms, imm_l = imm_l, ct = ct, stack_before = stack_before, stack_after = stack_after });
 
             return stack_after;
         }

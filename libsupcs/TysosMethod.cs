@@ -86,7 +86,12 @@ namespace libsupcs
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.InternalCall)]
         [MethodReferenceAlias("__invoke")]
-        static extern void* InternalInvoke(void* maddr, int pcnt, void **parameters, void **types, TysosMethod meth);
+        static extern void* InternalInvoke(void* maddr, int pcnt, void** parameters, void** types, void* ret_vtbl, uint flags);
+
+        internal const uint invoke_flag_instance = 1U;
+        internal const uint invoke_flag_vt = 2U;
+        internal const uint invoke_flag_vt_ret = 4U;
+
 
         public override System.Reflection.CallingConventions CallingConvention
         {
@@ -121,7 +126,7 @@ namespace libsupcs
 
         public unsafe override System.Reflection.ParameterInfo[] GetParameters()
         {
-            if(_Params == null)
+            if (_Params == null)
             {
                 var pc = mspec.m.GetMethodDefSigParamCount(mspec.msig);
                 var rt_idx = mspec.m.GetMethodDefSigRetTypeIndex(mspec.msig);
@@ -130,7 +135,7 @@ namespace libsupcs
                 var _params = new TysosParameterInfo[pc];
                 var _ptypes = new TysosType[pc];
 
-                for(int i = 0; i < pc; i++)
+                for (int i = 0; i < pc; i++)
                 {
                     var tspec = mspec.m.GetTypeSpec(ref rt_idx, mspec.gtparams, mspec.gmparams);
                     TysosType tt = tspec;
@@ -140,7 +145,7 @@ namespace libsupcs
                     _params[i] = tpi;
                 }
 
-                if(System.Threading.Interlocked.CompareExchange(ref _Params, _params, null) == null)
+                if (System.Threading.Interlocked.CompareExchange(ref _Params, _params, null) == null)
                 {
                     _ParamTypes = _ptypes;
                 }
@@ -153,7 +158,7 @@ namespace libsupcs
         {
             get
             {
-                if(_ReturnType == null && !returns_void)
+                if (_ReturnType == null && !returns_void)
                 {
                     var rtspec = mspec.ReturnType;
                     TysosType _rt;
@@ -173,12 +178,14 @@ namespace libsupcs
 
         public override object Invoke(object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, object[] parameters, System.Globalization.CultureInfo culture)
         {
+            uint flags = 0;
+
             if (MethodAddress == null)
             {
                 var mangled_name = mspec.MangleMethod();
                 System.Diagnostics.Debugger.Log(0, "libsupcs", "TysosMethod.Invoke: requesting run-time address for " + mangled_name);
                 MethodAddress = JitOperations.GetAddressOfObject(mspec.MangleMethod());
-                if(MethodAddress == null)
+                if (MethodAddress == null)
                 {
                     System.Diagnostics.Debugger.Log(0, "libsupcs", "TysosMethod.Invoke: jit compiling method");
                     MethodAddress = JitOperations.JitCompile(this);
@@ -204,7 +211,7 @@ namespace libsupcs
             IntPtr* tstack = stackalloc IntPtr[max_stack_alloc];
 
             void** ps, ts;
-            if(max_stack_alloc <= 512)
+            if (max_stack_alloc <= 512)
             {
                 ps = (void**)pstack;
                 ts = (void**)tstack;
@@ -217,15 +224,15 @@ namespace libsupcs
 
             // Build a new params array to include obj if necessary, and a tysos type array
             int curptr = 0;
-            if(!IsStatic)
+            if (!IsStatic)
             {
                 ps[0] = CastOperations.ReinterpretAsPointer(obj);
                 ts[0] = OtherOperations.GetStaticObjectAddress("_Zu1O");
                 curptr++;
             }
-            if(parameters != null)
+            if (parameters != null)
             {
-                for(int i = 0; i < parameters.Length; i++, curptr++)
+                for (int i = 0; i < parameters.Length; i++, curptr++)
                 {
                     var cp = CastOperations.ReinterpretAsPointer(parameters[i]);
                     ps[curptr] = cp;
@@ -233,7 +240,58 @@ namespace libsupcs
                 }
             }
 
-            return CastOperations.ReinterpretAsObject(InternalInvoke(MethodAddress, p_length, ps, ts, this));
+            if (!IsStatic)
+                flags |= invoke_flag_instance;
+            if (OwningType.IsValueType)
+                flags |= invoke_flag_vt;
+            if (ReturnType != null && ReturnType.IsValueType)
+                flags |= invoke_flag_vt_ret;
+
+            return CastOperations.ReinterpretAsObject(InternalInvoke(MethodAddress, p_length, ps, ts, TysosType.ReinterpretAsType(ReturnType)._impl, flags));
+        }
+
+        /** <summary>Override this in you application to pass Invokes across thread boundaries</summary> */
+        [AlwaysCompile]
+        [WeakLinkage]
+        [MethodAlias("invoke")]
+        public static void* Invoke(void* mptr, object[] args, void* rtype, uint flags)
+        {
+            return InternalInvoke(mptr, args, rtype, flags);
+        }
+
+        public static void* InternalInvoke(void* mptr, object[] args, void* rtype, uint flags)
+        {
+            int p_length = (args == null) ? 0 : args.Length;
+
+            // See InternalStrCpy for the rationale here
+            int max_stack_alloc = p_length > 512 ? 512 : p_length;
+            IntPtr* pstack = stackalloc IntPtr[max_stack_alloc];
+            IntPtr* tstack = stackalloc IntPtr[max_stack_alloc];
+
+            void** ps, ts;
+            if (max_stack_alloc <= 512)
+            {
+                ps = (void**)pstack;
+                ts = (void**)tstack;
+            }
+            else
+            {
+                ps = (void**)MemoryOperations.GcMalloc(p_length * sizeof(void*));
+                ts = (void**)MemoryOperations.GcMalloc(p_length * sizeof(void*));
+            }
+
+            // Build a new params array and a tysos type array
+            if (args != null)
+            {
+                for (int i = 0; i < args.Length; i++)
+                {
+                    var cp = CastOperations.ReinterpretAsPointer(args[i]);
+                    ps[i] = cp;
+                    ts[i] = *(void**)cp;
+                }
+            }
+
+            return InternalInvoke(mptr, args.Length, ps, ts, rtype, flags);
         }
 
         public override RuntimeMethodHandle MethodHandle

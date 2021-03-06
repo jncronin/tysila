@@ -45,6 +45,7 @@ namespace libtysila5.ir
         public int memcpy;
         public int memset;
         public int debugger_Log;
+        public int invoke;
 
         public int string_ci;
         public int string_Zc;
@@ -74,6 +75,7 @@ namespace libtysila5.ir
         {
             corlib = m.al.GetAssembly("mscorlib");
             var i = corlib.GetTypeSpec("System", "Int32");
+            var u = corlib.GetTypeSpec("System", "UInt32");
             var I = corlib.GetTypeSpec("System", "IntPtr");
             var o = corlib.GetSimpleTypeSpec(0x1c);
             var s = corlib.GetSimpleTypeSpec(0x0e);
@@ -82,6 +84,7 @@ namespace libtysila5.ir
             var c = corlib.GetSimpleTypeSpec(0x03);
             var Pc = c.Pointer;
             var Zc = c.SzArray;
+            var Zo = o.SzArray;
             var Pv = m.SystemVoid.Type.Pointer;
             var d = corlib.GetSimpleTypeSpec(0xd);
 
@@ -107,6 +110,8 @@ namespace libtysila5.ir
                 new TypeSpec[] { I, I, i });
             memset = CreateMethodSignature(I,
                 new TypeSpec[] { I, i, i });
+            invoke = CreateMethodSignature(o,
+                new TypeSpec[] { Pv, Zo, Pv, u });
 
             inst_Rv_s = CreateMethodSignature(b, null,
                 new TypeSpec[] { s }, true);

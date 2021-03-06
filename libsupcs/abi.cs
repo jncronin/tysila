@@ -34,7 +34,7 @@ namespace libsupcs
         public NullTerminatedListOfAttribute(System.Type type) { }
     }
 
-    /** <summary>Apply to an interface or method to have the call changed to one to __invoke(void *mptr, object[] params) </summary> */
+    /** <summary>Apply to an interface or method to have the call changed to one to invoke(void *mptr, object[] params, void *rettype_vtbl, uint flags) </summary> */
     [System.AttributeUsage(System.AttributeTargets.Interface | System.AttributeTargets.Method, AllowMultiple = false)]
     public sealed class AlwaysInvokeAttribute : System.Attribute
     { }

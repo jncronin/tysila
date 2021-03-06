@@ -203,6 +203,19 @@ namespace libtysila5.layout
                     return ms.Name;
                 }
             }
+
+            public override bool IsAlwaysInvoke
+            {
+                get
+                {
+                    return ms.IsAlwaysInvoke;
+                }
+            }
+
+            public override bool HasCustomAttribute(string ctor)
+            {
+                return ms.HasCustomAttribute(ctor);
+            }
         }
     }
 }
