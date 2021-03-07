@@ -247,7 +247,8 @@ namespace libsupcs
             if (ReturnType != null && ReturnType.IsValueType)
                 flags |= invoke_flag_vt_ret;
 
-            return CastOperations.ReinterpretAsObject(InternalInvoke(MethodAddress, p_length, ps, ts, TysosType.ReinterpretAsType(ReturnType)._impl, flags));
+            return CastOperations.ReinterpretAsObject(InternalInvoke(MethodAddress, p_length, ps, ts,
+                (ReturnType != null) ? TysosType.ReinterpretAsType(ReturnType)._impl : null, flags));
         }
 
         /** <summary>Override this in you application to pass Invokes across thread boundaries</summary> */
