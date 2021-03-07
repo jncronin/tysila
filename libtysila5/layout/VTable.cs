@@ -467,6 +467,18 @@ namespace libtysila5.layout
                 if (impl_ms == null)
                     impl_ms = GetVirtualMethod(impl_ts, iface_ms, t, true);
 
+                if (iface_ms.MangleMethod().StartsWith("_ZW30System#2ECollections#2EGeneric13IEnumerable`1_G1") && impl_ts.stype == TypeSpec.SpecialType.SzArray)
+                {
+                    // Special case this so we get the generic IEnumerator<T> rather than the standard IEnumator from System.Array.GetEnumerator
+
+                    // coreclr does something similar for _all_ T[] methods (see https://github.com/dotnet/coreclr/blob/release/2.0.0/src/mscorlib/src/System/Array.cs#L2577)
+                    var szarrayhelper = iface_ms.m.GetTypeSpec("System", "SZArrayHelper");
+                    var genum_ms = iface_ms.m.GetMethodSpec(szarrayhelper, "GetEnumerator");
+                    genum_ms.gmparams = new TypeSpec[] { impl_ts.other };
+                    t.r.MethodRequestor.Request(genum_ms);
+                    impl_ms = genum_ms;
+                }
+
                 // Vectors implement methods which we need to provide
                 if (impl_ms == null && impl_ts.stype == TypeSpec.SpecialType.SzArray)
                 {

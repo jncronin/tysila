@@ -2,7 +2,7 @@
   "profiles": {
     "tysila4": {
       "commandName": "Project",
-      "commandLineArgs": "-o D:/tysos/processes/services/Gui/bin/Release/Gui.obj -mno-sse4_1 -D -d D:/tysos/processes/services/Gui/bin/Release/Gui.txt -t x86_64 -q -Ld:\\coreclr -Ld:\\tysila\\bin D:/tysos/processes/services/Gui/bin/Release/Gui.dll",
+      "commandLineArgs": "-o d:/coreclr/System.Collections.obj -mno-sse4_1 -D -d d:/coreclr/System.Collections.txt -t x86_64 -q -Ld:\\coreclr -Ld:\\tysila\\bin d:/coreclr/System.Collections.dll",
       "workingDirectory": "d:/tysila"
     }
   }

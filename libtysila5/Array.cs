@@ -548,6 +548,23 @@ namespace libtysila5.ir
 
             return c;
         }
+
+        /*internal static Code CreateVectorGetEnumerator(MethodSpec ms,
+            Target t)
+        {
+            Code c = new Code { t = t, ms = ms };
+            t.AllocateLocalVarsArgs(c);
+            cil.CilNode n = new cil.CilNode(ms, 0);
+
+            util.Stack<StackItem> stack_before = new util.Stack<StackItem>();
+
+            // enter
+            n.irnodes.Add(new cil.CilNode.IRNode { parent = n, opcode = Opcode.oc_enter, stack_before = stack_before, stack_after = stack_before });
+
+
+        }
+        */
+
         internal static Code CreateVectorget_Item(MethodSpec ms,
             Target t)
         {

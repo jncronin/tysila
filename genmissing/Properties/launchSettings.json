@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "genmissing": {
+      "commandName": "Executable",
+      "executablePath": "d:/tysila/bin/genmissing.exe",
+      "commandLineArgs": "-o D:/tysos/tysos/missing.o -tx86_64 -Ld:\\coreclr -LD:\\tysos\\tysos\\bin\\Release -Ld:\\tysila\\bin D:\\tysos\\tysos\\bin\\Release/tysos.obj d:\\tysila\\bin/libtysila5.obj d:\\tysila\\bin/binary_library.obj D:\\tysos\\makefiles\\../tysos/x86_64/cpu.o D:\\tysos\\makefiles\\../tysos/x86_64/halt.o D:\\tysos\\makefiles\\../tysos/x86_64/exceptions.o D:\\tysos\\makefiles\\../tysos/x86_64/switcher.o corefx.a d:\\tysila\\bin/libsupcs.x86_64.a",
+      "workingDirectory": "D:\\tysos"
+    }
+  }
+}
