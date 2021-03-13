@@ -270,6 +270,9 @@ namespace libsupcs
             /* Field Typeinfos hava a pointer to the stored data as their third element */
             void* src = ((void**)fld_handle)[2];
 
+            System.Diagnostics.Debugger.Log(0, "libsupcs", "InitializeArray: src: " + ((ulong)src).ToString("X16") +
+                ", dest: " + ((ulong)dst).ToString("X16") + ", len: " + len.ToString());
+
             MemoryOperations.MemCpy(dst, src, len);
         }
 
@@ -282,6 +285,14 @@ namespace libsupcs
             int* lovals = *(int**)((byte*)dstArr + ArrayOperations.GetLoboundsOffset());
 
             var dst = *(byte**)((byte*)dstArr + ArrayOperations.GetInnerArrayOffset()) + (startIndex - lovals[0]) * esize;
+
+            System.Diagnostics.Debugger.Log(0, null, "libsupcs: Array.CopyToManaged: src: " + ((ulong)src).ToString("X16") +
+                ", dstArr: " + ((ulong)dstArr).ToString("X16") +
+                ", startIndex: " + startIndex.ToString() +
+                ", length: " + length.ToString() +
+                ", esize: " + esize.ToString() +
+                ", lovals[0]: " + lovals[0].ToString() +
+                ", dst: " + ((ulong)dst).ToString("X16"));
 
             MemoryOperations.MemCpy(dst, src, length * esize);
         }

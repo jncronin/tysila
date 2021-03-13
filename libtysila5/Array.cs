@@ -497,14 +497,19 @@ namespace libtysila5.ir
             n.irnodes.Add(new cil.CilNode.IRNode { parent = n, opcode = Opcode.oc_enter, stack_before = stack_before, stack_after = stack_before });
 
             // We call a libsupcs method here that expects arguments in the order
-            //  src, dst, startIndex, count (=length - startIndex)
+            //  srcInnerArr, dstArr, startIndex (in dstArr), count
             var stack_after = ldarg(n, c, stack_before, 0);
+            stack_after = ldc(n, c, stack_after, layout.Layout.GetArrayFieldOffset(layout.Layout.ArrayField.DataArrayPointer, c.t));
+            stack_after = binnumop(n, c, stack_after, cil.Opcode.SingleOpcodes.add, Opcode.ct_intptr);
+            stack_after = ldind(n, c, stack_after, ms.m.SystemIntPtr);
             stack_after = ldarg(n, c, stack_after, 1);
             stack_after = ldarg(n, c, stack_after, 2);
             stack_after = ldarg(n, c, stack_after, 0);
             stack_after = ldlen(n, c, stack_after);
-            stack_after = ldarg(n, c, stack_after, 2);
-            stack_after = binnumop(n, c, stack_after, cil.Opcode.SingleOpcodes.sub, Opcode.ct_int32);
+            //stack_after = ldarg(n, c, stack_after, 2);
+            //stack_after = binnumop(n, c, stack_after, cil.Opcode.SingleOpcodes.sub, Opcode.ct_int32);
+
+            //stack_after = debugger_Break(n, c, stack_after);
 
             stack_after = call(n, c, stack_after, false,
                 "_ZW34System#2ERuntime#2EInteropServices7Marshal_13CopyToManaged_Rv_P4u1Iu1Oii",
