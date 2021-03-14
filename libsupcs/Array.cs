@@ -553,7 +553,7 @@ namespace libsupcs
             *(void**)(ret + ClassOperations.GetVtblFieldOffset()) = vtbl;
             *(ulong*)(ret + ClassOperations.GetMutexLockOffset()) = 0;
 
-            *(void**)(ret + ArrayOperations.GetElemTypeOffset()) = (byte*)CastOperations.ReinterpretAsPointer(elemtt) + ClassOperations.GetSystemTypeImplOffset();
+            *(void**)(ret + ArrayOperations.GetElemTypeOffset()) = *(void**)((byte*)CastOperations.ReinterpretAsPointer(elemtt) + ClassOperations.GetSystemTypeImplOffset());
             *(int*)(ret + ArrayOperations.GetElemSizeOffset()) = elemsize;
             *(void**)(ret + ArrayOperations.GetInnerArrayOffset()) = data_addr;
             *(void**)(ret + ArrayOperations.GetLoboundsOffset()) =  ret + ArrayOperations.GetArrayClassSize();
