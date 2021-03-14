@@ -2,7 +2,7 @@
   "profiles": {
     "tysila4": {
       "commandName": "Project",
-      "commandLineArgs": "-o d:/coreclr/System.Collections.obj -mno-sse4_1 -D -d d:/coreclr/System.Collections.txt -t x86_64 -q -Ld:\\coreclr -Ld:\\tysila\\bin d:/coreclr/System.Collections.dll",
+      "commandLineArgs": "-o d:/coreclr/mscorlib.obj -mno-sse4_1 -D -d d:/coreclr/mscorlib.txt -t x86_64 -q -Ld:\\coreclr -Ld:\\tysila\\bin d:/coreclr/mscorlib.dll",
       "workingDirectory": "d:/tysila"
     }
   }

@@ -1325,6 +1325,14 @@ namespace libtysila5.target.arm
             throw new NotImplementedException();
         }
 
+        internal static List<MCInst> handle_syncvalexchangeandadd(
+           Target t,
+           List<CilNode.IRNode> nodes,
+           int start, int count, Code c)
+        {
+            throw new NotImplementedException();
+        }
+
         internal static List<MCInst> handle_target_specific(
            Target t,
            List<CilNode.IRNode> nodes,

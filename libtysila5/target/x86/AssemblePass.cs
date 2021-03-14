@@ -408,6 +408,14 @@ namespace libtysila5.target.x86
                         Code.Add(0xb1);
                         Code.AddRange(ModRMSIB(I.p[2].mreg, I.p[1].mreg));
                         break;
+                    case x86_lock_xadd_rm64_r64:
+                        Code.Add(0xf0); // lock before rex
+                        Code.AddRange(TLSOverride(ref tls_flag));
+                        AddRex(Code, Rex(I.p[0].v, I.p[2].mreg, I.p[1].mreg));
+                        Code.Add(0x0f);
+                        Code.Add(0xc1);
+                        Code.AddRange(ModRMSIB(I.p[2].mreg, I.p[1].mreg));
+                        break;
                     case x86_lock_cmpxchg8b_m64:
                         Code.Add(0xf0);
                         Code.AddRange(TLSOverride(ref tls_flag));

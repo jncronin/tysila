@@ -4309,6 +4309,64 @@ namespace libtysila5.target.x86
             return r;
         }
 
+        internal static List<MCInst> handle_syncvalexchangeandadd(
+            Target t,
+            List<CilNode.IRNode> nodes,
+            int start, int count, Code c)
+        {
+            var n = nodes[start];
+
+            var r = new List<MCInst>();
+            var size = n.imm_l;
+            var issigned = n.imm_ul == 0 ? false : true;
+
+
+            var ptr = n.stack_before.Peek(n.arg_b).reg;
+            var val = n.stack_before.Peek(n.arg_a).reg;
+            var dest = n.stack_after.Peek(n.res_a).reg;
+
+            bool is_tls = ir.Opcode.IsTLSCT(n.stack_before.Peek(n.arg_b).ct);
+
+
+            if (size == 8 && t.psize == 4)
+            {
+                throw new NotImplementedException("64-bit XADD on 32-bit platform");
+            }
+
+            var actdest = dest;
+            if(!dest.Equals(val))
+            {
+                actdest = r_eax;
+                handle_move(r_eax, val, r, n, c);
+            }
+
+            if(ptr is ContentsReg)
+            {
+                handle_move(r_edx, ptr, r, n, c);
+                ptr = r_edx;
+            }
+
+            int oc = 0;
+
+            switch(size)
+            {
+                case 8:
+                    oc = x86_lock_xadd_rm64_r64;
+                    break;
+                default:
+                    throw new NotImplementedException("XADD with size " + size.ToString());
+            }
+
+            r.Add(inst(oc, new ContentsReg { basereg = ptr }, val, n, is_tls));
+
+            if(!dest.Equals(actdest))
+            {
+                handle_move(dest, actdest, r, n, c);
+            }
+
+            return r;
+        }
+
         private static List<MCInst> handle_syncvalcompareandswap_8b(Target t, List<MCInst> r, CilNode.IRNode n, Code c, bool issigned, bool is_tls, Reg ptr, Reg oldval, Reg newval, Reg dest)
         {
             /* we need to use cmpxchg8b here

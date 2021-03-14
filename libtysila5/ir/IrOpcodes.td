@@ -83,6 +83,7 @@ intmap("libtysila5.ir", "Opcode", "oc", "oc_names", "init_oc", [
 	"memset",
 	"syncvalcompareandswap",
 	"syncvalswap",
+	"syncvalexchangeandadd",
 	"spinlockhint",
 
 	"target_specific",

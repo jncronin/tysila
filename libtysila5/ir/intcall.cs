@@ -120,6 +120,7 @@ namespace libtysila5.ir
             intcalls["_ZW18System#2EThreading11Interlocked_15CompareExchange_Rx_P3Rxxx"] = threading_CompareExchange_long;
             intcalls["_ZW18System#2EThreading11Interlocked_16_CompareExchange_Rv_P3u1Tu1Tu1O"] = threading_CompareExchange_TypedRef;
             intcalls["_ZW18System#2EThreading11Interlocked_15CompareExchange_Ru1p0_P3Ru1p0u1p0u1p0"] = threading_CompareExchange_Generic;
+            intcalls["_ZW18System#2EThreading11Interlocked_11ExchangeAdd_Rx_P2Rxx"] = threading_ExchangeAdd_long;
             intcalls["_ZW34System#2ERuntime#2EInteropServices8GCHandle_23InternalCompareExchange_Ru1O_P4u1Iu1Ou1Ob"] = gcHandle_InternalCompareExchange;
 
             intcalls["_ZW18System#2EThreading11Interlocked_8Exchange_Rx_P2Rxx"] = threading_Exchange_long;
@@ -308,6 +309,31 @@ namespace libtysila5.ir
                 arg_a = 1,
                 arg_b = 0,
                 arg_c = 2,
+                res_a = 0
+            });
+
+            return stack_after;
+        }
+
+        private static Stack<StackItem> threading_ExchangeAdd_long(CilNode n, Code c, Stack<StackItem> stack_before)
+        {
+            /* ExchangeAdd(ref int location1, int value) */
+            var stack_after = new Stack<StackItem>(stack_before);
+            stack_after.Pop();
+            stack_after.Pop();
+            stack_after.Push(new StackItem { ts = c.ms.m.SystemInt64 });
+
+            // Do synchronized instruction (arga = value, argb = location, res = [location] (before add))
+            n.irnodes.Add(new CilNode.IRNode
+            {
+                parent = n,
+                opcode = Opcode.oc_syncvalexchangeandadd,
+                imm_l = 8,
+                imm_ul = 0,
+                stack_before = stack_before,
+                stack_after = stack_after,
+                arg_a = 0,
+                arg_b = 1,
                 res_a = 0
             });
 

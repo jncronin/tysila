@@ -70,9 +70,9 @@ namespace libsupcs
             for (int i = 0; i < srcRank; i++)
             {
                 if (srcLobounds[i] != 0)
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("srcLobounds != 0");
                 if (dstLobounds[i] != 0)
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("dstLobounds != 0");
             }
             if (srcIndex < 0 || dstIndex < 0)
                 throw new ArgumentOutOfRangeException();
@@ -111,7 +111,8 @@ namespace libsupcs
             else
             {
                 /* TODO: implement as per System.Array.Copy() semantics */
-                throw new NotImplementedException();
+                throw new NotImplementedException("Cannot quick copy " + ((ulong)srcET).ToString("X") + 
+                    " to " + ((ulong)dstET).ToString("X"));
             }
         }
 

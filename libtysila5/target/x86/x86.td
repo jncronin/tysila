@@ -239,6 +239,7 @@ x86_instrs = [
 	"mov_r64_rm64sibscaledisp",
 	"iretq",
 	"lock_cmpxchg_rm64_r64",
+	"lock_xadd_rm64_r64",
 	"popfq"
 ];
 

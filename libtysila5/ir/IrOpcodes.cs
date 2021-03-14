@@ -1,7 +1,7 @@
 /* D:\tysila\libtysila5\ir\IrOpcodes.cs
  * This is an auto-generated file
  * DO NOT EDIT
- * It was generated at 14:47:38 on 27 January 2021
+ * It was generated at 14:03:29 on 14 March 2021
  * from libtysila5/ir/IrOpcodes.td
  * by TableMap (part of tysos: http://www.tysos.org)
  * Please edit the source file, rather than this file, to make any changes
@@ -120,10 +120,11 @@ namespace libtysila5.ir
 		public const int oc_memset = 76;
 		public const int oc_syncvalcompareandswap = 77;
 		public const int oc_syncvalswap = 78;
-		public const int oc_spinlockhint = 79;
-		public const int oc_target_specific = 80;
-		public const int oc_x86_portin = 81;
-		public const int oc_x86_portout = 82;
+		public const int oc_syncvalexchangeandadd = 79;
+		public const int oc_spinlockhint = 80;
+		public const int oc_target_specific = 81;
+		public const int oc_x86_portin = 82;
+		public const int oc_x86_portout = 83;
 		
 		internal static void init_oc()
 		{
@@ -187,10 +188,11 @@ namespace libtysila5.ir
 			oc_names[76] = "memset";
 			oc_names[77] = "syncvalcompareandswap";
 			oc_names[78] = "syncvalswap";
-			oc_names[79] = "spinlockhint";
-			oc_names[80] = "target_specific";
-			oc_names[81] = "x86_portin";
-			oc_names[82] = "x86_portout";
+			oc_names[79] = "syncvalexchangeandadd";
+			oc_names[80] = "spinlockhint";
+			oc_names[81] = "target_specific";
+			oc_names[82] = "x86_portin";
+			oc_names[83] = "x86_portout";
 		}
 	}
 }
@@ -199,33 +201,33 @@ namespace libtysila5.ir
 {
 	partial class Opcode
 	{
-		public const int cc_always = 83;
-		public const int cc_never = 84;
-		public const int cc_eq = 85;
-		public const int cc_ne = 86;
-		public const int cc_gt = 87;
-		public const int cc_ge = 88;
-		public const int cc_lt = 89;
-		public const int cc_le = 90;
-		public const int cc_a = 91;
-		public const int cc_ae = 92;
-		public const int cc_b = 93;
-		public const int cc_be = 94;
+		public const int cc_always = 84;
+		public const int cc_never = 85;
+		public const int cc_eq = 86;
+		public const int cc_ne = 87;
+		public const int cc_gt = 88;
+		public const int cc_ge = 89;
+		public const int cc_lt = 90;
+		public const int cc_le = 91;
+		public const int cc_a = 92;
+		public const int cc_ae = 93;
+		public const int cc_b = 94;
+		public const int cc_be = 95;
 		
 		internal static void init_cc()
 		{
-			cc_names[83] = "always";
-			cc_names[84] = "never";
-			cc_names[85] = "eq";
-			cc_names[86] = "ne";
-			cc_names[87] = "gt";
-			cc_names[88] = "ge";
-			cc_names[89] = "lt";
-			cc_names[90] = "le";
-			cc_names[91] = "a";
-			cc_names[92] = "ae";
-			cc_names[93] = "b";
-			cc_names[94] = "be";
+			cc_names[84] = "always";
+			cc_names[85] = "never";
+			cc_names[86] = "eq";
+			cc_names[87] = "ne";
+			cc_names[88] = "gt";
+			cc_names[89] = "ge";
+			cc_names[90] = "lt";
+			cc_names[91] = "le";
+			cc_names[92] = "a";
+			cc_names[93] = "ae";
+			cc_names[94] = "b";
+			cc_names[95] = "be";
 		}
 	}
 }
@@ -256,31 +258,31 @@ namespace libtysila5.ir
 {
 	partial class Opcode
 	{
-		public const int ct_unknown = 95;
-		public const int ct_int32 = 96;
-		public const int ct_int64 = 97;
-		public const int ct_intptr = 98;
-		public const int ct_tls_int32 = 99;
-		public const int ct_tls_int64 = 100;
-		public const int ct_tls_intptr = 101;
-		public const int ct_float = 102;
-		public const int ct_object = 103;
-		public const int ct_ref = 104;
-		public const int ct_vt = 105;
+		public const int ct_unknown = 96;
+		public const int ct_int32 = 97;
+		public const int ct_int64 = 98;
+		public const int ct_intptr = 99;
+		public const int ct_tls_int32 = 100;
+		public const int ct_tls_int64 = 101;
+		public const int ct_tls_intptr = 102;
+		public const int ct_float = 103;
+		public const int ct_object = 104;
+		public const int ct_ref = 105;
+		public const int ct_vt = 106;
 		
 		internal static void init_ct()
 		{
-			ct_names[95] = "unknown";
-			ct_names[96] = "int32";
-			ct_names[97] = "int64";
-			ct_names[98] = "intptr";
-			ct_names[99] = "tls_int32";
-			ct_names[100] = "tls_int64";
-			ct_names[101] = "tls_intptr";
-			ct_names[102] = "float";
-			ct_names[103] = "object";
-			ct_names[104] = "ref";
-			ct_names[105] = "vt";
+			ct_names[96] = "unknown";
+			ct_names[97] = "int32";
+			ct_names[98] = "int64";
+			ct_names[99] = "intptr";
+			ct_names[100] = "tls_int32";
+			ct_names[101] = "tls_int64";
+			ct_names[102] = "tls_intptr";
+			ct_names[103] = "float";
+			ct_names[104] = "object";
+			ct_names[105] = "ref";
+			ct_names[106] = "vt";
 		}
 	}
 }
