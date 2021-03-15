@@ -43,7 +43,7 @@ namespace libsupcs
             public UIntPtr Offset;
         }
 
-        internal static unsafe object[] DoUnwind(Unwinder u, UIntPtr exit_address)
+        internal static unsafe object[] DoUnwind(Unwinder u, UIntPtr exit_address, bool get_symbols = true)
         {
             System.Collections.ArrayList ret = new System.Collections.ArrayList();
             UIntPtr pc;
@@ -51,7 +51,16 @@ namespace libsupcs
             while (u.CanContinue() && ((pc = u.GetInstructionPointer()) != exit_address))
             {
                 void* offset;
-                var sym = JitOperations.GetNameOfAddress((void*)pc, out offset);
+                string sym;
+                if (get_symbols)
+                {
+                    sym = JitOperations.GetNameOfAddress((void*)pc, out offset);
+                }
+                else
+                {
+                    offset = (void*)pc;
+                    sym = "offset_0";                    
+                }
                 ret.Add(new UnwinderEntry { ProgramCounter = pc, Symbol = sym, Offset = (UIntPtr)offset });
                 u.UnwindOne();
             }
