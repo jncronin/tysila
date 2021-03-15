@@ -34,7 +34,7 @@ namespace libsupcs
         public abstract libsupcs.TysosMethod GetMethodInfo();
         public abstract Unwinder Init();
         public abstract bool CanContinue();
-        public virtual object[] DoUnwind(UIntPtr exit_address) { return DoUnwind(this, exit_address); }
+        public virtual object[] DoUnwind(UIntPtr exit_address, bool get_symbols = true) { return DoUnwind(this, exit_address, get_symbols); }
 
         public class UnwinderEntry
         {
