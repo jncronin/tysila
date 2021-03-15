@@ -956,20 +956,11 @@ namespace libtysila5.target.x86
             if(hidden_adjust != 0)
             {
                 // load up the address of the return value
+                // we store to rax so we don't overwrite any stack variables, and then use the
+                //  allocation logic below to move it to where it should go
 
-                var ret_to = to_locs[0];
-                if (ret_to is ContentsReg || (ret_to.type == rt_stack))
-                {
-                    r.Add(inst(t.psize == 4 ? x86_lea_r32 : x86_lea_r64, r_eax, act_dest, n));
-                    handle_move(ret_to, r_eax, r, n, c);
-                }
-                else
-                {
-                    r.Add(inst(t.psize == 4 ? x86_lea_r32 : x86_lea_r64, ret_to, act_dest, n));
-                }
-
-                to_do--;
-                done[0] = true;
+                r.Add(inst(t.psize == 4 ? x86_lea_r32 : x86_lea_r64, r_eax, act_dest, n));
+                from_locs[0] = r_eax;
             }
 
             while (to_do > 0)
