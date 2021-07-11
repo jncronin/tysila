@@ -89,6 +89,28 @@ namespace libsupcs
         }
 
         [WeakLinkage]
+        [MethodAlias("_ZW6System4Enum_21GetEnumValuesAndNames_Rv_P4V17RuntimeTypeHandleU35System#2ERuntime#2ECompilerServices19ObjectHandleOnStackV19ObjectHandleOnStackb")]
+        [AlwaysCompile]
+        static unsafe void get_enum_values_and_names(TysosType enum_type, void **values_ptr, void **names_ptr, bool getNames)
+        {
+            //System.Diagnostics.Debugger.Log(0, "libsupcs", "get_enum_values_and_names: enum_type: " + ((ulong)enum_vtbl).ToString("X16"));
+            //var enum_type = TysosType.internal_from_vtbl(enum_vtbl);
+            MonoEnumInfo info;
+            get_enum_info(enum_type, out info);
+
+            ulong[] values = new ulong[info.values.Length];
+            int[] v = info.values as int[];
+            for (int i = 0; i < info.values.Length; i++)
+                values[i] = (ulong)v[i];
+            *values_ptr = CastOperations.ReinterpretAsPointer(values);
+
+            if(getNames)
+            {
+                *names_ptr = CastOperations.ReinterpretAsPointer(info.names);
+            }
+        }
+
+        [WeakLinkage]
         [MethodAlias("_ZW6System12MonoEnumInfo_13get_enum_info_Rv_P2V4TypeRV12MonoEnumInfo")]
         [AlwaysCompile]
         static unsafe void get_enum_info(TysosType enumType, out MonoEnumInfo info)
