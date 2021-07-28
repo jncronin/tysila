@@ -1,0 +1,753 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace libtysila5.dwarf
+{
+    /** <summary>Base class for a Dwarf DIE</summary> */
+    public abstract class DwarfDIE
+    {
+        public int Offset { get; set; }
+        public target.Target t { get; set; }
+
+        public DwarfCU dcu { get; set; }
+
+        public abstract void WriteToOutput(DwarfSections ds, IList<byte> d);
+
+        /** <summary>Write string offset to output</summary> */
+        protected void w(IList<byte> d, string s, StringMap smap)
+        {
+            uint offset = smap.GetStringAddress(s);
+            var bytes = BitConverter.GetBytes(offset);
+            if (t.psize == 8)
+            {
+                for (int i = 0; i < 4; i++)
+                    d.Add(0);
+            }
+            for (int i = 0; i < 4; i++)
+                d.Add(bytes[i]);
+        }
+
+        /** <summary>Writes 0 at the pointer length</summary> */
+        protected void wp(IList<byte> d)
+        {
+            for (int i = 0; i < t.psize; i++)
+                d.Add(0);
+        }
+
+        /** <summary>Writes v at the pointer length</summary> */
+        protected void wp(IList<byte> d, long v)
+        {
+            var b = BitConverter.GetBytes(v);
+            for (int i = 0; i < t.psize; i++)
+                d.Add(b[i]);
+        }
+        
+        /** <summary>LEB128 encode data to output file</summary> */
+        protected void w(binary_library.ISection s, uint[] data)
+        {
+            foreach (var d in data)
+                w(s.Data, d);
+        }
+
+        /** <summary>LEB128 encode data to output file</summary> */
+        protected void w(IList<byte> s, uint[] data)
+        {
+            foreach (var d in data)
+                w(s, d);
+        }
+
+        /** <summary>LEB128 encode data to output file</summary> */
+        protected void w(binary_library.ISection s, uint data)
+        {
+            w(s.Data, data);
+        }
+
+        /** <summary>LEB128 encode data to output file</summary> */
+        public void w(IList<byte> s, uint data)
+        {
+            do
+            {
+                uint _byte = data & 0x7fU;
+                data >>= 7;
+                if (data != 0)
+                    _byte |= 0x80U;
+                s.Add((byte)_byte);
+            } while (data != 0);
+        }
+
+    }
+
+    public class StringMap
+    {
+        Dictionary<string, uint> smap = new Dictionary<string, uint>();
+        List<byte> d = new List<byte>();
+
+        public uint GetStringAddress(string v)
+        {
+            uint addr;
+            if (smap.TryGetValue(v, out addr))
+            {
+                return addr;
+            }
+            smap[v] = (uint)d.Count;
+            foreach (char c in v)
+            {
+                d.Add((byte)c);
+            }
+            d.Add(0);
+            return smap[v];
+        }
+
+        public void Write(binary_library.ISection str)
+        {
+            foreach (var c in d)
+                str.Data.Add(c);
+        }
+    }
+
+    /** <summary>A DIE with children</summary> */
+    public class DwarfParentDIE : DwarfDIE
+    {
+        public List<DwarfDIE> Children { get; } = new List<DwarfDIE>();
+
+        public override void WriteToOutput(DwarfSections ds, IList<byte> dinfo)
+        {
+            foreach (var c in Children)
+            {
+                c.Offset = dinfo.Count;
+                c.WriteToOutput(ds, dinfo);
+            }
+
+            dinfo.Add(0);    // null-terminate
+        }
+    }
+
+    /** <summary>Encapsulates a compilation unit</summary> */
+    public class DwarfCU : DwarfParentDIE
+    {
+        /** <summary>The original metadata stream we load from</summary> */
+        public metadata.MetadataStream m { get; set; }
+
+        public DwarfCU()
+        {
+            dcu = this;
+        }
+
+        /** <summary>Use when ref4s are not yet calculable.
+         *      key is Offset where relocation is written
+         *      value is target offset to place at Offset</summary> */
+        public Dictionary<int, DwarfDIE> fmap = new Dictionary<int, DwarfDIE>();
+
+        /** <summary>Line number program and its relocations, excluding header</summary> */
+        public List<byte> lnp = new List<byte>();
+        public Dictionary<int, binary_library.ISymbol> lnp_relocs = new Dictionary<int, binary_library.ISymbol>();
+        public Dictionary<string, uint> lnp_files = new Dictionary<string, uint>();
+        public List<string> lnp_fnames = new List<string>();
+
+        /** <summary>First and last symbol in CU</summary> */
+        public binary_library.ISymbol first_sym, last_sym;
+
+        public void WriteToOutput(DwarfSections odbgsect)
+        {
+            WriteAbbrev(odbgsect.abbrev);
+
+            WriteInfo(odbgsect);
+            odbgsect.smap.Write(odbgsect.str);
+
+            WriteLines(odbgsect);
+        }
+
+        private void WriteLines(DwarfSections odbgsect)
+        {
+            /* Write lines header */
+            List<byte> d = new List<byte>();
+
+            // Reserve space for unit_length
+            if (t.psize == 4)
+            {
+                for (int i = 0; i < 4; i++)
+                    d.Add(0);
+            }
+            else
+            {
+                for (int i = 0; i < 12; i++)
+                    d.Add(0);
+            }
+
+            // version
+            d.Add(4);
+            d.Add(0);
+
+            // header_length
+            var header_length_offset = d.Count;
+            for (int i = 0; i < t.psize; i++)
+                d.Add(0);
+
+            // minimum_instruction_length
+            d.Add(1);
+
+            // maximum_operations_per_instruction
+            d.Add(1);
+
+            // default_is_stmt
+            d.Add(1);
+
+            // line_base
+            d.Add(0xfd);    // -3
+
+            // line_range
+            d.Add(12);
+
+            // opcode_base
+            d.Add(13);
+
+            // standard_opcode_lengths
+            d.AddRange(new byte[] { 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1 });
+
+            // include_directories
+            d.Add(0);
+
+            // file_names
+            foreach(var fname in lnp_fnames)
+            {
+                foreach (var c in fname)
+                    d.Add((byte)c);
+                d.Add(0);
+
+                // dir index
+                d.Add(0);
+
+                // last_mod
+                d.Add(0);
+
+                // length
+                d.Add(0);
+            }
+            d.Add(0);
+
+            // point header_length here
+            var doffset = d.Count;
+            var header_length = doffset - header_length_offset - t.psize;
+            byte[] bytes = (t.psize == 4) ? BitConverter.GetBytes((int)header_length) :
+                BitConverter.GetBytes((long)header_length);
+            for (int i = 0; i < t.psize; i++)
+                d[header_length_offset + i] = bytes[i];
+
+            // add the actual data
+            d.AddRange(lnp);
+
+            // add relocs
+            foreach(var reloc in lnp_relocs)
+            {
+                var r = odbgsect.bf.CreateRelocation();
+                r.Type = t.GetDataToDataReloc();
+                r.Offset = (ulong)(doffset + reloc.Key);
+                r.References = reloc.Value;
+                r.DefinedIn = odbgsect.line;
+                odbgsect.bf.AddRelocation(r);
+            }
+
+            // Finally, patch the length back in
+            if (t.psize == 4)
+            {
+                uint len = (uint)d.Count - 4;
+                bytes = BitConverter.GetBytes(len);
+                for (int i = 0; i < 4; i++)
+                    d[i] = bytes[i];
+            }
+            else
+            {
+                ulong len = (ulong)d.Count - 12;
+                bytes = BitConverter.GetBytes(len);
+                for (int i = 0; i < 4; i++)
+                    d[i] = 0xff;
+                for (int i = 0; i < 8; i++)
+                    d[i + 4] = bytes[i];
+            }
+
+            // Store to section
+            for (int i = 0; i < d.Count; i++)
+                odbgsect.line.Data.Add(d[i]);
+        }
+
+        private void WriteInfo(DwarfSections ds)
+        {
+            var info = ds.info;
+            var string_map = ds.smap;
+
+            List<byte> d = new List<byte>();
+
+            // Output header
+
+            // Reserve space for unit_length
+            if(t.psize == 4)
+            {
+                for (int i = 0; i < 4; i++)
+                    d.Add(0);
+            }
+            else
+            {
+                for (int i = 0; i < 12; i++)
+                    d.Add(0);
+            }
+
+            // version
+            d.Add(4);
+            d.Add(0);
+
+            // debug_abbrev_offset
+            for (int i = 0; i < t.psize; i++)
+                d.Add(0);
+
+            // address_size
+            d.Add((byte)t.psize);
+
+            // Store offset of root entry
+            this.Offset = d.Count;
+
+
+            // Write the root DIE
+            w(d, 1);
+            w(d, "tysila", string_map);
+            w(d, 0x4);  // pretend to be C++
+            w(d, m.AssemblyName, string_map);
+
+            // store low/high pc offsets for patching later
+            var low_pc_offset = d.Count;
+            for (int i = 0; i < t.psize; i++)
+                d.Add(0);
+            var high_pc_offset = d.Count;
+            for (int i = 0; i < t.psize; i++)
+                d.Add(0);
+            var stmt_list_offset = d.Count;
+            for (int i = 0; i < t.psize; i++)
+                d.Add(0);
+
+            /* Children:
+             *  Items in the empty namespace are placed as direct children
+             *  Others are placed as children of the namespace
+             */
+            foreach(var kvp in ns_dies)
+            {
+                if(kvp.Key == "")
+                {
+                    foreach (var dc in kvp.Value.Children)
+                        Children.Add(dc);
+                }
+                else
+                {
+                    Children.Add(kvp.Value);
+                }
+            }
+
+            // Write children
+            base.WriteToOutput(ds, d);
+
+            // Patch relocs
+            byte[] bytes;
+            foreach(var kvp in fmap)
+            {
+                uint dest = (uint)kvp.Value.Offset;
+                int addr = kvp.Key;
+                bytes = BitConverter.GetBytes(dest);
+                for (int i = 0; i < 4; i++)
+                    d[addr + i] = bytes[i];
+            }
+
+            // Patch low/high_pc
+            var low_r = ds.bf.CreateRelocation();
+            low_r.Type = t.GetDataToDataReloc();
+            low_r.Offset = (ulong)low_pc_offset;
+            low_r.References = first_sym;
+            low_r.DefinedIn = ds.info;
+            ds.bf.AddRelocation(low_r);
+
+            var pc_size = last_sym.Offset - first_sym.Offset + (ulong)last_sym.Size;
+            bytes = (t.psize == 4) ? BitConverter.GetBytes((int)pc_size) :
+                BitConverter.GetBytes((long)pc_size);
+            for (int i = 0; i < t.psize; i++)
+                d[high_pc_offset + i] = bytes[i];
+
+            // Finally, patch the length back in
+            if (t.psize == 4)
+            {
+                uint len = (uint)d.Count - 4;
+                bytes = BitConverter.GetBytes(len);
+                for (int i = 0; i < 4; i++)
+                    d[i] = bytes[i];
+            }
+            else
+            {
+                ulong len = (ulong)d.Count - 12;
+                bytes = BitConverter.GetBytes(len);
+                for (int i = 0; i < 4; i++)
+                    d[i] = 0xff;
+                for (int i = 0; i < 8; i++)
+                    d[i + 4] = bytes[i];
+            }
+
+            // Store to section
+            for (int i = 0; i < d.Count; i++)
+                info.Data.Add(d[i]);
+        }
+
+        /** Write standard abbreviations
+         *    1  - compile_unit
+         *    2  - base_type
+         *    3  - pointer type (generic)
+         *    4  - pointer type (with base type)
+         *    5  - subprogram, returns void, static, non-virt
+         *    6  - subprogram, returns object, static, non-virt
+         *    7  - subprogram, returns void, instance, non-virt
+         *    8  - subprogram, returns object, instance, non-virt
+         *    9  - subprogram, returns void, instance, virtual
+         *    10 - subprogram, returns object, instance, virtual
+         *    11 - formal_parameter
+         *    12 - namespace
+         *    13 - class
+         *    14 - structure
+         *    15 - base_type
+         *    16 - pointer
+         *    17 - reference
+         *    18 - member
+         *    19 - formal_parameter with no name and artificial flag set
+         */
+        private void WriteAbbrev(binary_library.ISection abbrev)
+        {
+            uint dtype = t.psize == 4 ? 0x06U : 0x07U;  // data4/data 8 depending on target
+
+            w(abbrev, new uint[]
+            {
+                1, 0x11, 0x01,      // compile_unit, has children
+                0x25, 0x0e,         // producer, strp
+                0x13, 0x0b,         // language, data1
+                0x03, 0x0e,         // name, strp
+                0x11, 0x01,         // low_pc, addr  
+                0x12, dtype,        // high_pc, data (i.e. length)
+                0x10, 0x17,         // stmt_list, sec_offset
+                0x00, 0x00          // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                2, 0x24, 0x00,      // base_type, no children
+                0x0b, 0x0b,         // byte_size, data1
+                0x3e, 0x0b,         // encoding, data1
+                0x03, 0x0e,         // name, strp
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                3, 0x0f, 0x00,      // pointer_type, no children
+                0x0b, 0x0b,         // byte_size, data1
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                4, 0x0f, 0x00,      // pointer_type, no children
+                0x0b, 0x0b,         // byte_size, data1
+                0x49, 0x15,         // type, LEB128 from start of CU in bytes
+                0x00, 0x00,
+            });
+
+            w(abbrev, new uint[]
+            {
+                5, 0x2e, 0x01,      // subprogram, has children
+                0x03, 0x0e,         // name, strp
+                0x11, 0x01,         // low_pc, addr  
+                0x12, dtype,        // high_pc, data (i.e. length)
+                0x32, 0x0b,         // accessibility, data1
+                0x6e, 0x0e,         // linkage_name, strp
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                6, 0x2e, 0x01,      // subprogram, has children
+                0x03, 0x0e,         // name, strp
+                0x11, 0x01,         // low_pc, addr  
+                0x12, dtype,        // high_pc, data (i.e. length)
+                0x32, 0x0b,         // accessibility, data1
+                0x6e, 0x0e,         // linkage_name, strp
+                0x49, 0x13,         // type, ref4
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                7, 0x2e, 0x01,      // subprogram, has children
+                0x03, 0x0e,         // name, strp
+                0x11, 0x01,         // low_pc, addr  
+                0x12, dtype,        // high_pc, data (i.e. length)
+                0x32, 0x0b,         // accessibility, data1
+                0x6e, 0x0e,         // linkage_name, strp
+                0x64, 0x13,         // object_pointer, ref4
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                8, 0x2e, 0x01,      // subprogram, has children
+                0x03, 0x0e,         // name, strp
+                0x11, 0x01,         // low_pc, addr  
+                0x12, dtype,        // high_pc, data (i.e. length)
+                0x32, 0x0b,         // accessibility, data1
+                0x6e, 0x0e,         // linkage_name, strp
+                0x49, 0x13,         // type, ref4
+                0x64, 0x13,         // object_pointer, ref4
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                9, 0x2e, 0x01,      // subprogram, has children
+                0x03, 0x0e,         // name, strp
+                0x11, 0x01,         // low_pc, addr  
+                0x12, dtype,        // high_pc, data (i.e. length)
+                0x32, 0x0b,         // accessibility, data1
+                0x6e, 0x0e,         // linkage_name, strp
+                0x64, 0x13,         // object_pointer, ref4
+                0x4c, 0x0b,         // virtuality, data1
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                10, 0x2e, 0x01,      // subprogram, has children
+                0x03, 0x0e,         // name, strp
+                0x11, 0x01,         // low_pc, addr  
+                0x12, dtype,        // high_pc, data (i.e. length)
+                0x32, 0x0b,         // accessibility, data1
+                0x6e, 0x0e,         // linkage_name, strp
+                0x49, 0x13,         // type, ref4
+                0x64, 0x13,         // object_pointer, ref4
+                0x4c, 0x0b,         // virtuality, data1
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                11, 0x05, 0x00,     // formal_parameter, no children
+                0x03, 0x0e,         // name, strp
+                0x49, 0x13,         // type, ref4
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                12, 0x39, 0x01,     // namespace, has children
+                0x03, 0x0e,         // name, strp
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                13, 0x02, 0x01,     // class, has children
+                0x03, 0x0e,         // name, strp
+                0x0b, 0x0f,         // byte_size, udata (LEB128)
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                14, 0x13, 0x01,     // structure, has children
+                0x03, 0x0e,         // name, strp
+                0x0b, 0x0f,         // byte_size, udata (LEB128)
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                15, 0x24, 0x00,     // base_type, no children
+                0x03, 0x0e,         // name, strp
+                0x0b, 0x0b,         // byte_size, data1
+                0x3e, 0x0b,         // encoding, data1
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                16, 0x0f, 0x00,     // pointer_type, no children
+                0x0b, 0x0b,         // byte_size, data1
+                0x49, 0x13,         // type, ref4
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                17, 0x0f, 0x00,     // reference_type, no children
+                0x0b, 0x0b,         // byte_size, data1
+                0x49, 0x13,         // type, ref4
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                18, 0x0d, 0x00,     // member, no children
+                0x03, 0x0e,         // name, strp
+                0x49, 0x13,         // type, ref4
+                0x38, 0x0f,         // data_member_location, udata (LEB128)
+                0x00, 0x00,
+            });
+
+            w(abbrev, new uint[]
+            {
+                19, 0x05, 0x00,     // formal_parameter, no children
+                0x49, 0x13,         // type, ref4
+                0x34, 0x19,         // artificial, flag_present
+                0x00, 0x00,         // terminate
+            });
+
+            // last unit should have type 0
+            w(abbrev, new uint[]
+            {
+                0x00, 0x00
+            });
+        }
+
+        /* Here, we store all the allocated and non-allocated types etc that we
+         *  later need to access.
+         * Calling the 'Get' function will create a blank DIE if necessary but ensure
+         *  that DIE's are unique for each spec type */
+        Dictionary<string, DwarfNSDIE> ns_dies = new Dictionary<string, DwarfNSDIE>();
+        Dictionary<metadata.TypeSpec, DwarfTypeDIE> type_dies = new Dictionary<metadata.TypeSpec, DwarfTypeDIE>();
+        Dictionary<metadata.MethodSpec, DwarfMethodDIE> method_dies = new Dictionary<metadata.MethodSpec, DwarfMethodDIE>();
+
+        public DwarfNSDIE GetNSDie(string ns)
+        {
+            DwarfNSDIE ret;
+            if (ns_dies.TryGetValue(ns, out ret))
+                return ret;
+            ret = new DwarfNSDIE();
+            ret.ns = ns;
+            ret.t = t;
+            ret.dcu = this;
+            ns_dies[ns] = ret;
+            return ret;
+        }
+
+        public DwarfTypeDIE GetTypeDie(metadata.TypeSpec ts)
+        {
+            DwarfTypeDIE ret;
+            if (type_dies.TryGetValue(ts, out ret))
+                return ret;
+            ret = new DwarfTypeDIE();
+            ret.ts = ts;
+            ret.t = t;
+            ret.dcu = this;
+            type_dies[ts] = ret;
+
+            // Generate namespace too
+            var ns = GetNSDie(ts.Namespace);
+            ns.Children.Add(ret);
+
+            // Ensure base classes etc are referenced
+            if (ts.GetExtends() != null)
+                GetTypeDie(ts.GetExtends());
+            switch(ts.stype)
+            {
+                case metadata.TypeSpec.SpecialType.Array:
+                case metadata.TypeSpec.SpecialType.SzArray:
+                case metadata.TypeSpec.SpecialType.MPtr:
+                case metadata.TypeSpec.SpecialType.Ptr:
+                    GetTypeDie(ts.other);
+                    break;
+            }
+
+            // Ensure field types are referenced
+            if(ts.SimpleType == 0x1c ||     // Object
+                ts.SimpleType == 0x0e ||    // String
+                (ts.SimpleType == 0 &&
+                ts.stype == metadata.TypeSpec.SpecialType.None &&
+                ts.m == m)) // Class/struct in current module
+            {
+                bool is_tls;
+                List<metadata.TypeSpec> fld_types = new List<metadata.TypeSpec>();
+                List<string> fnames = new List<string>();
+                List<int> foffsets = new List<int>();
+
+                layout.Layout.GetFieldOffset(ts, null, t, out is_tls,
+                    false, fld_types, fnames, foffsets);
+                for(int i = 0; i < fld_types.Count; i++)
+                {
+                    var ft = fld_types[i];
+
+                    var fdie = new DwarfMemberDIE();
+                    fdie.dcu = dcu;
+                    fdie.Name = fnames[i];
+                    fdie.FieldOffset = foffsets[i];
+                    fdie.FieldType = GetTypeDie(ft);
+                    fdie.t = t;
+                    ret.Children.Add(fdie);
+                }
+
+                layout.Layout.GetFieldOffset(ts, null, t, out is_tls,
+                    true, fld_types);
+                foreach (var ft in fld_types)
+                    GetTypeDie(ft);
+            }
+
+            return ret;
+        }
+
+        public DwarfMethodDIE GetMethodDie(metadata.MethodSpec ms)
+        {
+            DwarfMethodDIE ret;
+            if (method_dies.TryGetValue(ms, out ret))
+                return ret;
+            ret = new DwarfMethodDIE();
+            ret.ms = ms;
+            ret.t = t;
+            ret.dcu = this;
+            method_dies[ms] = ret;
+            return ret;
+        }
+    }
+
+    /** <summary>All the various .debug sections for the current compilation</summary> */
+    public class DwarfSections
+    {
+        public binary_library.ISection abbrev, aranges, frame, info, line, loc, macinfo, pubnames, pubtypes,
+            ranges, str, types;
+        public binary_library.IBinaryFile bf;
+        public StringMap smap = new StringMap();
+
+        binary_library.ISection CreateDwarfSection(string name)
+        {
+            name = ".debug_" + name;
+
+            var ret = bf.FindSection(name);
+            if (ret != null)
+                return ret;
+
+            ret = bf.CreateContentsSection();
+            ret.IsAlloc = false;
+            ret.IsExecutable = false;
+            ret.IsWriteable = false;
+            ret.Name = name;
+
+            bf.AddSection(ret);
+            return ret;
+        }
+        public DwarfSections(binary_library.IBinaryFile _bf)
+        {
+            bf = _bf;
+
+            abbrev = CreateDwarfSection("abbrev");
+            aranges = CreateDwarfSection("aranges");
+            frame = CreateDwarfSection("frame");
+            info = CreateDwarfSection("info");
+            line = CreateDwarfSection("line");
+            loc = CreateDwarfSection("loc");
+            macinfo = CreateDwarfSection("macinfo");
+            pubnames = CreateDwarfSection("pubnames");
+            pubtypes = CreateDwarfSection("pubtypes");
+            ranges = CreateDwarfSection("ranges");
+            str = CreateDwarfSection("str");
+            types = CreateDwarfSection("types");
+        }
+    }
+}

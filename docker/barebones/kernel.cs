@@ -34,11 +34,9 @@ namespace BareBones
 		
 	unsafe class Program
 	{
-		static int pos = 0;
-
 		static Console c = new Console((byte *)0xb8000);
 
-		unsafe static void Main()
+		static void Main()
 		{
 			c.Clear();
 

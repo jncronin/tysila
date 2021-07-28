@@ -57,6 +57,8 @@ namespace tysila4
         static bool data_sects = false;
         static bool class_sects = false;
 
+        static bool do_dwarf = true;
+
         public static string DirectoryDelimiter
         {
             get
@@ -228,6 +230,14 @@ namespace tysila4
                     return;
             }
 
+            libtysila5.dwarf.DwarfCU dwarf = null;
+            if(do_dwarf)
+            {
+                dwarf = new libtysila5.dwarf.DwarfCU();
+                dwarf.m = m;
+                dwarf.t = t;
+            }
+
             if (output_file != null)
             {
                 var bf = new binary_library.elf.ElfFile(binary_library.Bitness.Bits32);
@@ -378,7 +388,7 @@ namespace tysila4
                         }
 
                         libtysila5.libtysila.AssembleMethod(ms.ms,
-                            bf, t, debug, m, ms.c, tsect, datasect);
+                            bf, t, debug, m, ms.c, tsect, datasect, dwarf);
                         if (!quiet)
                             Console.WriteLine(ms.ms.m.MangleMethod(ms.ms));
                     }
@@ -533,6 +543,14 @@ namespace tysila4
                     csect.Data.Add(0);
                 }
                 bf.AddSection(csect);
+
+                /* Add debugger sections */
+                if(dwarf != null)
+                {
+                    var dwarf_sects = new libtysila5.dwarf.DwarfSections(bf);
+                    dwarf.WriteToOutput(dwarf_sects);
+                }
+
 
                 /* Write output file */
                 bf.Filename = output_file;

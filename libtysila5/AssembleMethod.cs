@@ -35,7 +35,8 @@ namespace libtysila5
             MetadataStream base_m = null,
             Code code_override = null,
             binary_library.ISection ts = null,
-            binary_library.ISection data_sect = null)
+            binary_library.ISection data_sect = null,
+            dwarf.DwarfCU dcu = null)
         {
             if(ms.ret_type_needs_boxing)
             {
@@ -306,6 +307,161 @@ namespace libtysila5
             if (data_sect == null)
                 data_sect = bf.GetDataSection();
             t.sigt.WriteToOutput(bf, ms.m, t, data_sect);
+
+            /* DWARF output */
+            if (dcu != null)
+            {
+                var ddie = dcu.GetMethodDie(ms);
+                ddie.sym = meth_syms[0];
+                ddie.cil = cil;
+
+                var ddts = dcu.GetTypeDie(ms.type);
+                ddts.Children.Add(ddie);
+
+                if(ms.ReturnType != null)
+                {
+                    dcu.GetTypeDie(ms.ReturnType);
+                }
+                foreach(var la in cil.la_types)
+                {
+                    dcu.GetTypeDie(la);
+                }
+
+                if(!ms.IsStatic)
+                {
+                    dcu.GetTypeDie(ms.type.Pointer);
+                }
+
+                // do we have source lines?
+                if(ms.m.pdb != null && ms.mdrow > 0)
+                {
+                    var sps = ms.m.pdb.DebugGetSeqPtForMDRow(ms.mdrow);
+                    if (sps != null && cil.cil != null && cil.cil.Count > 0)
+                    {
+                        /* Start building a Line Number Program
+                         * 
+                         * We follow the example in DWARF4 D.5 (p251), with a few changes
+                         * 
+                         * header - defined per CU
+                         *   - add this/these source files to it if necessary
+                         *                          
+                         * DW_LNE_set_address - psize 0s, reloc to mangled name
+                         * DW_LNS_advance_pc - mc_offset of first cil instruction
+                         * DW_LNS_set_prologue_end
+                         * DW_LNS_set_file - source file
+                         * SPECIAL(0,0) - add first opcode
+                         * SPECIAL(x,y) - add rest of opcodes
+                         * DW_LNE_end_sequence
+                         * 
+                         */
+
+                        string cur_file = null;
+                        int cur_line = 1;
+                        int cur_mc = 0;
+                        int cur_col = 0;
+
+                        var lnp = dcu.lnp;
+
+                        // DW_LNE_set_address
+                        lnp.AddRange(new byte[] { 0x00, (byte)(t.psize + 1), 0x02 });
+                        dcu.lnp_relocs.Add(lnp.Count, meth_syms[0]);
+                        for (int i = 0; i < t.psize; i++)
+                            lnp.Add(0);
+
+                        // DW_LNS_advance_pc
+                        lnp.Add(0x02);
+                        dcu.w(lnp, (uint)cil.cil[0].mc_offset);
+                        cur_mc = cil.cil[0].mc_offset;
+
+                        // DW_LNS_set_prologue_end
+                        lnp.Add(0x0a);
+                        
+                        foreach(var cn in cil.cil)
+                        {
+                            var mc_advance = cn.mc_offset - cur_mc;
+
+                            // get current line number
+                            MetadataStream.SeqPt csp = null;
+                            foreach(var sp in sps)
+                            {
+                                if(sp.IlOffset == cn.il_offset &
+                                    !sp.IsHidden)
+                                {
+                                    csp = sp;
+                                    break;
+                                }
+                            }
+                            if(csp != null)
+                            {
+                                var line_advance = csp.StartLine - cur_line;
+
+                                if(csp.DocName != cur_file)
+                                {
+                                    // DW_LNS_set_file
+                                    lnp.Add(0x04);
+
+                                    uint file_no;
+                                    if(!dcu.lnp_files.TryGetValue(csp.DocName, out file_no))
+                                    {
+                                        file_no = (uint)(dcu.lnp_files.Count + 1);
+                                        dcu.lnp_files[csp.DocName] = file_no;
+                                        dcu.lnp_fnames.Add(csp.DocName);
+                                    }
+
+                                    dcu.w(lnp, file_no);
+
+                                    cur_file = csp.DocName;
+                                }
+
+                                if(csp.StartCol != cur_col)
+                                {
+                                    // DW_LNS_set_column
+                                    lnp.Add(0x05);
+                                    dcu.w(lnp, (uint)csp.StartCol);
+                                    cur_col = csp.StartCol;
+                                }
+
+                                /* SPECIAL if possible
+                                 *  Use example on DWARF4 p132:
+                                 *      opcode_base = 13, line_base = -3, line_range = 12
+                                 *  
+                                 *  Gives a line advance range of [-3,8] and op_advance [0,19]
+                                */
+                                if((line_advance >= -3 && line_advance <= 8) &&
+                                    (mc_advance >= 0 && mc_advance <= 19))
+                                {
+                                    var spec_opcode = (line_advance - (-3)) +
+                                        (12 * mc_advance) + 13;
+                                    lnp.Add((byte)spec_opcode);
+                                }
+                                else
+                                {
+                                    // DW_LNS_advance_pc
+                                    lnp.Add(0x02);
+                                    dcu.w(lnp, (uint)mc_advance);
+
+                                    // DW_LNS_advance_line
+                                    lnp.Add(0x03);
+                                    dcu.w(lnp, (uint)line_advance);
+
+                                    // SPECIAL(0,0)
+                                    var spec_opcode = (0 - (-3)) + (12 * 0) + 13;
+                                    lnp.Add((byte)spec_opcode);
+                                }
+
+                                cur_line += line_advance;
+                                cur_mc += mc_advance;
+                            }
+                        }
+
+                        // DW_LNE_end_sequence
+                        lnp.Add(0x00);
+                        lnp.Add(0x01);
+                        lnp.Add(0x01);
+
+                    }
+                }
+            }
 
             return true;
         }
