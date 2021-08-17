@@ -437,11 +437,12 @@ namespace libtysila5
                                  *  
                                  *  Gives a line advance range of [-3,8] and op_advance [0,19]
                                 */
-                                if((line_advance >= -3 && line_advance <= 8) &&
-                                    (mc_advance >= 0 && mc_advance <= 19))
+
+                                if((line_advance >= dcu.line_base && line_advance < (dcu.line_base + dcu.line_range)) &&
+                                    (mc_advance >= 0 && mc_advance < dcu.mc_advance_max))
                                 {
-                                    var spec_opcode = (line_advance - (-3)) +
-                                        (12 * mc_advance) + 13;
+                                    var spec_opcode = (line_advance - dcu.line_base) +
+                                        (dcu.line_range * mc_advance) + dcu.opcode_base;
                                     lnp.Add((byte)spec_opcode);
                                 }
                                 else
@@ -455,7 +456,7 @@ namespace libtysila5
                                     dwarf.DwarfDIE.w(lnp, line_advance);
 
                                     // SPECIAL(0,0)
-                                    var spec_opcode = (0 - (-3)) + (12 * 0) + 13;
+                                    var spec_opcode = (0 - dcu.line_base) + dcu.opcode_base;
                                     lnp.Add((byte)spec_opcode);
                                 }
 
@@ -463,6 +464,11 @@ namespace libtysila5
                                 cur_mc += mc_advance;
                             }
                         }
+
+                        // Advance to end
+                        var to_advance = (int)meth_syms[0].Size - cur_mc;
+                        lnp.Add(0x02);
+                        dwarf.DwarfDIE.w(lnp, to_advance);
 
                         // DW_LNE_end_sequence
                         lnp.Add(0x00);

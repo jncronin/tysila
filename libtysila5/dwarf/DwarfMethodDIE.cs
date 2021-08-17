@@ -293,4 +293,31 @@ namespace libtysila5.dwarf
         }
     }
 
+    public class DwarfMethodDefDIE : DwarfDIE
+    {
+        public DwarfMethodDIE decl { get; set; }
+
+        public override void WriteToOutput(DwarfSections ds, IList<byte> d, DwarfDIE parent)
+        {
+            w(d, 22);
+            dcu.fmap[d.Count] = decl;
+            for (int i = 0; i < 4; i++)
+                d.Add(0);
+
+            var low_r = ds.bf.CreateRelocation();
+            low_r.Type = t.GetDataToDataReloc();
+            low_r.Offset = (ulong)d.Count;
+            low_r.References = ds.bf.FindSymbol(decl.ms.MangleMethod());
+            low_r.DefinedIn = ds.info;
+            ds.bf.AddRelocation(low_r);
+            wp(d);  // low_pc
+            wp(d, low_r.References.Size);  // high_pc
+
+            foreach (var child in decl.Children)
+                child.WriteToOutput(ds, d, this);
+
+            d.Add(0);
+        }
+    }
+
 }

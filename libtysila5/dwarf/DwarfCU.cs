@@ -368,6 +368,11 @@ namespace libtysila5.dwarf
                 odbgsect.pubnames.Data.Add(d[i]);
         }
 
+        public int opcode_base = 13;
+        public int line_base = -3;
+        public int line_range = 6;
+        public int mc_advance_max { get { return (255 - opcode_base) / line_range; } }
+
         private void WriteLines(DwarfSections odbgsect)
         {
             /* Write lines header */
@@ -404,13 +409,16 @@ namespace libtysila5.dwarf
             d.Add(1);
 
             // line_base
-            d.Add(0xfd);    // -3
+            if (line_base < 0)
+                d.Add((byte)(0x100 + line_base));
+            else
+                d.Add((byte)line_base);
 
             // line_range
-            d.Add(12);
+            d.Add((byte)line_range);
 
             // opcode_base
-            d.Add(13);
+            d.Add((byte)opcode_base);
 
             // standard_opcode_lengths
             d.AddRange(new byte[] { 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1 });
@@ -563,6 +571,16 @@ namespace libtysila5.dwarf
                 }
             }
 
+            /* Add defintions for all the methods in the main namespace */
+            foreach(var methkvp in method_dies)
+            {
+                var methdef = new DwarfMethodDefDIE();
+                methdef.dcu = this;
+                methdef.t = t;
+                methdef.decl = methkvp.Value;
+                Children.Add(methdef);
+            }
+
             // Write children
             base.WriteToOutput(ds, d, null);
 
@@ -636,6 +654,7 @@ namespace libtysila5.dwarf
          *    19 - formal_parameter with no name and artificial flag set
          *    20 - typedef
          *    21 - variable
+         *    22 - method definition
          */
         private void WriteAbbrev(binary_library.ISection abbrev)
         {
@@ -686,6 +705,8 @@ namespace libtysila5.dwarf
                 0x12, dtype,        // high_pc, data (i.e. length)
                 0x32, 0x0b,         // accessibility, data1
                 0x6e, 0x0e,         // linkage_name, strp
+                0x3c, 0x19,         // declaration, present
+                0x27, 0x19,         // prototyped, present
                 0x00, 0x00,         // terminate
             });
 
@@ -698,6 +719,8 @@ namespace libtysila5.dwarf
                 0x32, 0x0b,         // accessibility, data1
                 0x6e, 0x0e,         // linkage_name, strp
                 0x49, 0x13,         // type, ref4
+                0x3c, 0x19,         // declaration, present
+                0x27, 0x19,         // prototyped, present
                 0x00, 0x00,         // terminate
             });
 
@@ -710,6 +733,8 @@ namespace libtysila5.dwarf
                 0x32, 0x0b,         // accessibility, data1
                 0x6e, 0x0e,         // linkage_name, strp
                 0x64, 0x13,         // object_pointer, ref4
+                0x3c, 0x19,         // declaration, present
+                0x27, 0x19,         // prototyped, present
                 0x00, 0x00,         // terminate
             });
 
@@ -723,6 +748,8 @@ namespace libtysila5.dwarf
                 0x6e, 0x0e,         // linkage_name, strp
                 0x49, 0x13,         // type, ref4
                 0x64, 0x13,         // object_pointer, ref4
+                0x3c, 0x19,         // declaration, present
+                0x27, 0x19,         // prototyped, present
                 0x00, 0x00,         // terminate
             });
 
@@ -736,6 +763,8 @@ namespace libtysila5.dwarf
                 0x6e, 0x0e,         // linkage_name, strp
                 0x64, 0x13,         // object_pointer, ref4
                 0x4c, 0x0b,         // virtuality, data1
+                0x3c, 0x19,         // declaration, present
+                0x27, 0x19,         // prototyped, present
                 0x00, 0x00,         // terminate
             });
 
@@ -750,6 +779,8 @@ namespace libtysila5.dwarf
                 0x49, 0x13,         // type, ref4
                 0x64, 0x13,         // object_pointer, ref4
                 0x4c, 0x0b,         // virtuality, data1
+                0x3c, 0x19,         // declaration, present
+                0x27, 0x19,         // prototyped, present
                 0x00, 0x00,         // terminate
             });
 
@@ -844,7 +875,17 @@ namespace libtysila5.dwarf
                 0x02, 0x18,         // location, exprloc
                 0x00, 0x00,         // terminate
             });
-            
+
+            w(abbrev, new uint[]
+{
+                22, 0x2e, 0x01,      // subprogram, has children
+                0x47, 0x13,         // specification, ref4
+                0x11, 0x01,         // low_pc, addr  
+                0x12, dtype,        // high_pc, data (i.e. length)
+                //0x64, 0x13,         // object_pointer, ref4
+                0x00, 0x00,         // terminate
+            });
+
             // last unit should have type 0
             w(abbrev, new uint[]
             {
