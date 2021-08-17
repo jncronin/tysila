@@ -233,9 +233,7 @@ namespace tysila4
             libtysila5.dwarf.DwarfCU dwarf = null;
             if(do_dwarf)
             {
-                dwarf = new libtysila5.dwarf.DwarfCU();
-                dwarf.m = m;
-                dwarf.t = t;
+                dwarf = new libtysila5.dwarf.DwarfCU(t, m);
             }
 
             if (output_file != null)

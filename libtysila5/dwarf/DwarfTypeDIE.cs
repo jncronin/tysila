@@ -7,7 +7,8 @@ namespace libtysila5.dwarf
     public class DwarfTypeDIE : DwarfParentDIE
     {
         public metadata.TypeSpec ts { get; set; }
-        public override void WriteToOutput(DwarfSections ds, IList<byte> d)
+        public string NameOverride { get; set; }
+        public override void WriteToOutput(DwarfSections ds, IList<byte> d, DwarfDIE parent)
         {
             int abbrev;
 
@@ -32,7 +33,7 @@ namespace libtysila5.dwarf
                     if(ts.SimpleType != 0)
                     {
                         // base_type
-                        WriteBaseType(ts.SimpleType, ds, d);
+                        WriteBaseType(ts.SimpleType, ds, d, parent);
                     }
                     else if(ts.IsValueType && (ts.m == dcu.m))
                     {
@@ -43,7 +44,7 @@ namespace libtysila5.dwarf
                             w(d, ts.Name, ds.smap);
                             w(d, (uint)t.GetSize(ts));
 
-                            base.WriteToOutput(ds, d);
+                            base.WriteToOutput(ds, d, parent);
                         }
                         else
                         {
@@ -60,7 +61,7 @@ namespace libtysila5.dwarf
                             w(d, ts.Name, ds.smap);
                             w(d, (uint)t.GetSize(ts));
 
-                            base.WriteToOutput(ds, d);
+                            base.WriteToOutput(ds, d, parent);
                         }
                         else
                         {
@@ -75,10 +76,108 @@ namespace libtysila5.dwarf
             }
         }
 
-        private void WriteBaseType(int st, DwarfSections ds, IList<byte> d)
+        private void WriteBaseType(int st, DwarfSections ds, IList<byte> d, DwarfDIE parent)
         {
-            switch(st)
+            if (parent is DwarfNSDIE && ((DwarfNSDIE)parent).ns == "System" && dcu.basetype_dies.ContainsKey(st))
             {
+                // These are typedefs to types in the global scope
+                d.Add(20);
+                w(d, ts.Name, ds.smap);
+                dcu.fmap[d.Count] = dcu.basetype_dies[st];
+                for (int i = 0; i < 4; i++) d.Add(0);
+
+                if (st == 0x1c)
+                    System.Diagnostics.Debugger.Break();
+            }
+            else
+            {
+                /* There are a few CLI basetypes that do not have C# equivalents
+                 * or this is a string/object in the main namespace */
+                switch (st)
+                {
+                    case 0x11:
+                        // ValueType
+                        // class_type
+                        d.Add(13);
+                        w(d, "ValueType", ds.smap);
+                        w(d, (uint)t.GetSize(ts));
+                        base.WriteToOutput(ds, d, parent);
+                        break;
+
+                    case 0x18:
+                        // IntPtr
+                        d.Add(20);
+                        w(d, "IntPtr", ds.smap);
+                        dcu.fmap[d.Count] = dcu.basetype_dies[t.psize == 4 ? 0x08 : 0x0a];
+                        for (int i = 0; i < 4; i++) d.Add(0);
+                        break;
+
+                    case 0x19:
+                        // IntPtr
+                        d.Add(20);
+                        w(d, "UIntPtr", ds.smap);
+                        dcu.fmap[d.Count] = dcu.basetype_dies[t.psize == 4 ? 0x09 : 0x0b];
+                        for (int i = 0; i < 4; i++) d.Add(0);
+                        break;
+
+                    case 0x0e:
+                        // String
+                        // class_type
+                        d.Add(13);
+                        w(d, NameOverride ?? "String", ds.smap);
+                        w(d, 0);        // size - TODO
+                        base.WriteToOutput(ds, d, parent);
+                        break;
+
+                    case 0x1c:
+                        // Object
+                        // class_type
+                        d.Add(13);
+                        w(d, NameOverride ?? "Object", ds.smap);
+                        w(d, (uint)t.GetSize(ts));
+                        base.WriteToOutput(ds, d, parent);
+                        break;
+
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+        }
+    }
+
+    public class DwarfMemberDIE : DwarfDIE
+    {
+        public string Name { get; set; }
+        public int FieldOffset { get; set; }
+        public DwarfDIE FieldType { get; set; }
+
+        public override void WriteToOutput(DwarfSections ds, IList<byte> d, DwarfDIE parent)
+        {
+            d.Add(18);
+            w(d, Name, ds.smap);
+            dcu.fmap[d.Count] = FieldType;
+            for (int i = 0; i < 4; i++)
+                d.Add(0);
+            w(d, (uint)FieldOffset);
+        }
+    }
+
+    public class DwarfBaseTypeDIE : DwarfParentDIE
+    {
+        public int stype { get; set; }
+
+        public override void WriteToOutput(DwarfSections ds, IList<byte> d, DwarfDIE parent)
+        {
+            switch (stype)
+            {
+                case 0x02:
+                    // bool
+                    d.Add(15);
+                    w(d, "bool", ds.smap);
+                    d.Add((byte)t.GetSize(dcu.m.SystemBool));
+                    d.Add(0x07);    // unsigned
+                    break;
+
                 case 0x03:
                     // Char
                     d.Add(15);
@@ -151,66 +250,26 @@ namespace libtysila5.dwarf
                     d.Add(0x07);    // unsigned
                     break;
 
-                case 0x0e:
-                    // ValueType
-                    // class_type
-                    d.Add(13);
-                    w(d, "String", ds.smap);
-                    w(d, 0);        // size - TODO
-                    base.WriteToOutput(ds, d);
-
-                    break;
-
-                case 0x11:
-                    // ValueType
-                    // class_type
-                    d.Add(13);
-                    w(d, "ValueType", ds.smap);
-                    w(d, (uint)t.GetSize(ts));
-                    base.WriteToOutput(ds, d);
-
-                    break;
-
-                case 0x18:
-                    // IntPtr
+                case 0x0c:
+                    // R4
                     d.Add(15);
-                    w(d, "IntPtr", ds.smap);
-                    d.Add((byte)t.psize);
-                    d.Add(0x05);    // signed
+                    w(d, "float", ds.smap);
+                    d.Add(4);
+                    d.Add(0x04);    // float
                     break;
 
-                case 0x1c:
-                    // Object
-                    // class_type
-                    d.Add(13);
-                    w(d, "Object", ds.smap);
-                    w(d, (uint)t.GetSize(ts));
-                    base.WriteToOutput(ds, d);
-
+                case 0x0d:
+                    // R8
+                    d.Add(15);
+                    w(d, "double", ds.smap);
+                    d.Add(8);
+                    d.Add(0x04);    // float
                     break;
-
-
+                    
 
                 default:
                     throw new NotImplementedException();
             }
-        }
-    }
-
-    public class DwarfMemberDIE : DwarfDIE
-    {
-        public string Name { get; set; }
-        public int FieldOffset { get; set; }
-        public DwarfTypeDIE FieldType { get; set; }
-
-        public override void WriteToOutput(DwarfSections ds, IList<byte> d)
-        {
-            d.Add(18);
-            w(d, Name, ds.smap);
-            dcu.fmap[d.Count] = FieldType;
-            for (int i = 0; i < 4; i++)
-                d.Add(0);
-            w(d, (uint)FieldOffset);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace libtysila5.dwarf
 
         public DwarfCU dcu { get; set; }
 
-        public abstract void WriteToOutput(DwarfSections ds, IList<byte> d);
+        public abstract void WriteToOutput(DwarfSections ds, IList<byte> d, DwarfDIE parent);
 
         /** <summary>Write string offset to output</summary> */
         protected void w(IList<byte> d, string s, StringMap smap)
@@ -64,7 +64,7 @@ namespace libtysila5.dwarf
         }
 
         /** <summary>LEB128 encode data to output file</summary> */
-        public void w(IList<byte> s, uint data)
+        public static void w(IList<byte> s, uint data)
         {
             do
             {
@@ -76,6 +76,33 @@ namespace libtysila5.dwarf
             } while (data != 0);
         }
 
+        /** <summary>LEB128 encode data to output file</summary> */
+        public static void w(IList<byte> s, int data)
+        {
+            bool more = true;
+            bool negative = data < 0;
+            var size = 32;
+
+            while(more)
+            {
+                var b = data & 0x7f;
+                data >>= 7;
+                if(negative)
+                {
+                    data |= -(1 << (size - 7));
+                }
+                if((data == 0 && (b & 0x40) == 0) ||
+                    (data == -1 && (b & 0x40) == 0x40))
+                {
+                    more = false;
+                }
+                else
+                {
+                    b |= 0x80;
+                }
+                s.Add((byte)b);
+            }
+        }
     }
 
     public class StringMap
@@ -111,12 +138,12 @@ namespace libtysila5.dwarf
     {
         public List<DwarfDIE> Children { get; } = new List<DwarfDIE>();
 
-        public override void WriteToOutput(DwarfSections ds, IList<byte> dinfo)
+        public override void WriteToOutput(DwarfSections ds, IList<byte> dinfo, DwarfDIE parent)
         {
             foreach (var c in Children)
             {
                 c.Offset = dinfo.Count;
-                c.WriteToOutput(ds, dinfo);
+                c.WriteToOutput(ds, dinfo, this);
             }
 
             dinfo.Add(0);    // null-terminate
@@ -129,9 +156,51 @@ namespace libtysila5.dwarf
         /** <summary>The original metadata stream we load from</summary> */
         public metadata.MetadataStream m { get; set; }
 
-        public DwarfCU()
+        public DwarfCU(target.Target target, metadata.MetadataStream mdata)
         {
             dcu = this;
+            t = target;
+            m = mdata;
+
+            AddBaseTypes();
+        }
+
+        private void AddBaseTypes()
+        {
+            int[] btypes = new int[]
+            {
+                0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+                0x0a, 0x0b, 0x0c, 0x0d, 0x1c, 0x0e
+            };
+            /* Force there to be a base type in the empty namespace,
+             * with C# style names.
+             * 
+             * Link to these using typedefs from System namespace (GDB
+             * doesn't seem to like base types in namespaces) */
+            foreach (var btype in btypes)
+            {
+                DwarfDIE btdie;
+                switch(btype)
+                {
+                    case 0x0e:
+                        // string
+                        btdie = GetTypeDie(m.SystemString, false);
+                        ((DwarfTypeDIE)btdie).NameOverride = "string";
+                        type_dies.Remove(m.SystemString);
+                        break;
+                    case 0x1c:
+                        // object
+                        btdie = GetTypeDie(m.SystemObject, false);
+                        ((DwarfTypeDIE)btdie).NameOverride = "object";
+                        type_dies.Remove(m.SystemObject);
+                        break;
+                    default:
+                        btdie = new DwarfBaseTypeDIE() { dcu = this, t = t, stype = btype };
+                        break;
+                }
+                basetype_dies[btype] = btdie;
+                Children.Add(btdie);
+            }
         }
 
         /** <summary>Use when ref4s are not yet calculable.
@@ -156,6 +225,147 @@ namespace libtysila5.dwarf
             odbgsect.smap.Write(odbgsect.str);
 
             WriteLines(odbgsect);
+
+            WritePubTypes(odbgsect);
+            WritePubNames(odbgsect);
+        }
+
+        private void WritePubTypes(DwarfSections odbgsect)
+        {
+            /* Write lines header */
+            List<byte> d = new List<byte>();
+
+            // Reserve space for unit_length
+            if (t.psize == 4)
+            {
+                for (int i = 0; i < 4; i++)
+                    d.Add(0);
+            }
+            else
+            {
+                for (int i = 0; i < 12; i++)
+                    d.Add(0);
+            }
+
+            // version
+            d.Add(2);
+            d.Add(0);
+
+            // debug_info_offset
+            for (int i = 0; i < t.psize; i++)
+                d.Add(0);
+
+            // debug_info_length
+            var length = odbgsect.info.Data.Count;
+            var bytes = (t.psize == 4) ? BitConverter.GetBytes((int)length) :
+                BitConverter.GetBytes((long)length);
+            foreach (var b in bytes)
+                d.Add(b);
+
+            foreach(var kvp in type_dies)
+            {
+                // offset
+                bytes = (t.psize == 4) ? BitConverter.GetBytes((int)kvp.Value.Offset) :
+                    BitConverter.GetBytes((long)kvp.Value.Offset);
+                foreach (var b in bytes)
+                    d.Add(b);
+
+                // name
+                foreach (var c in kvp.Key.Name)
+                    d.Add((byte)c);
+                d.Add(0);
+            }
+
+            // Finally, patch the length back in
+            if (t.psize == 4)
+            {
+                uint len = (uint)d.Count - 4;
+                bytes = BitConverter.GetBytes(len);
+                for (int i = 0; i < 4; i++)
+                    d[i] = bytes[i];
+            }
+            else
+            {
+                ulong len = (ulong)d.Count - 12;
+                bytes = BitConverter.GetBytes(len);
+                for (int i = 0; i < 4; i++)
+                    d[i] = 0xff;
+                for (int i = 0; i < 8; i++)
+                    d[i + 4] = bytes[i];
+            }
+
+            // Store to section
+            for (int i = 0; i < d.Count; i++)
+                odbgsect.pubtypes.Data.Add(d[i]);
+        }
+
+        private void WritePubNames(DwarfSections odbgsect)
+        {
+            /* Write lines header */
+            List<byte> d = new List<byte>();
+
+            // Reserve space for unit_length
+            if (t.psize == 4)
+            {
+                for (int i = 0; i < 4; i++)
+                    d.Add(0);
+            }
+            else
+            {
+                for (int i = 0; i < 12; i++)
+                    d.Add(0);
+            }
+
+            // version
+            d.Add(2);
+            d.Add(0);
+
+            // debug_info_offset
+            for (int i = 0; i < t.psize; i++)
+                d.Add(0);
+
+            // debug_info_length
+            var length = odbgsect.info.Data.Count;
+            var bytes = (t.psize == 4) ? BitConverter.GetBytes((int)length) :
+                BitConverter.GetBytes((long)length);
+            foreach (var b in bytes)
+                d.Add(b);
+
+            foreach (var kvp in method_dies)
+            {
+                // offset
+                bytes = (t.psize == 4) ? BitConverter.GetBytes((int)kvp.Value.Offset) :
+                    BitConverter.GetBytes((long)kvp.Value.Offset);
+                foreach (var b in bytes)
+                    d.Add(b);
+
+                // name
+                foreach (var c in kvp.Key.MangleMethod())
+                    d.Add((byte)c);
+                d.Add(0);
+            }
+
+            // Finally, patch the length back in
+            if (t.psize == 4)
+            {
+                uint len = (uint)d.Count - 4;
+                bytes = BitConverter.GetBytes(len);
+                for (int i = 0; i < 4; i++)
+                    d[i] = bytes[i];
+            }
+            else
+            {
+                ulong len = (ulong)d.Count - 12;
+                bytes = BitConverter.GetBytes(len);
+                for (int i = 0; i < 4; i++)
+                    d[i] = 0xff;
+                for (int i = 0; i < 8; i++)
+                    d[i + 4] = bytes[i];
+            }
+
+            // Store to section
+            for (int i = 0; i < d.Count; i++)
+                odbgsect.pubnames.Data.Add(d[i]);
         }
 
         private void WriteLines(DwarfSections odbgsect)
@@ -311,7 +521,19 @@ namespace libtysila5.dwarf
             w(d, 1);
             w(d, "tysila", string_map);
             w(d, 0x4);  // pretend to be C++
-            w(d, m.AssemblyName, string_map);
+
+            var fname = m.file.Name;
+            if(fname == null || fname.Equals(string.Empty))
+            {
+                w(d, m.AssemblyName, string_map);
+                w(d, "", string_map);
+            }
+            else
+            {
+                var finfo = new System.IO.FileInfo(fname);
+                w(d, finfo.Name, string_map);
+                w(d, finfo.DirectoryName, string_map);
+            }
 
             // store low/high pc offsets for patching later
             var low_pc_offset = d.Count;
@@ -342,7 +564,7 @@ namespace libtysila5.dwarf
             }
 
             // Write children
-            base.WriteToOutput(ds, d);
+            base.WriteToOutput(ds, d, null);
 
             // Patch relocs
             byte[] bytes;
@@ -412,6 +634,8 @@ namespace libtysila5.dwarf
          *    17 - reference
          *    18 - member
          *    19 - formal_parameter with no name and artificial flag set
+         *    20 - typedef
+         *    21 - variable
          */
         private void WriteAbbrev(binary_library.ISection abbrev)
         {
@@ -423,6 +647,7 @@ namespace libtysila5.dwarf
                 0x25, 0x0e,         // producer, strp
                 0x13, 0x0b,         // language, data1
                 0x03, 0x0e,         // name, strp
+                0x1b, 0x0e,         // comp_dir, strp
                 0x11, 0x01,         // low_pc, addr  
                 0x12, dtype,        // high_pc, data (i.e. length)
                 0x10, 0x17,         // stmt_list, sec_offset
@@ -533,6 +758,7 @@ namespace libtysila5.dwarf
                 11, 0x05, 0x00,     // formal_parameter, no children
                 0x03, 0x0e,         // name, strp
                 0x49, 0x13,         // type, ref4
+                0x02, 0x18,         // location, exprloc
                 0x00, 0x00,         // terminate
             });
 
@@ -598,9 +824,27 @@ namespace libtysila5.dwarf
                 19, 0x05, 0x00,     // formal_parameter, no children
                 0x49, 0x13,         // type, ref4
                 0x34, 0x19,         // artificial, flag_present
+                0x02, 0x18,         // location, exprloc
                 0x00, 0x00,         // terminate
             });
 
+            w(abbrev, new uint[]
+            {
+                20, 0x16, 0x00,     // typedef, no children
+                0x03, 0x0e,         // name, strp
+                0x49, 0x13,         // type, ref4
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                21, 0x34, 0x00,     // variable, no children
+                0x03, 0x0e,         // name, strp
+                0x49, 0x13,         // type, ref4
+                0x02, 0x18,         // location, exprloc
+                0x00, 0x00,         // terminate
+            });
+            
             // last unit should have type 0
             w(abbrev, new uint[]
             {
@@ -615,7 +859,8 @@ namespace libtysila5.dwarf
         Dictionary<string, DwarfNSDIE> ns_dies = new Dictionary<string, DwarfNSDIE>();
         Dictionary<metadata.TypeSpec, DwarfTypeDIE> type_dies = new Dictionary<metadata.TypeSpec, DwarfTypeDIE>();
         Dictionary<metadata.MethodSpec, DwarfMethodDIE> method_dies = new Dictionary<metadata.MethodSpec, DwarfMethodDIE>();
-
+        public Dictionary<int, DwarfDIE> basetype_dies = new Dictionary<int, DwarfDIE>();
+            
         public DwarfNSDIE GetNSDie(string ns)
         {
             DwarfNSDIE ret;
@@ -629,20 +874,29 @@ namespace libtysila5.dwarf
             return ret;
         }
 
-        public DwarfTypeDIE GetTypeDie(metadata.TypeSpec ts)
+        public DwarfDIE GetTypeDie(metadata.TypeSpec ts, bool add_ns = true)
         {
             DwarfTypeDIE ret;
             if (type_dies.TryGetValue(ts, out ret))
                 return ret;
+            if(ts.SimpleType != 0)
+            {
+                DwarfDIE dret;
+                if (basetype_dies.TryGetValue(ts.SimpleType, out dret))
+                    return dret;
+            }
             ret = new DwarfTypeDIE();
             ret.ts = ts;
             ret.t = t;
             ret.dcu = this;
             type_dies[ts] = ret;
 
-            // Generate namespace too
-            var ns = GetNSDie(ts.Namespace);
-            ns.Children.Add(ret);
+            if (add_ns)
+            {
+                // Generate namespace too
+                var ns = GetNSDie(ts.Namespace);
+                ns.Children.Add(ret);
+            }
 
             // Ensure base classes etc are referenced
             if (ts.GetExtends() != null)
@@ -737,17 +991,17 @@ namespace libtysila5.dwarf
             bf = _bf;
 
             abbrev = CreateDwarfSection("abbrev");
-            aranges = CreateDwarfSection("aranges");
+            //aranges = CreateDwarfSection("aranges");
             frame = CreateDwarfSection("frame");
             info = CreateDwarfSection("info");
             line = CreateDwarfSection("line");
-            loc = CreateDwarfSection("loc");
-            macinfo = CreateDwarfSection("macinfo");
+            //loc = CreateDwarfSection("loc");
+            //macinfo = CreateDwarfSection("macinfo");
             pubnames = CreateDwarfSection("pubnames");
             pubtypes = CreateDwarfSection("pubtypes");
-            ranges = CreateDwarfSection("ranges");
+            //ranges = CreateDwarfSection("ranges");
             str = CreateDwarfSection("str");
-            types = CreateDwarfSection("types");
+            //types = CreateDwarfSection("types");
         }
     }
 }

@@ -315,16 +315,26 @@ namespace libtysila5
                 ddie.sym = meth_syms[0];
                 ddie.cil = cil;
 
-                var ddts = dcu.GetTypeDie(ms.type);
+                var ddts = dcu.GetTypeDie(ms.type) as dwarf.DwarfParentDIE;
                 ddts.Children.Add(ddie);
 
                 if(ms.ReturnType != null)
                 {
                     dcu.GetTypeDie(ms.ReturnType);
+                    if (ms.ReturnType.stype == TypeSpec.SpecialType.None && !ms.ReturnType.IsValueType)
+                        dcu.GetTypeDie(ms.ReturnType.Pointer);
                 }
                 foreach(var la in cil.la_types)
                 {
                     dcu.GetTypeDie(la);
+                    if (la.stype == TypeSpec.SpecialType.None && !la.IsValueType)
+                        dcu.GetTypeDie(la.Pointer);
+                }
+                foreach(var lv in cil.lv_types)
+                {
+                    dcu.GetTypeDie(lv);
+                    if (lv.stype == TypeSpec.SpecialType.None && !lv.IsValueType)
+                        dcu.GetTypeDie(lv.Pointer);
                 }
 
                 if(!ms.IsStatic)
@@ -370,7 +380,7 @@ namespace libtysila5
 
                         // DW_LNS_advance_pc
                         lnp.Add(0x02);
-                        dcu.w(lnp, (uint)cil.cil[0].mc_offset);
+                        dwarf.DwarfDIE.w(lnp, (uint)cil.cil[0].mc_offset);
                         cur_mc = cil.cil[0].mc_offset;
 
                         // DW_LNS_set_prologue_end
@@ -408,7 +418,7 @@ namespace libtysila5
                                         dcu.lnp_fnames.Add(csp.DocName);
                                     }
 
-                                    dcu.w(lnp, file_no);
+                                    dwarf.DwarfDIE.w(lnp, file_no);
 
                                     cur_file = csp.DocName;
                                 }
@@ -417,7 +427,7 @@ namespace libtysila5
                                 {
                                     // DW_LNS_set_column
                                     lnp.Add(0x05);
-                                    dcu.w(lnp, (uint)csp.StartCol);
+                                    dwarf.DwarfDIE.w(lnp, (uint)csp.StartCol);
                                     cur_col = csp.StartCol;
                                 }
 
@@ -438,11 +448,11 @@ namespace libtysila5
                                 {
                                     // DW_LNS_advance_pc
                                     lnp.Add(0x02);
-                                    dcu.w(lnp, (uint)mc_advance);
+                                    dwarf.DwarfDIE.w(lnp, (uint)mc_advance);
 
                                     // DW_LNS_advance_line
                                     lnp.Add(0x03);
-                                    dcu.w(lnp, (uint)line_advance);
+                                    dwarf.DwarfDIE.w(lnp, line_advance);
 
                                     // SPECIAL(0,0)
                                     var spec_opcode = (0 - (-3)) + (12 * 0) + 13;

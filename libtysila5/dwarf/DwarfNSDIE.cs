@@ -8,12 +8,12 @@ namespace libtysila5.dwarf
     {
         public string ns { get; set; }
 
-        public override void WriteToOutput(DwarfSections ds, IList<byte> d)
+        public override void WriteToOutput(DwarfSections ds, IList<byte> d, DwarfDIE parent)
         {
             d.Add((byte)12);
             w(d, ns, ds.smap);
 
-            base.WriteToOutput(ds, d);
+            base.WriteToOutput(ds, d, parent);
         }
     }
 }

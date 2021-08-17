@@ -525,6 +525,27 @@ namespace libtysila5.target.x86
 
             return c;
         }
+
+
+        public override bool AddDwarfLocation(Reg r, IList<byte> d)
+        {
+            if (r is ContentsReg)
+            {
+                var cr = r as ContentsReg;
+
+                if (cr.basereg.Equals(r_ebp))
+                {
+                    if (psize == 4)
+                        d.Add(0x75);    // breg5
+                    else
+                        d.Add(0x76);    // breg6
+
+                    dwarf.DwarfDIE.w(d, (int)cr.disp);
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
 

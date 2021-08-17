@@ -677,5 +677,10 @@ namespace libtysila5.target
         }
 
         public abstract Reg AllocateStackLocation(Code c, int size, ref int cur_stack);
+
+        public virtual bool AddDwarfLocation(Reg r, IList<byte> d)
+        {
+            return false;
+        }
     }
 }

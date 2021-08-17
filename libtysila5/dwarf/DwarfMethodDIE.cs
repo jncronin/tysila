@@ -11,7 +11,7 @@ namespace libtysila5.dwarf
         public Code cil { get; set; }
         public binary_library.ISymbol sym { get; set; }
 
-        public override void WriteToOutput(DwarfSections ds, IList<byte> d)
+        public override void WriteToOutput(DwarfSections ds, IList<byte> d, DwarfDIE parent)
         {
             var ms = cil.ms;
 
@@ -56,7 +56,9 @@ namespace libtysila5.dwarf
 
             if(ms.ReturnType != null)
             {
-                dcu.fmap[d.Count] = dcu.GetTypeDie(ms.ReturnType);
+                dcu.fmap[d.Count] = (ms.ReturnType.stype == metadata.TypeSpec.SpecialType.None && !ms.ReturnType.IsValueType) ?
+                    dcu.GetTypeDie(ms.ReturnType.Pointer) :
+                    dcu.GetTypeDie(ms.ReturnType);
                 
                 // add return type
                 for (int i = 0; i < 4; i++)
@@ -105,6 +107,10 @@ namespace libtysila5.dwarf
                 fparam.IsThis = false;
                 fparam.ts = ms.m.GetTypeSpec(ref rt_idx, ms.gtparams, ms.gmparams);
 
+                if (fparam.ts.stype == metadata.TypeSpec.SpecialType.None &&
+                    !fparam.ts.IsValueType)
+                    fparam.ts = fparam.ts.Pointer;
+
                 Children.Add(fparam);
             }
 
@@ -144,7 +150,76 @@ namespace libtysila5.dwarf
                 dcu.fmap[fparam_ref_loc] = Children[0];
             }
 
-            base.WriteToOutput(ds, d);
+            // Param locations
+            if(cil != null && cil.la_locs != null && cil.la_locs.Length == Children.Count)
+            {
+                for (int i = 0; i < cil.la_locs.Length; i++)
+                    ((DwarfParamDIE)Children[i]).loc = cil.la_locs[i];
+            }
+
+            // Get param names
+            if (ms.mdrow != 0)
+            {
+                string[] pnames = new string[cil.lv_types.Length];
+
+                if(ms.m.pdb != null)
+                {
+                    for(int i = 1; i < ms.m.pdb.table_rows[(int)metadata.MetadataStream.TableId.LocalScope]; i++)
+                    {
+                        var lv_mdrow = (int)ms.m.pdb.GetIntEntry((int)metadata.MetadataStream.TableId.LocalScope,
+                            i, 0);
+                        if(lv_mdrow == ms.mdrow)
+                        {
+                            var lv_start = (int)ms.m.pdb.GetIntEntry((int)metadata.MetadataStream.TableId.LocalScope,
+                                i, 2);
+
+                            int lv_last_row = ms.m.pdb.GetRowCount((int)metadata.MetadataStream.TableId.LocalVariable);
+                            int next_lv = int.MaxValue;
+                            if(i < ms.m.pdb.GetRowCount((int)metadata.MetadataStream.TableId.LocalScope))
+                            {
+                                next_lv = (int)ms.m.pdb.GetIntEntry((int)metadata.MetadataStream.TableId.LocalScope,
+                                    i + 1, 2) - 1;
+                            }
+                            int lv_end = lv_last_row > next_lv ? next_lv : lv_last_row;
+
+                            for(int j = lv_start; j <= lv_end; j++)
+                            {
+                                var pindex = (int)ms.m.pdb.GetIntEntry((int)metadata.MetadataStream.TableId.LocalVariable,
+                                    j, 1);
+                                var pname = ms.m.pdb.GetStringEntry((int)metadata.MetadataStream.TableId.LocalVariable,
+                                    j, 2);
+
+                                pnames[pindex] = pname;
+                            }
+                        }
+                    }
+                }
+
+                for (int i = 0; i < pnames.Length; i++)
+                {
+                    var pname = pnames[i];
+                    if (pname != null)
+                    {
+                        var ptype = cil.lv_types[i];
+                        var ploc = cil.lv_locs[i];
+
+                        var vparam = new DwarfVarDIE();
+                        vparam.dcu = dcu;
+                        vparam.t = t;
+                        vparam.ts = ptype;
+                        vparam.name = pname;
+                        vparam.loc = ploc;
+
+                        if (vparam.ts.stype == metadata.TypeSpec.SpecialType.None &&
+                            !vparam.ts.IsValueType)
+                            vparam.ts = vparam.ts.Pointer;
+
+                        Children.Add(vparam);
+                    }
+                }
+            }
+
+            base.WriteToOutput(ds, d, parent);
         }
     }
 
@@ -153,8 +228,9 @@ namespace libtysila5.dwarf
         public string name { get; set; }
         public metadata.TypeSpec ts { get; set; }
         public bool IsThis { get; set; }
+        public target.Target.Reg loc { get; set; }
 
-        public override void WriteToOutput(DwarfSections ds, IList<byte> d)
+        public override void WriteToOutput(DwarfSections ds, IList<byte> d, DwarfDIE parent)
         {
             if (IsThis)
             {
@@ -172,6 +248,49 @@ namespace libtysila5.dwarf
                 for (int i = 0; i < 4; i++)
                     d.Add(0);
             }
+
+            // location as exprloc
+            var b = new List<byte>();
+            if (t.AddDwarfLocation(loc, b))
+            {
+                DwarfDIE.w(d, (uint)b.Count);
+                foreach (var c in b)
+                    d.Add(c);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
     }
+
+    public class DwarfVarDIE : DwarfDIE
+    {
+        public string name { get; set; }
+        public metadata.TypeSpec ts { get; set; }
+        public target.Target.Reg loc { get; set; }
+
+        public override void WriteToOutput(DwarfSections ds, IList<byte> d, DwarfDIE parent)
+        {
+            w(d, 21);
+            w(d, name, ds.smap);
+            dcu.fmap[d.Count] = dcu.GetTypeDie(ts);
+            for (int i = 0; i < 4; i++)
+                d.Add(0);
+
+            // location as exprloc
+            var b = new List<byte>();
+            if (t.AddDwarfLocation(loc, b))
+            {
+                DwarfDIE.w(d, (uint)b.Count);
+                foreach (var c in b)
+                    d.Add(c);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+    }
+
 }
