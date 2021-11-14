@@ -655,6 +655,8 @@ namespace libtysila5.dwarf
          *    20 - typedef
          *    21 - variable
          *    22 - method definition
+         *    23 - class with decl_file/line/column
+         *    24 - structure with decl_file/line/column
          */
         private void WriteAbbrev(binary_library.ISection abbrev)
         {
@@ -886,6 +888,29 @@ namespace libtysila5.dwarf
                 0x00, 0x00,         // terminate
             });
 
+            w(abbrev, new uint[]
+            {
+                23, 0x02, 0x01,     // class, has children
+                0x03, 0x0e,         // name, strp
+                0x0b, 0x0f,         // byte_size, udata (LEB128)
+                0x3a, 0x0b,         // decl_file, data1
+                0x3b, 0x0b,         // decl_line, data1
+                0x39, 0x0b,         // decl_column, data1
+                0x00, 0x00,         // terminate
+            });
+
+            w(abbrev, new uint[]
+            {
+                24, 0x13, 0x01,     // structure, has children
+                0x03, 0x0e,         // name, strp
+                0x0b, 0x0f,         // byte_size, udata (LEB128)
+                0x3a, 0x0b,         // decl_file, data1
+                0x3b, 0x0b,         // decl_line, data1
+                0x39, 0x0b,         // decl_column, data1
+                0x00, 0x00,         // terminate
+            });
+
+
             // last unit should have type 0
             w(abbrev, new uint[]
             {
@@ -948,7 +973,8 @@ namespace libtysila5.dwarf
                 case metadata.TypeSpec.SpecialType.SzArray:
                 case metadata.TypeSpec.SpecialType.MPtr:
                 case metadata.TypeSpec.SpecialType.Ptr:
-                    GetTypeDie(ts.other);
+                    if(ts.other != null)
+                        GetTypeDie(ts.other);
                     break;
             }
 

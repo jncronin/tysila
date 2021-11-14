@@ -40,9 +40,20 @@ namespace libtysila5.dwarf
                         if (ts.m == dcu.m)
                         {
                             // structure_type
-                            d.Add(14);
+                            var source_loc = GetSourceLoc();
+                            if (source_loc == null)
+                                d.Add(14);
+                            else
+                                d.Add(24);
                             w(d, ts.Name, ds.smap);
                             w(d, (uint)t.GetSize(ts));
+
+                            if(source_loc != null)
+                            {
+                                d.Add((byte)source_loc.file);
+                                d.Add((byte)source_loc.line);
+                                d.Add((byte)source_loc.col);
+                            }
 
                             base.WriteToOutput(ds, d, parent);
                         }
@@ -57,9 +68,20 @@ namespace libtysila5.dwarf
                         if (ts.m == dcu.m)
                         {
                             // class_type
-                            d.Add(13);
+                            var source_loc = GetSourceLoc();
+                            if (source_loc == null)
+                                d.Add(13);
+                            else
+                                d.Add(23);
                             w(d, ts.Name, ds.smap);
                             w(d, (uint)t.GetSize(ts));
+
+                            if (source_loc != null)
+                            {
+                                d.Add((byte)source_loc.file);
+                                d.Add((byte)source_loc.line);
+                                d.Add((byte)source_loc.col);
+                            }
 
                             base.WriteToOutput(ds, d, parent);
                         }
@@ -74,6 +96,47 @@ namespace libtysila5.dwarf
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        class SourceLoc
+        {
+            public int file, line, col;
+        }
+
+        private SourceLoc GetSourceLoc()
+        {
+            DwarfMethodDIE first = null, ctor = null;
+            foreach(var die in Children)
+            {
+                if(die is DwarfMethodDIE)
+                {
+                    var dmdie = die as DwarfMethodDIE;
+                    if (first == null && dmdie.SourceFileId != 0)
+                        first = dmdie;
+                    if(ctor == null && dmdie.ms != null && dmdie.ms.Name == ".ctor" && dmdie.SourceFileId != 0)
+                    {
+                        ctor = dmdie;
+                        break;
+                    }
+                }
+            }
+            if (first == null)
+                return null;
+            var ret = new SourceLoc();
+            if(ctor != null)
+            {
+                ret.file = ctor.SourceFileId;
+                ret.line = ctor.StartLine;
+                ret.col = ctor.StartColumn;
+            }
+            else
+            {
+                ret.file = first.SourceFileId;
+                ret.line = first.StartLine;
+                ret.col = first.StartColumn;
+            }
+
+            return ret;
         }
 
         private void WriteBaseType(int st, DwarfSections ds, IList<byte> d, DwarfDIE parent)

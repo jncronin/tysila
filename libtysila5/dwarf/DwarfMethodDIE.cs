@@ -11,6 +11,10 @@ namespace libtysila5.dwarf
         public Code cil { get; set; }
         public binary_library.ISymbol sym { get; set; }
 
+        public int SourceFileId { get; set; }
+        public int StartLine { get; set; }
+        public int StartColumn { get; set; }
+
         public override void WriteToOutput(DwarfSections ds, IList<byte> d, DwarfDIE parent)
         {
             var ms = cil.ms;

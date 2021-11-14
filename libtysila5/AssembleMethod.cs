@@ -405,6 +405,11 @@ namespace libtysila5
                             {
                                 var line_advance = csp.StartLine - cur_line;
 
+                                if (ddie.StartLine == 0)
+                                    ddie.StartLine = csp.StartLine;
+                                if (ddie.StartColumn == 0)
+                                    ddie.StartColumn = csp.StartCol;
+
                                 if(csp.DocName != cur_file)
                                 {
                                     // DW_LNS_set_file
@@ -417,6 +422,8 @@ namespace libtysila5
                                         dcu.lnp_files[csp.DocName] = file_no;
                                         dcu.lnp_fnames.Add(csp.DocName);
                                     }
+                                    if (ddie.SourceFileId == 0)
+                                        ddie.SourceFileId = (int)file_no;
 
                                     dwarf.DwarfDIE.w(lnp, file_no);
 
@@ -462,6 +469,8 @@ namespace libtysila5
 
                                 cur_line += line_advance;
                                 cur_mc += mc_advance;
+
+
                             }
                         }
 
