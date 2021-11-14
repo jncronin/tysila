@@ -91,7 +91,7 @@ namespace libsupcs
         [WeakLinkage]
         [MethodAlias("_ZW6System4Enum_21GetEnumValuesAndNames_Rv_P4V17RuntimeTypeHandleU35System#2ERuntime#2ECompilerServices19ObjectHandleOnStackV19ObjectHandleOnStackb")]
         [AlwaysCompile]
-        static unsafe void get_enum_values_and_names(TysosType enum_type, void **values_ptr, void **names_ptr, bool getNames)
+        static unsafe void get_enum_values_and_names(TysosType enum_type, HandleOnStack values_ptr, HandleOnStack names_ptr, bool getNames)
         {
             //System.Diagnostics.Debugger.Log(0, "libsupcs", "get_enum_values_and_names: enum_type: " + ((ulong)enum_vtbl).ToString("X16"));
             //var enum_type = TysosType.internal_from_vtbl(enum_vtbl);
@@ -102,11 +102,11 @@ namespace libsupcs
             int[] v = info.values as int[];
             for (int i = 0; i < info.values.Length; i++)
                 values[i] = (ulong)v[i];
-            *values_ptr = CastOperations.ReinterpretAsPointer(values);
+            *values_ptr.ptr = CastOperations.ReinterpretAsPointer(values);
 
             if(getNames)
             {
-                *names_ptr = CastOperations.ReinterpretAsPointer(info.names);
+                *names_ptr.ptr = CastOperations.ReinterpretAsPointer(info.names);
             }
         }
 
