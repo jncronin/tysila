@@ -57,7 +57,7 @@ namespace tysila4
         static bool data_sects = false;
         static bool class_sects = false;
 
-        static bool do_dwarf = true;
+        static bool do_dwarf = false;
 
         public static string DirectoryDelimiter
         {
@@ -124,6 +124,9 @@ namespace tysila4
                         break;
                     case 'i':
                         interactive = true;
+                        break;
+                    case 'g':
+                        do_dwarf = true;
                         break;
                     case 'm':
                         {
