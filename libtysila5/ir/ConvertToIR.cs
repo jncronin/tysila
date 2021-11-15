@@ -1413,7 +1413,7 @@ namespace libtysila5.ir
                 c.t.r.VTableRequestor.Request(ts.Box);
 
                 stack_after = ldlab(n, c, stack_before, ts.MangleType());
-                stack_after = call(n, c, stack_after, false, "__type_from_vtbl", c.special_meths, c.special_meths.type_from_vtbl);
+                //stack_after = call(n, c, stack_after, false, "__type_from_vtbl", c.special_meths, c.special_meths.type_from_vtbl);
             }
             else if (ms != null)
             {

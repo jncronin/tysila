@@ -41,7 +41,7 @@ namespace libsupcs
         /** <summary>holds a pointer to the vtbl represented by this type</summary> */
         internal void* _impl;
 
-        internal TysosType(void *vtbl)
+        internal TysosType(void* vtbl)
         {
             _impl = vtbl;
 
@@ -118,7 +118,7 @@ namespace libsupcs
         public static unsafe extern TysosMethod ReinterpretAsMethodInfo(void* obj);
 
         public unsafe virtual int GetClassSize() {
-            return *(int *)((byte*)_impl + ClassOperations.GetVtblTypeSizeOffset());
+            return *(int*)((byte*)_impl + ClassOperations.GetVtblTypeSizeOffset());
         }
 
         public unsafe override System.Reflection.Assembly Assembly
@@ -268,7 +268,7 @@ namespace libsupcs
             /* Special case a few generic types that are required before the JIT can start */
             void* spec_vtbl = null;
             void* spec_ctor = null;
-            if(t_vtbl == OtherOperations.GetStaticObjectAddress("_ZW30System#2ECollections#2EGeneric25GenericEqualityComparer`1_G1i"))
+            if (t_vtbl == OtherOperations.GetStaticObjectAddress("_ZW30System#2ECollections#2EGeneric25GenericEqualityComparer`1_G1i"))
             {
                 if (n_vtbl == OtherOperations.GetStaticObjectAddress("_Zu1S"))
                 {
@@ -286,7 +286,7 @@ namespace libsupcs
                     spec_ctor = OtherOperations.GetFunctionAddress("_ZW30System#2ECollections#2EGeneric25GenericEqualityComparer`1_G1i_7#2Ector_Rv_P1u1t");
                 }
             }
-            if(spec_vtbl != null)
+            if (spec_vtbl != null)
             {
                 var ntype = internal_from_vtbl(spec_vtbl);
                 var obj = ntype.Create();
@@ -304,7 +304,7 @@ namespace libsupcs
 
             var vtbl = JitOperations.GetAddressOfObject(tname);
             TysosType tt = null;
-            if(vtbl != null)
+            if (vtbl != null)
             {
                 tt = internal_from_vtbl(vtbl);
             }
@@ -318,10 +318,37 @@ namespace libsupcs
 
             var newobj = tt.Create();
             var ctor = tt.GetConstructor(Type.EmptyTypes);
-            if(ctor != null)
+            if (ctor != null)
                 ctor.Invoke(newobj, Type.EmptyTypes);
 
             return newobj;
+        }
+
+        [AlwaysCompile]
+        [MethodAlias("_ZW6System17RuntimeTypeHandle_11Instantiate_Rv_P4V17RuntimeTypeHandlePu1IiU35System#2ERuntime#2ECompilerServices19ObjectHandleOnStack")]
+        static unsafe void RTH_Instantiate(RuntimeTypeHandle rth, IntPtr* gparam_rth, int gparam_count, HandleOnStack ret)
+        {
+            // Instantiate a generic type from a RTH (TysosType pointer)
+            var tt = Type_GetTypeFromHandle(rth);
+
+            if (tt == null)
+                throw new ArgumentNullException("RTH_Instantiate: rth is null");
+
+            if (gparam_count == 0)
+            {
+                // Non-generic version
+                *ret.ptr = CastOperations.ReinterpretAsPointer(tt);
+                return;
+            }
+
+            // Convert IntPtr * array to managed array
+            var gparr = new TysosType[gparam_count];
+            for (int i = 0; i < gparam_count; i++)
+            {
+                gparr[i] = ReinterpretAsType(gparam_rth[i]);
+            }
+
+            *ret.ptr = CastOperations.ReinterpretAsPointer(tt.MakeGenericType(gparr));
         }
 
         [MethodReferenceAlias("_ZW6System11RuntimeType_15MakeGenericType_RV4Type_P2u1tu1ZV4Type")]
@@ -1212,10 +1239,13 @@ namespace libsupcs
 
         [MethodAlias("_ZW6System4Type_17GetTypeFromHandle_RV4Type_P1V17RuntimeTypeHandle")]
         [AlwaysCompile]
-        static internal unsafe TysosType Type_GetTypeFromHandle(RuntimeTypeHandle rth)
+        static internal unsafe TysosType Type_GetTypeFromHandle(void* val)
         {
-            return ReinterpretAsType(rth.Value);
+            return internal_from_vtbl(val);
         }
+
+        [MethodReferenceAlias("_ZW6System4Type_17GetTypeFromHandle_RV4Type_P1V17RuntimeTypeHandle")]
+        static extern internal unsafe TysosType Type_GetTypeFromHandle(RuntimeTypeHandle rth);
 
         [AlwaysCompile]
         [MethodAlias("__type_from_vtbl")]
