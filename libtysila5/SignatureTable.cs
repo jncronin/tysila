@@ -38,7 +38,7 @@ namespace libtysila5
             new Dictionary<object, binary_library.ISymbol>(
                 new GenericEqualityComparerRef<object>());
 
-        public int GetSignatureAddress(IEnumerable<byte> sig, target.Target t)
+        public int GetSignatureAddress(IEnumerable<byte> sig, target.Target t, TysilaState s)
         {
             var ptr_size = t.GetCTSize(ir.Opcode.ct_object);
             while (str_tab.Count % ptr_size != 0)
@@ -52,7 +52,7 @@ namespace libtysila5
             return ret;
         }
 
-        public int GetSignatureAddress(metadata.TypeSpec.FullySpecSignature sig, target.Target t)
+        public int GetSignatureAddress(metadata.TypeSpec.FullySpecSignature sig, target.Target t, TysilaState s)
         {
             var ptr_size = t.GetCTSize(ir.Opcode.ct_object);
             while (str_tab.Count % ptr_size != 0)
@@ -68,11 +68,11 @@ namespace libtysila5
             {
                 case metadata.Spec.FullySpecSignature.FSSType.Field:
                     // For fields with static data we insert it here
-                    AddFieldSpecFields(sig.OriginalSpec as MethodSpec, str_tab, t);
+                    AddFieldSpecFields(sig.OriginalSpec as MethodSpec, str_tab, t, s);
                     break;
 
                 case Spec.FullySpecSignature.FSSType.Type:
-                    AddTypeSpecFields(sig.OriginalSpec as TypeSpec, str_tab, t);
+                    AddTypeSpecFields(sig.OriginalSpec as TypeSpec, str_tab, t, s);
                     break;
             }
 
@@ -93,7 +93,7 @@ namespace libtysila5
             return ret;
         }
 
-        private void AddTypeSpecFields(TypeSpec ts, List<byte> str_tab, Target t)
+        private void AddTypeSpecFields(TypeSpec ts, List<byte> str_tab, Target t, TysilaState s)
         {
             /* For types we add four special fields:
              * 
@@ -155,7 +155,7 @@ namespace libtysila5
                 if (cctor != null)
                 {
                     sig_metadata_addrs[str_tab.Count] = cctor.MangleMethod();
-                    t.r.MethodRequestor.Request(cctor);
+                    s.r.MethodRequestor.Request(cctor);
                 }
             }
             for (int i = 0; i < t.psize; i++)
@@ -166,7 +166,7 @@ namespace libtysila5
             str_tab.AddRange(t.IntPtrArray(BitConverter.GetBytes(flags)));
         }
 
-        private void AddFieldSpecFields(MethodSpec fs, List<byte> str_tab, target.Target t)
+        private void AddFieldSpecFields(MethodSpec fs, List<byte> str_tab, target.Target t, TysilaState s)
         {
             /* Field specs have two special fields:
              * 

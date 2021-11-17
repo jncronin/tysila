@@ -35,7 +35,7 @@ namespace libtysila5.ir
         static MethodSpec delegate_method_ptr;
         
         public static bool CreateDelegate(metadata.TypeSpec ts,
-            target.Target t)
+            target.Target t, TysilaState s)
         {
             if(delegate_m_target == null)
             {
@@ -48,20 +48,20 @@ namespace libtysila5.ir
             }
 
             // Generate required delegate methods in IR
-            CreateDelegateCtor(ts, t);
-            CreateDelegateInvoke(ts, t);
-            CreateDelegateBeginInvoke(ts, t);
-            CreateDelegateEndInvoke(ts, t);
+            CreateDelegateCtor(ts, t, s);
+            CreateDelegateInvoke(ts, t, s);
+            CreateDelegateBeginInvoke(ts, t, s);
+            CreateDelegateEndInvoke(ts, t, s);
 
 
             return true;
         }
 
-        private static void CreateDelegateEndInvoke(TypeSpec ts, Target t)
+        private static void CreateDelegateEndInvoke(TypeSpec ts, Target t, TysilaState s)
         {
             var ms = ts.m.GetMethodSpec(ts, "EndInvoke", 0, null);
 
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -102,15 +102,15 @@ namespace libtysila5.ir
                 ms = ms,
                 c = c
             };
-            t.r.MethodRequestor.Remove(msc);
-            t.r.MethodRequestor.Request(msc);
+            s.r.MethodRequestor.Remove(msc);
+            s.r.MethodRequestor.Request(msc);
         }
 
-        private static void CreateDelegateBeginInvoke(TypeSpec ts, Target t)
+        private static void CreateDelegateBeginInvoke(TypeSpec ts, Target t, TysilaState s)
         {
             var ms = ts.m.GetMethodSpec(ts, "BeginInvoke", 0, null);
 
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -151,15 +151,15 @@ namespace libtysila5.ir
                 ms = ms,
                 c = c
             };
-            t.r.MethodRequestor.Remove(msc);
-            t.r.MethodRequestor.Request(msc);
+            s.r.MethodRequestor.Remove(msc);
+            s.r.MethodRequestor.Request(msc);
         }
 
-        private static void CreateDelegateInvoke(TypeSpec ts, Target t)
+        private static void CreateDelegateInvoke(TypeSpec ts, Target t, TysilaState s)
         {
             var ms = ts.m.GetMethodSpec(ts, "Invoke", 0, null);
 
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -252,15 +252,15 @@ namespace libtysila5.ir
                 ms = ms,
                 c = c
             };
-            t.r.MethodRequestor.Remove(msc);
-            t.r.MethodRequestor.Request(msc);
+            s.r.MethodRequestor.Remove(msc);
+            s.r.MethodRequestor.Request(msc);
         }
 
-        private static void CreateDelegateCtor(TypeSpec ts, Target t)
+        private static void CreateDelegateCtor(TypeSpec ts, Target t, TysilaState s)
         {
             var ms = ts.m.GetMethodSpec(ts, ".ctor", 0, null);
 
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -300,8 +300,8 @@ namespace libtysila5.ir
                 ms = ms,
                 c = c
             };
-            t.r.MethodRequestor.Remove(msc);
-            t.r.MethodRequestor.Request(msc);
+            s.r.MethodRequestor.Remove(msc);
+            s.r.MethodRequestor.Request(msc);
         }
     }
 }

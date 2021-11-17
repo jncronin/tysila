@@ -30,7 +30,7 @@ namespace libtysila5.target.x86
     {
         protected internal override void AssemblePass(Code c)
         { 
-            var Code = text_section.Data as List<byte>;
+            var Code = c.s.text_section.Data as List<byte>;
             var code_start = Code.Count;
 
             Dictionary<int, int> il_starts = new Dictionary<int, int>(
@@ -152,14 +152,14 @@ namespace libtysila5.target.x86
                                 break;
                             case ir.Opcode.vl_str:
                                 Code.AddRange(ModRMSIB(GetR(I.p[1].mreg), 5, 0, -1, 0, 0, false));
-                                var reloc = bf.CreateRelocation();
-                                reloc.DefinedIn = text_section;
+                                var reloc = c.s.bf.CreateRelocation();
+                                reloc.DefinedIn = c.s.text_section;
                                 reloc.Type = new binary_library.elf.ElfFile.Rel_386_32();
                                 reloc.Addend = I.p[2].v;
-                                reloc.References = bf.CreateSymbol();
+                                reloc.References = c.s.bf.CreateSymbol();
                                 reloc.References.Name = I.p[2].str;
                                 reloc.Offset = (ulong)Code.Count;
-                                bf.AddRelocation(reloc);
+                                c.s.bf.AddRelocation(reloc);
                                 AddImm32(Code, 0);
                                 break;
                             default:
@@ -185,8 +185,8 @@ namespace libtysila5.target.x86
                                 AddImm32(Code, I.p[2].v);
                                 break;
                             case ir.Opcode.vl_str:
-                                var reloc = bf.CreateRelocation();
-                                reloc.DefinedIn = text_section;
+                                var reloc = c.s.bf.CreateRelocation();
+                                reloc.DefinedIn = c.s.text_section;
                                 if (I.p[2].v2 == 1)
                                 {
                                     if (psize == 4)
@@ -199,10 +199,10 @@ namespace libtysila5.target.x86
                                 else
                                     reloc.Type = new binary_library.elf.ElfFile.Rel_x86_64_32();
                                 reloc.Addend = I.p[2].v;
-                                reloc.References = bf.CreateSymbol();
+                                reloc.References = c.s.bf.CreateSymbol();
                                 reloc.References.Name = I.p[2].str;
                                 reloc.Offset = (ulong)Code.Count;
-                                bf.AddRelocation(reloc);
+                                c.s.bf.AddRelocation(reloc);
                                 AddImm32(Code, 0);
                                 break;
                             default:
@@ -334,15 +334,15 @@ namespace libtysila5.target.x86
                     case x86_call_rel32:
                         {
                             Code.Add(0xe8);
-                            var reloc = bf.CreateRelocation();
-                            reloc.DefinedIn = text_section;
+                            var reloc = c.s.bf.CreateRelocation();
+                            reloc.DefinedIn = c.s.text_section;
                             reloc.Type = new binary_library.elf.ElfFile.Rel_386_PC32();
                             reloc.Addend = -4;
-                            reloc.References = bf.CreateSymbol();
+                            reloc.References = c.s.bf.CreateSymbol();
                             reloc.References.Name = I.p[1].str;
                             reloc.References.ObjectType = binary_library.SymbolObjectType.Function;
                             reloc.Offset = (ulong)Code.Count;
-                            bf.AddRelocation(reloc);
+                            c.s.bf.AddRelocation(reloc);
                             AddImm32(Code, 0);
                         }
                         break;
@@ -592,18 +592,18 @@ namespace libtysila5.target.x86
                         }
                         else if (I.p[1].t == ir.Opcode.vl_str)
                         {
-                            var reloc = bf.CreateRelocation();
-                            reloc.DefinedIn = text_section;
+                            var reloc = c.s.bf.CreateRelocation();
+                            reloc.DefinedIn = c.s.text_section;
                             if (psize == 4)
                                 reloc.Type = new binary_library.elf.ElfFile.Rel_386_PC32();
                             else
                                 reloc.Type = new binary_library.elf.ElfFile.Rel_x86_64_pc32();
                             reloc.Addend = -4;
-                            reloc.References = bf.CreateSymbol();
+                            reloc.References = c.s.bf.CreateSymbol();
                             reloc.References.Name = I.p[1].str;
                             reloc.References.ObjectType = binary_library.SymbolObjectType.Function;
                             reloc.Offset = (ulong)Code.Count;
-                            bf.AddRelocation(reloc);
+                            c.s.bf.AddRelocation(reloc);
                             AddImm32(Code, 0);
                         }
                         else
@@ -616,15 +616,15 @@ namespace libtysila5.target.x86
                         {
                             Code.Add(0xc7);
                             Code.AddRange(ModRMSIB(0, I.p[1].mreg));
-                            var reloc = bf.CreateRelocation();
-                            reloc.DefinedIn = text_section;
+                            var reloc = c.s.bf.CreateRelocation();
+                            reloc.DefinedIn = c.s.text_section;
                             reloc.Type = new binary_library.elf.ElfFile.Rel_386_32();
                             reloc.Addend = I.p[2].v;
-                            reloc.References = bf.CreateSymbol();
+                            reloc.References = c.s.bf.CreateSymbol();
                             reloc.References.Name = I.p[2].str;
                             reloc.References.ObjectType = binary_library.SymbolObjectType.Function;
                             reloc.Offset = (ulong)Code.Count;
-                            bf.AddRelocation(reloc);
+                            c.s.bf.AddRelocation(reloc);
                             AddImm32(Code, 0);
                         }
                         break;
@@ -633,15 +633,15 @@ namespace libtysila5.target.x86
                         {
                             Code.Add(0xc7);
                             Code.AddRange(ModRMSIB(0, I.p[1].mreg));
-                            var reloc = bf.CreateRelocation();
-                            reloc.DefinedIn = text_section;
+                            var reloc = c.s.bf.CreateRelocation();
+                            reloc.DefinedIn = c.s.text_section;
                             reloc.Type = new binary_library.elf.ElfFile.Rel_386_32();
                             reloc.Addend = I.p[2].v;
-                            reloc.References = bf.CreateSymbol();
+                            reloc.References = c.s.bf.CreateSymbol();
                             reloc.References.Name = I.p[2].str;
                             reloc.References.ObjectType = binary_library.SymbolObjectType.Object;
                             reloc.Offset = (ulong)Code.Count;
-                            bf.AddRelocation(reloc);
+                            c.s.bf.AddRelocation(reloc);
                             AddImm32(Code, 0);
                         }
                         break;
@@ -650,15 +650,15 @@ namespace libtysila5.target.x86
                         {
                             Code.Add(0x8b);
                             Code.AddRange(ModRMSIB(GetR(I.p[1].mreg), 5, 0, -1, 0, 0, false));
-                            var reloc = bf.CreateRelocation();
-                            reloc.DefinedIn = text_section;
+                            var reloc = c.s.bf.CreateRelocation();
+                            reloc.DefinedIn = c.s.text_section;
                             reloc.Type = new binary_library.elf.ElfFile.Rel_386_32();
                             reloc.Addend = I.p[2].v;
-                            reloc.References = bf.CreateSymbol();
+                            reloc.References = c.s.bf.CreateSymbol();
                             reloc.References.Name = I.p[2].str;
                             reloc.References.ObjectType = binary_library.SymbolObjectType.Object;
                             reloc.Offset = (ulong)Code.Count;
-                            bf.AddRelocation(reloc);
+                            c.s.bf.AddRelocation(reloc);
                             AddImm32(Code, 0);
                         }
                         break;
@@ -667,15 +667,15 @@ namespace libtysila5.target.x86
                         {
                             Code.Add(0x89);
                             Code.AddRange(ModRMSIB(GetR(I.p[2].mreg), 5, 0, -1, 0, 0, false));
-                            var reloc = bf.CreateRelocation();
-                            reloc.DefinedIn = text_section;
+                            var reloc = c.s.bf.CreateRelocation();
+                            reloc.DefinedIn = c.s.text_section;
                             reloc.Type = new binary_library.elf.ElfFile.Rel_386_32();
                             reloc.Addend = I.p[1].v;
-                            reloc.References = bf.CreateSymbol();
+                            reloc.References = c.s.bf.CreateSymbol();
                             reloc.References.Name = I.p[1].str;
                             reloc.References.ObjectType = binary_library.SymbolObjectType.Object;
                             reloc.Offset = (ulong)Code.Count;
-                            bf.AddRelocation(reloc);
+                            c.s.bf.AddRelocation(reloc);
                             AddImm32(Code, 0);
                         }
                         break;
@@ -896,18 +896,18 @@ namespace libtysila5.target.x86
                                 AddImm64(Code, I.p[2].v);
                                 break;
                             case ir.Opcode.vl_str:
-                                var reloc = bf.CreateRelocation();
-                                reloc.DefinedIn = text_section;
+                                var reloc = c.s.bf.CreateRelocation();
+                                reloc.DefinedIn = c.s.text_section;
                                 if (I.p[2].v2 == 1)
                                 {
                                     throw new NotImplementedException("TLS label with mcmodel large");
                                 }
                                 reloc.Type = new binary_library.elf.ElfFile.Rel_x86_64_64();
                                 reloc.Addend = I.p[2].v;
-                                reloc.References = bf.CreateSymbol();
+                                reloc.References = c.s.bf.CreateSymbol();
                                 reloc.References.Name = I.p[2].str;
                                 reloc.Offset = (ulong)Code.Count;
-                                bf.AddRelocation(reloc);
+                                c.s.bf.AddRelocation(reloc);
                                 AddImm64(Code, 0);
                                 break;
                             default:

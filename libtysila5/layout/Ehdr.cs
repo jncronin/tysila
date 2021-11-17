@@ -43,6 +43,7 @@ namespace libtysila5.layout
 
         public static void OutputEHdr(MethodSpecWithEhdr ms,
             Target t, binary_library.IBinaryFile of,
+            TysilaState s,
             MetadataStream base_m = null,
             binary_library.ISection os = null)
         {
@@ -101,7 +102,7 @@ namespace libtysila5.layout
                     catch_reloc.Type = t.GetDataToDataReloc();
                     of.AddRelocation(catch_reloc);
 
-                    t.r.VTableRequestor.Request(ehdr.ClassToken);
+                    s.r.VTableRequestor.Request(ehdr.ClassToken);
                 }
                 else if(ehdr.EType == ExceptionHeader.ExceptionHeaderType.Filter)
                 {

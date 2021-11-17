@@ -28,6 +28,8 @@ namespace libtysila5
 {
     public class Code
     {
+        public TysilaState s;
+
         public metadata.MethodSpec ms;
         public List<cil.CilNode> cil;
         public List<cil.CilNode.IRNode> ir;

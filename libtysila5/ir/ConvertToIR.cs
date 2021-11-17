@@ -205,7 +205,7 @@ namespace libtysila5.ir
                                 {
                                     n.irnodes.Insert(1,
                                         new CilNode.IRNode { parent = n, opcode = Opcode.oc_call, imm_ms = cctor, stack_before = n.irnodes[0].stack_after, stack_after = n.irnodes[0].stack_after, ignore_for_mcoffset = true });
-                                    c.t.r.MethodRequestor.Request(cctor);
+                                    c.s.r.MethodRequestor.Request(cctor);
                                 }
                             }
                         }
@@ -1093,7 +1093,7 @@ namespace libtysila5.ir
 
             Stack<StackItem> stack_after = new Stack<StackItem>(stack_before);
 
-            c.t.r.VTableRequestor.Request(ts.Box);
+            c.s.r.VTableRequestor.Request(ts.Box);
 
             // Ensure the stack type is a managed pointer to push_ts
             var stack_type = stack_after.Peek().ts;
@@ -1277,7 +1277,7 @@ namespace libtysila5.ir
             var m = ms.m;
             var mangled_meth = m.MangleMethod(ms);
 
-            c.t.r.MethodRequestor.Request(ms);
+            c.s.r.MethodRequestor.Request(ms);
 
             var stack_after = ldlab(n, c, stack_before, mangled_meth);
             return stack_after;
@@ -1298,7 +1298,7 @@ namespace libtysila5.ir
             var stack_after = ldlab(n, c, stack_before, c.ms.m.MangleMethod(c.ms) + "EH",
                 ehdrIdx * layout.Layout.GetEhdrSize(c.t));
             stack_after = ldfp(n, c, stack_after);
-            c.t.r.EHRequestor.Request(c);
+            c.s.r.EHRequestor.Request(c);
 
             if(is_catch)
             {
@@ -1358,7 +1358,7 @@ namespace libtysila5.ir
             // ensure we are in a try, filter or catch block
             if(c.ehdrs != null)
             {
-                c.t.r.EHRequestor.Request(c);
+                c.s.r.EHRequestor.Request(c);
                 foreach(var ehdr in c.ehdrs)
                 {
                     if (n.il_offset >= ehdr.TryILOffset &&
@@ -1410,7 +1410,7 @@ namespace libtysila5.ir
             {
                 push_ts = ts.m.SystemRuntimeTypeHandle;
                 sig_val = ts.Signature;
-                c.t.r.VTableRequestor.Request(ts.Box);
+                c.s.r.VTableRequestor.Request(ts.Box);
 
                 stack_after = ldlab(n, c, stack_before, ts.MangleType());
                 //stack_after = call(n, c, stack_after, false, "__type_from_vtbl", c.special_meths, c.special_meths.type_from_vtbl);
@@ -1425,10 +1425,10 @@ namespace libtysila5.ir
                 sig_val = ms.Signature;
 
 
-                int sig_offset = c.t.sigt.GetSignatureAddress(sig_val, c.t);
+                int sig_offset = c.s.sigt.GetSignatureAddress(sig_val, c.t, c.s);
 
                 // build the object
-                stack_after = ldlab(n, c, stack_before, c.t.sigt.GetStringTableName(), sig_offset);
+                stack_after = ldlab(n, c, stack_before, c.s.sigt.GetStringTableName(), sig_offset);
             }
             else throw new Exception("Bad token");
 
@@ -1529,7 +1529,7 @@ namespace libtysila5.ir
                         " vs " + stack_before.Peek().ts);
 
                 var boxed_ts = ts.Box;
-                c.t.r.VTableRequestor.Request(boxed_ts);
+                c.s.r.VTableRequestor.Request(boxed_ts);
                 var ptr_size = c.t.GetPointerSize();
                 var sysobj_size = layout.Layout.GetTypeSize(c.ms.m.SystemObject, c.t);
                 var data_size = c.t.GetSize(ts);
@@ -1568,7 +1568,7 @@ namespace libtysila5.ir
             }
             else
             {
-                c.t.r.VTableRequestor.Request(ts);
+                c.s.r.VTableRequestor.Request(ts);
                 return stack_before;
             }
         }
@@ -1734,9 +1734,9 @@ namespace libtysila5.ir
                 ctor = n.GetTokenAsMethodSpec(c);
             if(objtype == null) 
                 objtype = ctor.type;
-            c.t.r.VTableRequestor.Request(objtype.Box);
+            c.s.r.VTableRequestor.Request(objtype.Box);
             if(ctor != null)
-                c.t.r.MethodRequestor.Request(ctor);
+                c.s.r.MethodRequestor.Request(ctor);
             var stack_after = new Stack<StackItem>(stack_before);
 
             int vt_adjust = 0;
@@ -2024,8 +2024,8 @@ namespace libtysila5.ir
             var arr_type = new metadata.TypeSpec { m = arr_elem_type.m, stype = TypeSpec.SpecialType.SzArray, other = arr_elem_type };
             var et_size = c.t.GetSize(arr_elem_type);
 
-            c.t.r.VTableRequestor.Request(arr_elem_type.Box);
-            c.t.r.VTableRequestor.Request(arr_type);
+            c.s.r.VTableRequestor.Request(arr_elem_type.Box);
+            c.s.r.VTableRequestor.Request(arr_type);
 
             /* Determine size of array object.
              * 
@@ -2172,7 +2172,7 @@ namespace libtysila5.ir
 
                 stack_after.Peek().ts = to_type;
 
-                c.t.r.VTableRequestor.Request(to_type);
+                c.s.r.VTableRequestor.Request(to_type);
 
                 return stack_after;
             }
@@ -2302,7 +2302,7 @@ namespace libtysila5.ir
 
                 n.irnodes.Add(new CilNode.IRNode { parent = n, opcode = Opcode.oc_ldlabaddr, ct = si._ct, imm_lab = static_name, imm_l = fld_addr, imm_ul = is_tls ? 1UL : 0UL, stack_before = stack_before, stack_after = stack_after });
 
-                c.t.r.StaticFieldRequestor.Request(ts.Unbox);
+                c.s.r.StaticFieldRequestor.Request(ts.Unbox);
             }
             else
             {
@@ -2356,7 +2356,7 @@ namespace libtysila5.ir
 
             if (ms.type.IsInterface)
             {
-                c.t.r.VTableRequestor.Request(ms.type);
+                c.s.r.VTableRequestor.Request(ms.type);
 
                 // load interface map
                 stack_after = ldc(n, c, stack_after, c.t.psize, 0x18);
@@ -2730,7 +2730,7 @@ namespace libtysila5.ir
 
                     }
 
-                    c.t.r.MethodRequestor.Request(ms);
+                    c.s.r.MethodRequestor.Request(ms);
                 }
             }
 
@@ -2789,8 +2789,8 @@ namespace libtysila5.ir
                 str = c.ms.m.GetUserString((int)(tok & 0x00ffffffUL));
             }
 
-            var str_addr = c.t.st.GetStringAddress(str, c.t);
-            var st_name = c.t.st.GetStringTableName();
+            var str_addr = c.s.st.GetStringAddress(str, c.t);
+            var st_name = c.s.st.GetStringTableName();
 
             StackItem si = new StackItem();
             si.ts = c.ms.m.GetSimpleTypeSpec(0x0e);

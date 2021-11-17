@@ -2,8 +2,8 @@
   "profiles": {
     "tysila4": {
       "commandName": "Project",
-      "commandLineArgs": "-o d:/coreclr/mscorlib.obj -mno-sse4_1 -D -d d:/coreclr/mscorlib.txt -t x86_64 -q -Ld:\\coreclr -Ld:\\tysila\\bin d:/coreclr/mscorlib.dll",
-      "workingDirectory": "d:/tysila"
+      "commandLineArgs": "-o kernel.o -t x86_64 -e _start -L /coreclr tysos.dll",
+      "workingDirectory": "d:/tysos/tysos/bin/Debug/netstandard2.0"
     }
   }
 }

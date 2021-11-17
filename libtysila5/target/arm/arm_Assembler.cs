@@ -139,7 +139,7 @@ namespace libtysila5.target.arm
             throw new NotImplementedException();
         }
 
-        protected internal override Code AssembleBoxRetTypeMethod(MethodSpec ms)
+        protected internal override Code AssembleBoxRetTypeMethod(MethodSpec ms, TysilaState s)
         {
             throw new NotImplementedException();
         }
@@ -149,7 +149,7 @@ namespace libtysila5.target.arm
             throw new NotImplementedException();
         }
 
-        protected internal override Code AssembleBoxedMethod(MethodSpec ms)
+        protected internal override Code AssembleBoxedMethod(MethodSpec ms, TysilaState s)
         {
             throw new NotImplementedException();
         }

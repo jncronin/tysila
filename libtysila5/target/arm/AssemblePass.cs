@@ -90,7 +90,7 @@ namespace libtysila5.target.arm
 
         protected internal override void AssemblePass(Code c)
         {
-            var Code = text_section.Data as List<byte>;
+            var Code = c.s.text_section.Data as List<byte>;
             var code_start = Code.Count;
 
             Dictionary<int, int> il_starts = new Dictionary<int, int>(
@@ -166,15 +166,15 @@ namespace libtysila5.target.arm
                             var target = I.p[3];
                             if (target.t == ir.Opcode.vl_call_target)
                             {
-                                var reloc = bf.CreateRelocation();
-                                reloc.DefinedIn = text_section;
+                                var reloc = c.s.bf.CreateRelocation();
+                                reloc.DefinedIn = c.s.text_section;
                                 reloc.Type = new binary_library.elf.ElfFile.Rel_Arm_Thm_Call();
                                 reloc.Addend = 0;
-                                reloc.References = bf.CreateSymbol();
+                                reloc.References = c.s.bf.CreateSymbol();
                                 reloc.References.Name = target.str;
                                 reloc.References.ObjectType = binary_library.SymbolObjectType.Function;
                                 reloc.Offset = (ulong)Code.Count;
-                                bf.AddRelocation(reloc);
+                                c.s.bf.AddRelocation(reloc);
 
                                 AddImm32(Code, 0xf000);
                                 AddImm32(Code, 0xd000);
@@ -250,15 +250,15 @@ namespace libtysila5.target.arm
                         if(Str(I) != null)
                         {
                             // this has an embedded string target, need to generate relocs
-                            var reloc = bf.CreateRelocation();
-                            reloc.DefinedIn = text_section;
+                            var reloc = c.s.bf.CreateRelocation();
+                            reloc.DefinedIn = c.s.text_section;
                             reloc.Type = new binary_library.elf.ElfFile.Rel_Arm_Thm_Movw_Abs_Nc();
                             reloc.Addend = 0;
-                            reloc.References = bf.CreateSymbol();
+                            reloc.References = c.s.bf.CreateSymbol();
                             reloc.References.Name = Str(I);
                             reloc.References.ObjectType = binary_library.SymbolObjectType.Object;
                             reloc.Offset = (ulong)Code.Count;
-                            bf.AddRelocation(reloc);
+                            c.s.bf.AddRelocation(reloc);
 
                             // encoding T3
                             AddImm16(Code, 0xf240);
@@ -288,15 +288,15 @@ namespace libtysila5.target.arm
                         if (Str(I) != null)
                         {
                             // this has an embedded string target, need to generate relocs
-                            var reloc = bf.CreateRelocation();
-                            reloc.DefinedIn = text_section;
+                            var reloc = c.s.bf.CreateRelocation();
+                            reloc.DefinedIn = c.s.text_section;
                             reloc.Type = new binary_library.elf.ElfFile.Rel_Arm_Thm_Movt_Abs();
                             reloc.Addend = 0;
-                            reloc.References = bf.CreateSymbol();
+                            reloc.References = c.s.bf.CreateSymbol();
                             reloc.References.Name = Str(I);
                             reloc.References.ObjectType = binary_library.SymbolObjectType.Object;
                             reloc.Offset = (ulong)Code.Count;
-                            bf.AddRelocation(reloc);
+                            c.s.bf.AddRelocation(reloc);
 
                             // encoding T3
                             AddImm16(Code, 0xf2c0);

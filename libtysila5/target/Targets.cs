@@ -82,8 +82,8 @@ namespace libtysila5.target
         protected internal abstract binary_library.IRelocationType GetDataToDataReloc();
         protected internal abstract binary_library.IRelocationType GetDataToCodeReloc();
 
-        protected internal abstract Code AssembleBoxedMethod(metadata.MethodSpec ms);
-        protected internal abstract Code AssembleBoxRetTypeMethod(metadata.MethodSpec ms);
+        protected internal abstract Code AssembleBoxedMethod(metadata.MethodSpec ms, TysilaState s);
+        protected internal abstract Code AssembleBoxRetTypeMethod(metadata.MethodSpec ms, TysilaState s);
         protected internal abstract bool NeedsBoxRetType(metadata.MethodSpec ms);
         protected internal abstract void AssemblePass(Code c);
 
@@ -160,11 +160,11 @@ namespace libtysila5.target
         protected internal virtual bool HasSideEffects(MCInst i)
         { return IsCall(i); }
 
-        public binary_library.IBinaryFile bf;
-        public binary_library.ISection text_section;
-        public StringTable st;
-        public SignatureTable sigt;
-        public Requestor r;
+        //public binary_library.IBinaryFile bf;
+        //public binary_library.ISection text_section;
+        //public StringTable st;
+        //public SignatureTable sigt;
+        //public Requestor r;
 
         protected internal virtual bool NeedsMregLiveness(MCInst i)
         {

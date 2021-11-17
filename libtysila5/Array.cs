@@ -33,9 +33,9 @@ namespace libtysila5.ir
     public partial class ConvertToIR
     {
         internal static Code CreateArrayCtor1(MethodSpec ms,
-            Target t)
+            Target t, TysilaState s)
         {
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -50,7 +50,7 @@ namespace libtysila5.ir
             stack_before = ldc(n, c, stack_before, layout.Layout.GetArrayFieldOffset(layout.Layout.ArrayField.ElemTypeVtblPointer, t), 0x18);
             stack_before = binnumop(n, c, stack_before, cil.Opcode.SingleOpcodes.add, Opcode.ct_intptr);
             stack_before = ldlab(n, c, stack_before, ms.type.other.MangleType());
-            t.r.VTableRequestor.Request(ms.type.other.Box);
+            s.r.VTableRequestor.Request(ms.type.other.Box);
             stack_before = stind(n, c, stack_before, t.GetPointerSize());
 
             // Set lobounds array and pointer
@@ -140,21 +140,21 @@ namespace libtysila5.ir
         }
 
         internal static Code CreateArrayCtor2(MethodSpec ms,
-           Target t)
+           Target t, TysilaState s)
         {
             throw new NotImplementedException();
         }
 
         internal static Code CreateArrayAddress(MethodSpec ms,
-           Target t)
+           Target t, TysilaState s)
         {
             throw new NotImplementedException();
         }
 
         internal static Code CreateArraySet(MethodSpec ms,
-           Target t)
+           Target t, TysilaState s)
         {
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -193,9 +193,9 @@ namespace libtysila5.ir
         }
 
         internal static Code CreateArrayGet(MethodSpec ms,
-            Target t)
+            Target t, TysilaState s)
         {
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -392,9 +392,9 @@ namespace libtysila5.ir
         }
 
         internal static Code CreateVectorIndexOf(MethodSpec ms,
-            Target t)
+            Target t, TysilaState s)
         {
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -425,9 +425,9 @@ namespace libtysila5.ir
             return c;
         }
         internal static Code CreateVectorInsert(MethodSpec ms,
-           Target t)
+           Target t, TysilaState s)
         {
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -455,9 +455,9 @@ namespace libtysila5.ir
             return c;
         }
         internal static Code CreateVectorRemoveAt(MethodSpec ms,
-            Target t)
+            Target t, TysilaState s)
         {
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -485,9 +485,9 @@ namespace libtysila5.ir
             return c;
         }
         internal static Code CreateVectorCopyTo(MethodSpec ms,
-            Target t)
+            Target t, TysilaState s)
         {
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -527,9 +527,9 @@ namespace libtysila5.ir
         }
 
         internal static Code CreateVectorget_Count(MethodSpec ms,
-            Target t)
+            Target t, TysilaState s)
         {
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -557,7 +557,7 @@ namespace libtysila5.ir
         /*internal static Code CreateVectorGetEnumerator(MethodSpec ms,
             Target t)
         {
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -571,9 +571,9 @@ namespace libtysila5.ir
         */
 
         internal static Code CreateVectorget_Item(MethodSpec ms,
-            Target t)
+            Target t, TysilaState s)
         {
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -603,9 +603,9 @@ namespace libtysila5.ir
             return c;
         }
         internal static Code CreateVectorset_Item(MethodSpec ms,
-            Target t)
+            Target t, TysilaState s)
         {
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 
@@ -634,9 +634,9 @@ namespace libtysila5.ir
         }
 
         internal static Code CreateVectorUnimplemented(MethodSpec ms,
-            Target t)
+            Target t, TysilaState s)
         {
-            Code c = new Code { t = t, ms = ms };
+            Code c = new Code { t = t, ms = ms, s = s };
             t.AllocateLocalVarsArgs(c);
             cil.CilNode n = new cil.CilNode(ms, 0);
 

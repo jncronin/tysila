@@ -239,17 +239,19 @@ namespace tysila4
                 dwarf = new libtysila5.dwarf.DwarfCU(t, m);
             }
 
+            libtysila5.TysilaState s = new libtysila5.TysilaState();
+
             if (output_file != null)
             {
                 var bf = new binary_library.elf.ElfFile(binary_library.Bitness.Bits32);
-                t.bf = bf;
+                s.bf = bf;
                 bf.Init();
                 bf.Architecture = target;
                 var st = new libtysila5.StringTable(
                     m.GetStringEntry(metadata.MetadataStream.tid_Module,
                     1, 1), al, t);
-                t.st = st;
-                t.r = new libtysila5.CachingRequestor(m);
+                s.st = st;
+                s.r = new libtysila5.CachingRequestor(m);
                 t.InitIntcalls();
 
                 /* for now, just assemble all public and protected
@@ -315,7 +317,7 @@ namespace tysila4
                         (mflags == 0x4 || mflags == 0x5 || mflags == 0x6) &&
                         tflags != 0)
                     {
-                        t.r.MethodRequestor.Request(ms);
+                        s.r.MethodRequestor.Request(ms);
                     }
                 }
 
@@ -330,35 +332,35 @@ namespace tysila4
                     var ts = new metadata.TypeSpec { m = m, tdrow = i };
                     if (ts.IsGeneric)
                         continue;
-                    t.r.StaticFieldRequestor.Request(ts);
-                    t.r.VTableRequestor.Request(ts.Box);
+                    s.r.StaticFieldRequestor.Request(ts);
+                    s.r.VTableRequestor.Request(ts.Box);
                 }
 
                 /* If corlib, add in the default equality comparers so we don't have to jit these
                  * commonly used classes */
                 if(m.is_corlib)
                 {
-                    t.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemByte }), ".ctor"));
-                    t.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt8 }), ".ctor"));
-                    t.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt16 }), ".ctor"));
-                    t.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemUInt16 }), ".ctor"));
-                    t.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt32 }), ".ctor"));
-                    t.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemUInt32 }), ".ctor"));
-                    t.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt64 }), ".ctor"));
-                    t.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemUInt64 }), ".ctor"));
-                    t.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemString }), ".ctor"));
-                    t.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemObject }), ".ctor"));
+                    s.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemByte }), ".ctor"));
+                    s.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt8 }), ".ctor"));
+                    s.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt16 }), ".ctor"));
+                    s.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemUInt16 }), ".ctor"));
+                    s.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt32 }), ".ctor"));
+                    s.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemUInt32 }), ".ctor"));
+                    s.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt64 }), ".ctor"));
+                    s.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemUInt64 }), ".ctor"));
+                    s.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemString }), ".ctor"));
+                    s.r.MethodRequestor.Request(m.GetMethodSpec(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemObject }), ".ctor"));
 
-                    t.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemByte }));
-                    t.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt8 }));
-                    t.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt16 }));
-                    t.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemUInt16 }));
-                    t.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt32 }));
-                    t.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemUInt32 }));
-                    t.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt64 }));
-                    t.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemUInt64 }));
-                    t.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemString }));
-                    t.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemObject }));
+                    s.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemByte }));
+                    s.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt8 }));
+                    s.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt16 }));
+                    s.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemUInt16 }));
+                    s.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt32 }));
+                    s.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemUInt32 }));
+                    s.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemInt64 }));
+                    s.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemUInt64 }));
+                    s.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemString }));
+                    s.r.VTableRequestor.Request(m.GetTypeSpec("System.Collections.Generic", "GenericEqualityComparer`1", new metadata.TypeSpec[] { m.SystemObject }));
                 }
 
                 /* Generate a thread-local data section.  We may not use it. */
@@ -369,11 +371,11 @@ namespace tysila4
                 tlsos.IsWriteable = true;
                 tlsos.IsThreadLocal = true;
 
-                while (!t.r.Empty)
+                while (!s.r.Empty)
                 {
-                    if (!t.r.MethodRequestor.Empty)
+                    if (!s.r.MethodRequestor.Empty)
                     {
-                        var ms = t.r.MethodRequestor.GetNext();
+                        var ms = s.r.MethodRequestor.GetNext();
 
                         ISection tsect = null;
                         ISection datasect = null;
@@ -389,13 +391,13 @@ namespace tysila4
                         }
 
                         libtysila5.libtysila.AssembleMethod(ms.ms,
-                            bf, t, debug, m, ms.c, tsect, datasect, dwarf);
+                            bf, t, s, debug, m, ms.c, tsect, datasect, dwarf);
                         if (!quiet)
                             Console.WriteLine(ms.ms.m.MangleMethod(ms.ms));
                     }
-                    else if (!t.r.StaticFieldRequestor.Empty)
+                    else if (!s.r.StaticFieldRequestor.Empty)
                     {
-                        var sf = t.r.StaticFieldRequestor.GetNext();
+                        var sf = s.r.StaticFieldRequestor.GetNext();
 
                         ISection tsect = null;
                         if (data_sects && !sf.AlwaysCompile)
@@ -410,9 +412,9 @@ namespace tysila4
                         if (!quiet)
                             Console.WriteLine(sf.MangleType() + "S");
                     }
-                    else if (!t.r.EHRequestor.Empty)
+                    else if (!s.r.EHRequestor.Empty)
                     {
-                        var eh = t.r.EHRequestor.GetNext();
+                        var eh = s.r.EHRequestor.GetNext();
 
                         ISection tsect = null;
                         if (func_sects && !eh.ms.AlwaysCompile)
@@ -423,13 +425,13 @@ namespace tysila4
                         }
 
                         libtysila5.layout.Layout.OutputEHdr(eh,
-                            t, bf, m, tsect);
+                            t, bf, s, m, tsect);
                         if (!quiet)
                             Console.WriteLine(eh.ms.MangleMethod() + "EH");
                     }
-                    else if (!t.r.VTableRequestor.Empty)
+                    else if (!s.r.VTableRequestor.Empty)
                     {
-                        var vt = t.r.VTableRequestor.GetNext();
+                        var vt = s.r.VTableRequestor.GetNext();
 
                         ISection tsect = null;
                         ISection data_sect = null;
@@ -445,20 +447,20 @@ namespace tysila4
                         }
 
                         libtysila5.layout.Layout.OutputVTable(vt,
-                            t, bf, m, tsect, data_sect);
+                            t, bf, s, m, tsect, data_sect);
                         if (!quiet)
                             Console.WriteLine(vt.MangleType());
                     }
-                    else if(!t.r.DelegateRequestor.Empty)
+                    else if(!s.r.DelegateRequestor.Empty)
                     {
-                        var d = t.r.DelegateRequestor.GetNext();
-                        libtysila5.ir.ConvertToIR.CreateDelegate(d, t);
+                        var d = s.r.DelegateRequestor.GetNext();
+                        libtysila5.ir.ConvertToIR.CreateDelegate(d, t, s);
                         if (!quiet)
                             Console.WriteLine(d.MangleType() + "D");
                     }
-                    else if(!t.r.BoxedMethodRequestor.Empty)
+                    else if(!s.r.BoxedMethodRequestor.Empty)
                     {
-                        var bm = t.r.BoxedMethodRequestor.GetNext();
+                        var bm = s.r.BoxedMethodRequestor.GetNext();
 
                         ISection tsect = null;
                         if (func_sects && !bm.ms.AlwaysCompile)
@@ -469,7 +471,7 @@ namespace tysila4
                         }
 
                         libtysila5.libtysila.AssembleBoxedMethod(bm.ms,
-                            bf, t, debug, tsect);
+                            bf, t, s, debug, tsect);
                         if (!quiet)
                             Console.WriteLine(bm.ms.MangleMethod());
                     }

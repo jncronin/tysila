@@ -47,6 +47,7 @@ namespace libtysila5.layout
 
         public static void OutputVTable(TypeSpec ts,
             target.Target t, binary_library.IBinaryFile of,
+            TysilaState s,
             MetadataStream base_m = null,
             ISection os = null,
             ISection data_sect = null)
@@ -56,11 +57,11 @@ namespace libtysila5.layout
                 return;
 
             /* New signature table */
-            t.sigt = new SignatureTable(ts.MangleType());
+            s.sigt = new SignatureTable(ts.MangleType());
 
             // If its a delegate type we also need to output its methods
             if (ts.IsDelegate && !ts.IsGenericTemplate)
-                t.r.DelegateRequestor.Request(ts);
+                s.r.DelegateRequestor.Request(ts);
 
             if(os == null)
                 os = of.GetRDataSection();
@@ -82,7 +83,7 @@ namespace libtysila5.layout
                 sym.Type = SymbolType.Weak;
 
             /* TIPtr */
-            var tiptr_offset = t.sigt.GetSignatureAddress(ts.Signature, t);
+            var tiptr_offset = s.sigt.GetSignatureAddress(ts.Signature, t, s);
 
             var ti_reloc = of.CreateRelocation();
             ti_reloc.Addend = tiptr_offset;
@@ -90,7 +91,7 @@ namespace libtysila5.layout
             ti_reloc.Offset = offset;
             ti_reloc.Type = t.GetDataToDataReloc();
             ti_reloc.References = of.CreateSymbol();
-            ti_reloc.References.Name = t.sigt.GetStringTableName();
+            ti_reloc.References.Name = s.sigt.GetStringTableName();
             of.AddRelocation(ti_reloc);
 
             for (int i = 0; i < ptr_size; i++, offset++)
@@ -127,7 +128,7 @@ namespace libtysila5.layout
                 ext_reloc.References = ext_sym;
                 of.AddRelocation(ext_reloc);
 
-                t.r.VTableRequestor.Request(ts_extends);
+                s.r.VTableRequestor.Request(ts_extends);
             }
             for (int i = 0; i < ptr_size; i++, offset++)
                 d.Add(0);
@@ -143,7 +144,7 @@ namespace libtysila5.layout
                 AddFlags(d, ts, ref offset, t);
 
                 /* BaseType */
-                AddBaseType(d, ts, of, os, ref offset, t);
+                AddBaseType(d, ts, of, os, ref offset, t, s);
 
                 // Target-specific information
                 t.AddExtraVTableFields(ts, d, ref offset);
@@ -162,14 +163,14 @@ namespace libtysila5.layout
                 AddFlags(d, ts, ref offset, t);
 
                 /* BaseType */
-                AddBaseType(d, ts, of, os, ref offset, t);
+                AddBaseType(d, ts, of, os, ref offset, t, s);
 
                 // Target specific information
                 t.AddExtraVTableFields(ts, d, ref offset);
 
                 /* Virtual methods */
                 OutputVirtualMethods(ts, of, os,
-                    d, ref offset, t);
+                    d, ref offset, t, s);
 
                 /* Interface implementations */
 
@@ -183,8 +184,8 @@ namespace libtysila5.layout
                 {
                     ii_offsets.Add(offset - sym.Offset);
                     OutputInterface(ts, ii[i],
-                        of, os, d, ref offset, t);
-                    t.r.VTableRequestor.Request(ii[i]);
+                        of, os, d, ref offset, t, s);
+                    s.r.VTableRequestor.Request(ii[i]);
                 }
 
                 // point iface ptr here
@@ -229,10 +230,11 @@ namespace libtysila5.layout
             /* Output signature table if any */
             if (data_sect == null)
                 data_sect = of.GetDataSection();
-            t.sigt.WriteToOutput(of, base_m, t, data_sect);
+            s.sigt.WriteToOutput(of, base_m, t, data_sect);
         }
 
-        private static void AddBaseType(IList<byte> d, TypeSpec ts, IBinaryFile of, ISection os, ref ulong offset, Target t)
+        private static void AddBaseType(IList<byte> d, TypeSpec ts, IBinaryFile of, ISection os, ref ulong offset, Target t,
+            TysilaState s)
         {
             if(ts.other != null && ts.stype != TypeSpec.SpecialType.Boxed)
             {
@@ -250,7 +252,7 @@ namespace libtysila5.layout
                 ext_reloc.References = ext_sym;
                 of.AddRelocation(ext_reloc);
 
-                t.r.VTableRequestor.Request(bt);
+                s.r.VTableRequestor.Request(bt);
             }
             for (int i = 0; i < t.GetPointerSize(); i++, offset++)
                 d.Add(0);
@@ -313,7 +315,7 @@ namespace libtysila5.layout
         }
 
         public static List<InterfaceMethodImplementation> ImplementInterface(
-            TypeSpec impl_ts, TypeSpec iface_ts, Target t)
+            TypeSpec impl_ts, TypeSpec iface_ts, Target t, TysilaState s)
         {
             var ret = new List<InterfaceMethodImplementation>();
             bool is_boxed = false;
@@ -394,15 +396,15 @@ namespace libtysila5.layout
                     {
                         impl_ms = impl_ms.Clone();
                         impl_ms.ret_type_needs_boxing = true;
-                        t.r.BoxedMethodRequestor.Request(impl_ms);
+                        s.r.BoxedMethodRequestor.Request(impl_ms);
                     }
                     if (is_boxed)
                     {
                         impl_ms.is_boxed = true;
-                        t.r.BoxedMethodRequestor.Request(impl_ms);
+                        s.r.BoxedMethodRequestor.Request(impl_ms);
                     }
                     else
-                        t.r.MethodRequestor.Request(impl_ms);
+                        s.r.MethodRequestor.Request(impl_ms);
                 }
 
                 ret.Add(new InterfaceMethodImplementation { InterfaceMethod = iface_ms, ImplementationMethod = impl_ms });
@@ -413,7 +415,8 @@ namespace libtysila5.layout
         // TODO: Use ImplementInterface
         private static void OutputInterface(TypeSpec impl_ts,
             TypeSpec iface_ts, IBinaryFile of, ISection os,
-            IList<byte> d, ref ulong offset, Target t)
+            IList<byte> d, ref ulong offset, Target t,
+            TysilaState s)
         {
             bool is_boxed = false;
             if(impl_ts.IsBoxed)
@@ -475,7 +478,7 @@ namespace libtysila5.layout
                     var szarrayhelper = iface_ms.m.GetTypeSpec("System", "SZArrayHelper");
                     var genum_ms = iface_ms.m.GetMethodSpec(szarrayhelper, "GetEnumerator");
                     genum_ms.gmparams = new TypeSpec[] { impl_ts.other };
-                    t.r.MethodRequestor.Request(genum_ms);
+                    s.r.MethodRequestor.Request(genum_ms);
                     impl_ms = genum_ms;
                 }
 
@@ -500,15 +503,15 @@ namespace libtysila5.layout
                     {
                         impl_ms = impl_ms.Clone();
                         impl_ms.ret_type_needs_boxing = true;
-                        t.r.BoxedMethodRequestor.Request(impl_ms);
+                        s.r.BoxedMethodRequestor.Request(impl_ms);
                     }
                     else if (is_boxed)
                     {
                         impl_ms.is_boxed = true;
-                        t.r.BoxedMethodRequestor.Request(impl_ms);
+                        s.r.BoxedMethodRequestor.Request(impl_ms);
                     }
                     else
-                        t.r.MethodRequestor.Request(impl_ms);
+                        s.r.MethodRequestor.Request(impl_ms);
                 }
 
                 // Output reference
@@ -538,7 +541,8 @@ namespace libtysila5.layout
 
         private static void OutputVirtualMethods(TypeSpec decl_ts,
             IBinaryFile of, ISection os,
-            IList<byte> d, ref ulong offset, target.Target t)
+            IList<byte> d, ref ulong offset, target.Target t,
+            TysilaState s)
         {
             var vmeths = GetVirtualMethodDeclarations(decl_ts);
             ImplementVirtualMethods(decl_ts, vmeths);
@@ -564,7 +568,7 @@ namespace libtysila5.layout
                     d.Add(0);
 
                 if (impl_ms != null)
-                    t.r.MethodRequestor.Request(impl_ms);
+                    s.r.MethodRequestor.Request(impl_ms);
             }
         }
 

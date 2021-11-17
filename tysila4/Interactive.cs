@@ -286,6 +286,7 @@ namespace tysila4
         libtysila5.target.Target t;
         InteractiveMetadataStream corlib;
         AutoCompleteHandler ach;
+        libtysila5.TysilaState tst = new libtysila5.TysilaState();
 
         List<string> cmds = new List<string>
         {
@@ -361,10 +362,10 @@ namespace tysila4
                     s.ms = ParseMethod(cmd, ref idx);
 
                     t.InitIntcalls();
-                    t.r = new libtysila5.CachingRequestor(s.m.m);
-                    t.st = new libtysila5.StringTable("Interactive", s.ms.ms.m.al, Program.t);
+                    tst.r = new libtysila5.CachingRequestor(s.m.m);
+                    tst.st = new libtysila5.StringTable("Interactive", s.ms.ms.m.al, Program.t);
                     StringBuilder sb = new StringBuilder();
-                    libtysila5.libtysila.AssembleMethod(s.ms.ms, new binary_library.binary.FlatBinaryFile(), t, sb);
+                    libtysila5.libtysila.AssembleMethod(s.ms.ms, new binary_library.binary.FlatBinaryFile(), t, tst, sb);
 
                     Console.WriteLine(sb.ToString());
                 }
@@ -423,9 +424,9 @@ namespace tysila4
                     istate.ts = ParseType(cmd, ref idx, istate);
 
                     t.InitIntcalls();
-                    t.r = new libtysila5.CachingRequestor(s.m.m);
+                    tst.r = new libtysila5.CachingRequestor(s.m.m);
 
-                    var iis = libtysila5.layout.Layout.ImplementInterface(s.ts, istate.ts, t);
+                    var iis = libtysila5.layout.Layout.ImplementInterface(s.ts, istate.ts, t, tst);
                     foreach (var ii in iis)
                     {
                         Console.WriteLine(((InteractiveMethodSpec)ii.InterfaceMethod).Name + " -> " + ii.TargetName);

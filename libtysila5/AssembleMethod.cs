@@ -31,6 +31,7 @@ namespace libtysila5
     {
         public static bool AssembleMethod(metadata.MethodSpec ms,
             binary_library.IBinaryFile bf, target.Target t,
+            TysilaState s,
             StringBuilder debug_passes = null,
             MetadataStream base_m = null,
             Code code_override = null,
@@ -51,8 +52,8 @@ namespace libtysila5
             {
                 ts = bf.GetTextSection();
             }
-            t.bf = bf;
-            t.text_section = ts;
+            s.bf = bf;
+            s.text_section = ts;
             binary_library.SymbolType sym_st = binary_library.SymbolType.Global;
 
             var csite = ms.msig;
@@ -68,7 +69,7 @@ namespace libtysila5
                 mdef, 0);
 
             // New signature table
-            t.sigt = new SignatureTable(ms.MangleMethod());
+            s.sigt = new SignatureTable(ms.MangleMethod());
 
             /* Is this an array method? */
             if (rva == 0 &&
@@ -78,7 +79,7 @@ namespace libtysila5
             {
                 if (ms.name_override == "Get")
                 {
-                    code_override = ir.ConvertToIR.CreateArrayGet(ms, t);
+                    code_override = ir.ConvertToIR.CreateArrayGet(ms, t, s);
                 }
                 else if (ms.name_override == ".ctor")
                 {
@@ -86,16 +87,16 @@ namespace libtysila5
                     var pcount = ms.m.GetMethodDefSigParamCount(ms.msig);
 
                     if (pcount == ms.type.arr_rank)
-                        code_override = ir.ConvertToIR.CreateArrayCtor1(ms, t);
+                        code_override = ir.ConvertToIR.CreateArrayCtor1(ms, t, s);
                     else if (pcount == 2 * ms.type.arr_rank)
-                        code_override = ir.ConvertToIR.CreateArrayCtor2(ms, t);
+                        code_override = ir.ConvertToIR.CreateArrayCtor2(ms, t, s);
                     else
                         throw new NotSupportedException("Invalid number of parameters to " + ms.MangleMethod() + " for array of rank " + ms.type.arr_rank.ToString());
                 }
                 else if (ms.name_override == "Set")
-                    code_override = ir.ConvertToIR.CreateArraySet(ms, t);
+                    code_override = ir.ConvertToIR.CreateArraySet(ms, t, s);
                 else if (ms.name_override == "Address")
-                    code_override = ir.ConvertToIR.CreateArrayAddress(ms, t);
+                    code_override = ir.ConvertToIR.CreateArrayAddress(ms, t, s);
                 else
                     throw new NotImplementedException(ms.name_override);
 
@@ -109,19 +110,19 @@ namespace libtysila5
                 code_override == null)
             {
                 if (ms.Name == "IndexOf")
-                    code_override = ir.ConvertToIR.CreateVectorIndexOf(ms, t);
+                    code_override = ir.ConvertToIR.CreateVectorIndexOf(ms, t, s);
                 else if (ms.Name == "Insert")
-                    code_override = ir.ConvertToIR.CreateVectorInsert(ms, t);
+                    code_override = ir.ConvertToIR.CreateVectorInsert(ms, t, s);
                 else if (ms.Name == "RemoveAt")
-                    code_override = ir.ConvertToIR.CreateVectorRemoveAt(ms, t);
+                    code_override = ir.ConvertToIR.CreateVectorRemoveAt(ms, t, s);
                 else if (ms.Name == "get_Item")
-                    code_override = ir.ConvertToIR.CreateVectorget_Item(ms, t);
+                    code_override = ir.ConvertToIR.CreateVectorget_Item(ms, t, s);
                 else if (ms.Name == "set_Item")
-                    code_override = ir.ConvertToIR.CreateVectorset_Item(ms, t);
+                    code_override = ir.ConvertToIR.CreateVectorset_Item(ms, t, s);
                 else if (ms.Name == "get_Count")
-                    code_override = ir.ConvertToIR.CreateVectorget_Count(ms, t);
+                    code_override = ir.ConvertToIR.CreateVectorget_Count(ms, t, s);
                 else if (ms.Name == "CopyTo")
-                    code_override = ir.ConvertToIR.CreateVectorCopyTo(ms, t);
+                    code_override = ir.ConvertToIR.CreateVectorCopyTo(ms, t, s);
                 /*else if (ms.Name == "GetEnumerator")
                     code_override = ir.ConvertToIR.CreateVectorGetEnumerator(ms, t);*/
                 else if (ms.Name == "Add" ||
@@ -136,7 +137,7 @@ namespace libtysila5
                     ms.Name == "CompareTo" ||
                     ms.Name == "GetHashCode" ||
                     ms.Name == "Equals")
-                    code_override = ir.ConvertToIR.CreateVectorUnimplemented(ms, t);
+                    code_override = ir.ConvertToIR.CreateVectorUnimplemented(ms, t, s);
                 else
                     return false;
 
@@ -266,6 +267,7 @@ namespace libtysila5
                 cil = libtysila5.cil.CilParser.ParseCIL(meth,
                     ms, boffset, (int)code_size, lvar_sig_tok,
                     has_exceptions, ehdrs);
+                cil.s = s;
 
                 /* Allocate local vars and args */
                 t.AllocateLocalVarsArgs(cil);
@@ -306,7 +308,7 @@ namespace libtysila5
             /* Signature table */
             if (data_sect == null)
                 data_sect = bf.GetDataSection();
-            t.sigt.WriteToOutput(bf, ms.m, t, data_sect);
+            s.sigt.WriteToOutput(bf, ms.m, t, data_sect);
 
             /* DWARF output */
             if (dcu != null)
@@ -526,7 +528,7 @@ namespace libtysila5
                     debug_passes.Append(mc.offset.ToString("X8"));
                     debug_passes.Append(": ");
                     debug_passes.AppendLine(cil.t.MCInstToDebug(mc));
-                    if (cil.t != null && cil.t.text_section != null && cil.t.text_section.Data != null)
+                    if (cil.s != null && cil.s.text_section != null && cil.s.text_section.Data != null)
                     {
                         debug_passes.Append("        ");
                         int idx = 0;
@@ -534,7 +536,7 @@ namespace libtysila5
                         {
                             if (idx > 0)
                                 debug_passes.Append(", ");
-                            debug_passes.Append(cil.t.text_section.Data[i].ToString("X2"));
+                            debug_passes.Append(cil.s.text_section.Data[i].ToString("X2"));
                         }
                         debug_passes.AppendLine();
                     }
@@ -610,13 +612,14 @@ namespace libtysila5
 
         public static bool AssembleBoxedMethod(metadata.MethodSpec ms,
             binary_library.IBinaryFile bf, target.Target t,
+            TysilaState s,
             StringBuilder debug_passes = null,
             binary_library.ISection ts = null)
         {
             if(ts == null)
                 ts = bf.GetTextSection();
-            t.bf = bf;
-            t.text_section = ts;
+            s.bf = bf;
+            s.text_section = ts;
 
             // Symbol
             List<binary_library.ISymbol> meth_syms = new List<binary_library.ISymbol>();
@@ -629,7 +632,7 @@ namespace libtysila5
             ts.AddSymbol(meth_sym);
             meth_syms.Add(meth_sym);
 
-            Code c = ms.ret_type_needs_boxing ? t.AssembleBoxRetTypeMethod(ms) : t.AssembleBoxedMethod(ms);
+            Code c = ms.ret_type_needs_boxing ? t.AssembleBoxRetTypeMethod(ms, s) : t.AssembleBoxedMethod(ms, s);
             c.t = t;
             t.AssemblePass(c);
 

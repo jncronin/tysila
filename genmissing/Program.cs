@@ -140,7 +140,8 @@ namespace genmissing
             /* Load up assembler target */
             var t = libtysila5.target.Target.targets[arch];
             var fsi = new System.IO.FileInfo(output_name);
-            t.st = new libtysila5.StringTable(fsi.Name.Substring(0, fsi.Name.Length - fsi.Extension.Length), ms.al, t);
+            var s = new libtysila5.TysilaState();
+            s.st = new libtysila5.StringTable(fsi.Name.Substring(0, fsi.Name.Length - fsi.Extension.Length), ms.al, t);
 
             /* Generate signature of missing_function(string) to call */
             var special_c = new libtysila5.Code { ms = new metadata.MethodSpec { m = ms } };
@@ -157,7 +158,7 @@ namespace genmissing
                 {
                     if (ms.IsMangledMethod(str))
                     {
-                        GenerateMissingMethod(str, ms, t, missing_msig, o);
+                        GenerateMissingMethod(str, ms, t, missing_msig, o, s);
                     }
                     else
                     {
@@ -172,7 +173,7 @@ namespace genmissing
             }
 
             /* Write out */
-            t.st.WriteToOutput(o, ms, t);
+            s.st.WriteToOutput(o, ms, t);
             o.Write();
 
             /* Dump missing types */
@@ -191,7 +192,7 @@ namespace genmissing
             Console.WriteLine("Usage: genmissing [-t architecture] [-o output_file] [-L library_path] <input_file_1> [extra_input_files]");
         }
 
-        private static void GenerateMissingMethod(string str, metadata.MetadataStream m, libtysila5.target.Target t, int missing_msig, ElfFile o)
+        private static void GenerateMissingMethod(string str, metadata.MetadataStream m, libtysila5.target.Target t, int missing_msig, ElfFile o, libtysila5.TysilaState s)
         {
             /* Generate new method spec */
             var ms = new metadata.MethodSpec { m = m, mangle_override = str };
@@ -213,7 +214,7 @@ namespace genmissing
                 c.special_meths, missing_msig);
 
             /* Assemble */
-            libtysila5.libtysila.AssembleMethod(ms, o, t, null, null, c);
+            libtysila5.libtysila.AssembleMethod(ms, o, t, s, null, null, c);
         }
     }
 }

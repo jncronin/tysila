@@ -399,7 +399,7 @@ namespace libtysila5.target.x86
                 return false;
         }
 
-        protected internal override Code AssembleBoxRetTypeMethod(MethodSpec ms)
+        protected internal override Code AssembleBoxRetTypeMethod(MethodSpec ms, TysilaState s)
         {
             // Move all parameters up one - this will require knowledge of the param locs
             // if the return type is an object (to get the 'from' locations) and
@@ -430,6 +430,7 @@ namespace libtysila5.target.x86
             // Generate code
             var c = new Code();
             c.mc = new List<MCInst>();
+            c.s = s;
             var n = new cil.CilNode(ms, 0);
             var ir = new cil.CilNode.IRNode { parent = n, mc = c.mc };
             ir.opcode = Opcode.oc_nop;
@@ -490,7 +491,7 @@ namespace libtysila5.target.x86
             // call the actual function (see AssembleBoxedMethod below)
             var unboxed = ms.Unbox;
             var act_meth = unboxed.MangleMethod();
-            r.MethodRequestor.Request(unboxed);
+            s.r.MethodRequestor.Request(unboxed);
 
             // Save rax around the call and return it
             // We do this because the actual method returns the address of a value type in rax
@@ -503,7 +504,7 @@ namespace libtysila5.target.x86
             return c;
         }
 
-        protected internal override Code AssembleBoxedMethod(MethodSpec ms)
+        protected internal override Code AssembleBoxedMethod(MethodSpec ms, TysilaState s)
         {
             /* To unbox, we simply add the size of system.object to 
              * first argument, then jmp to the actual method
@@ -511,6 +512,7 @@ namespace libtysila5.target.x86
 
             var c = new Code();
             c.mc = new List<MCInst>();
+            c.s = s;
 
             var this_reg = psize == 4 ? new ContentsReg { basereg = r_ebp, disp = 8, size = 4 } : x86_64.x86_64_Assembler.r_rdi;
             var sysobjsize = layout.Layout.GetTypeSize(ms.m.SystemObject, this);
@@ -518,7 +520,7 @@ namespace libtysila5.target.x86
 
             var unboxed = ms.Unbox;
             var act_meth = unboxed.MangleMethod();
-            r.MethodRequestor.Request(unboxed);
+            c.s.r.MethodRequestor.Request(unboxed);
 
 
             c.mc.Add(inst(x86_jmp_rel32, new Param { t = Opcode.vl_str, str = act_meth }, null));
