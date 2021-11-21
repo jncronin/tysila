@@ -208,6 +208,7 @@ namespace genmissing
             cilnode.irnodes = ir;
             c.ir = ir;
             c.starts = new List<libtysila5.cil.CilNode> { cilnode };
+            c.s = s;
 
             stack = libtysila5.ir.ConvertToIR.ldstr(cilnode, c, stack, str);
             stack = libtysila5.ir.ConvertToIR.call(cilnode, c, stack, false, "missing_function",
