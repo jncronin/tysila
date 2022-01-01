@@ -94,8 +94,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\binary_library\binary_library\binary_library.csproj" />
-    <ProjectReference Include="..\binary_library\tl\elfhash\elfhash.csproj" />
-    <ProjectReference Include="..\binary_library\tl\tl\tl.csproj" />
     <ProjectReference Include="..\libsupcs\libsupcs.csproj" />
     <ProjectReference Include="..\libtysila5\libtysila5.csproj" />
     <ProjectReference Include="..\metadata\metadata.csproj" />

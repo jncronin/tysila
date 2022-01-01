@@ -13,6 +13,9 @@ if(PLATFORM == "win")
 // How to build tysila
 TYSILA ?= dir(THIS) + "/tysila4/bin/Release/tysila4" + EXEC_SUFFIX;
 GENMISSING ?= dir(THIS) + "/genmissing/bin/Release/genmissing" + EXEC_SUFFIX;
+TL ?= dir(THIS) + "/tl/bin/Release/tl" + EXEC_SUFFIX;
+ELFHASH ?= dir(THIS) + "/elfhash/bin/Release/elfhash" + EXEC_SUFFIX;
+
 MSBUILD = "msbuild";
 
 // Where to put the finished build
@@ -156,6 +159,14 @@ if(INSTALL == "y")
 	foreach(gmfile in files(dir(GENMISSING)))
 	{
 		cp(gmfile, INSTALL_DIR);
+	}
+	foreach(ehfile in files(dir(ELFHASH)))
+	{
+		cp(ehfile, INSTALL_DIR);
+	}
+	foreach(tlfile in files(dir(TL)))
+	{
+		cp(tlfile, INSTALL_DIR);
 	}
 	foreach(arch in ARCHS)
 	{
