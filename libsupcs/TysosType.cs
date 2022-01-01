@@ -351,6 +351,13 @@ namespace libsupcs
             *ret.ptr = CastOperations.ReinterpretAsPointer(tt.MakeGenericType(gparr));
         }
 
+        [MethodAlias("_ZW6System17RuntimeTypeHandle_8Allocate_Ru1O_P1V11RuntimeType")]
+        [AlwaysCompile]
+        static object RTH_Allocate(TysosType tt)
+        {
+            return tt.Create();
+        }
+
         [MethodReferenceAlias("_ZW6System11RuntimeType_15MakeGenericType_RV4Type_P2u1tu1ZV4Type")]
         [MethodImpl(MethodImplOptions.InternalCall)]
         static extern Type RT_MakeGenericType(object _this, object _args);
