@@ -405,7 +405,7 @@ namespace libsupcs
     {
         [MethodImpl(MethodImplOptions.InternalCall)]
         [MethodReferenceAlias("jit_tm")]
-        public static extern void* JitCompile(TysosMethod m);
+        public static extern void* JitCompile(metadata.MethodSpec ms);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         [MethodReferenceAlias("jit_vtable")]

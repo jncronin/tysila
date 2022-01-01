@@ -188,7 +188,7 @@ namespace libsupcs
                 if (MethodAddress == null)
                 {
                     System.Diagnostics.Debugger.Log(0, "libsupcs", "TysosMethod.Invoke: jit compiling method");
-                    MethodAddress = JitOperations.JitCompile(this);
+                    MethodAddress = JitOperations.JitCompile(this.mspec);
                 }
             }
             if (MethodAddress == null)
